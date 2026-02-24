@@ -167,7 +167,7 @@
             },
             {
               "name": "x-api-key",
-              "value": "gvdgKFDom0glTeHwjdJYow73Uq6YNa8GytuqiHmK"
+              "value": "REDACTED"
             }
           ]
         },
@@ -212,7 +212,7 @@
             },
             {
               "name": "x-api-key",
-              "value": "gvdgKFDom0glTeHwjdJYow73Uq6YNa8GytuqiHmK"
+              "value": "REDACTED"
             },
             {
               "name": "messageType",
@@ -1703,7 +1703,7 @@
         "description": "Manage contacts with explicit intent. \n\nSEARCH: Find existing contacts. Required: intent='search', contact_name, agent_id\nINSERT: Add new contact. Required: intent='insert', contact_name, contact_phone, agent_id. Optional: email, company\n\nThe 'intent' field determines the operation:\n- intent='search' → Find contacts by name\n- intent='insert' → Add new contact to database\n\nAlways include the intent field in your request.",
         "workflowId": "={{ $workflow.id }}",
         "specifyInputSchema": true,
-        "jsonSchemaExample": "{\n  \"intent\": \"search\",\n  \"contact_name\": \"John Doe\",\n  \"contact_phone\": \"923001234567\",\n  \"email\": \"john@example.com\",\n  \"company\": \"Acme Corp\",\n  \"agent_id\": \"{{ $json.agentId }}\"\n}"
+        "jsonSchemaExample": "{\n  \"intent\": \"search\",\n  \"contact_name\": \"NAME_PLACEHOLDER\",\n  \"contact_phone\": \"923001234567\",\n  \"email\": \"placeholder@example.com\",\n  \"company\": \"COMPANY_PLACEHOLDER\",\n  \"agent_id\": \"{{ $json.agentId }}\"\n}"
       },
       "id": "6334e637-f084-44f7-b5ce-529d9a18764e",
       "name": "Tool: Manage Contact (Code)",

@@ -181,7 +181,7 @@
             },
             {
               "name": "x-api-key",
-              "value": "gvdgKFDom0glTeHwjdJYow73Uq6YNa8GytuqiHmK"
+              "value": "REDACTED"
             }
           ]
         },
@@ -226,7 +226,7 @@
             },
             {
               "name": "x-api-key",
-              "value": "gvdgKFDom0glTeHwjdJYow73Uq6YNa8GytuqiHmK"
+              "value": "REDACTED"
             },
             {
               "name": "messageType",
@@ -1065,7 +1065,7 @@
         "description": "=```\nSearch or add contacts. \nSEARCH: intent='search', contact_name, agent_id\nINSERT: intent='insert', contact_name, contact_phone (no +), email, company, agent_id\n```",
         "workflowId": "={{ $workflow.id }}",
         "specifyInputSchema": true,
-        "jsonSchemaExample": "{\n  \"intent\": \"search\",\n  \"contact_name\": \"John Doe\",\n  \"contact_phone\": \"923001234567\",\n  \"email\": \"john@example.com\",\n  \"company\": \"Acme Corp\",\n  \"agent_id\": \"{{ $json.agentId }}\"\n}"
+        "jsonSchemaExample": "{\n  \"intent\": \"search\",\n  \"contact_name\": \"NAME_PLACEHOLDER\",\n  \"contact_phone\": \"923001234567\",\n  \"email\": \"placeholder@example.com\",\n  \"company\": \"COMPANY_PLACEHOLDER\",\n  \"agent_id\": \"{{ $json.agentId }}\"\n}"
       },
       "id": "e32e9e66-5dc6-49c6-b15a-7bcb1c35ccec",
       "name": "Tool: Manage Contact (Code)",

@@ -26,11 +26,11 @@
           "parameters": [
             {
               "name": "X-API-Key",
-              "value": "n8n_DL0oj20sN-a1FGSkRkBB_5KTxWDgOHVI"
+              "value": "REDACTED"
             },
             {
               "name": "X-API-Secret",
-              "value": "ymS7qBS83Nsook3ZFVCgmvoH0lw7uJ0-WnGuoVUmHyRp_HYSxHZWPjpLpthDQNpB"
+              "value": "REDACTED"
             }
           ]
         },
@@ -63,9 +63,9 @@
     },
     {
       "parameters": {
-        "fromEmail": "no-replay@duhanashrah.ai",
-        "toEmail": "aliameen7882@gmail.com",
-        "subject": "no-replay@duhanashrah.ai",
+        "fromEmail": "placeholder@example.com",
+        "toEmail": "placeholder@example.com",
+        "subject": "placeholder@example.com",
         "emailFormat": "text",
         "text": "=Workflow Name: {{ $json.workflow.name }}\nWorkflow Id: {{ $json.workflow.id }}\nError Message: {{ $json.execution.error.message }}\nExecution id:  {{ $json.execution.id }}\nExecution Url:{{ $json.execution.url }}\nBahi ALLAH Hum sab ka Bahala Kara",
         "options": {}
@@ -83,9 +83,9 @@
     },
     {
       "parameters": {
-        "fromEmail": "no-replay@duhanashrah.ai",
-        "toEmail": "bruce.banner@duhanashrah.ai",
-        "subject": "no-replay@duhanashrah.ai",
+        "fromEmail": "placeholder@example.com",
+        "toEmail": "placeholder@example.com",
+        "subject": "placeholder@example.com",
         "emailFormat": "text",
         "text": "=Workflow Name: {{ $json.workflow.name }}\nWorkflow Id: {{ $json.workflow.id }}\nError Message: {{ $json.execution.error.message }}\nExecution id:  {{ $json.execution.id }}\nExecution Url:{{ $json.execution.url }}\nBahi ALLAH Hum sab ka Bahala Kara",
         "options": {}

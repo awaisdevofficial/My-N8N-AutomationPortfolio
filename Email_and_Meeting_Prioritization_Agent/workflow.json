@@ -167,7 +167,7 @@
             },
             {
               "name": "x-api-key",
-              "value": "gvdgKFDom0glTeHwjdJYow73Uq6YNa8GytuqiHmK"
+              "value": "REDACTED"
             }
           ]
         },
@@ -212,7 +212,7 @@
             },
             {
               "name": "x-api-key",
-              "value": "gvdgKFDom0glTeHwjdJYow73Uq6YNa8GytuqiHmK"
+              "value": "REDACTED"
             },
             {
               "name": "messageType",
@@ -911,10 +911,10 @@
     {
       "parameters": {
         "name": "manage_contact",
-        "description": "=Contact Management (Search & Insert)\n\n**Two Modes:**\n\n**1. SEARCH (intent=\"search\")**\n- **Use when:** User wants to message/meet someone, or find contact\n- **Required:** intent=\"search\", contact_name, agent_id\n- **Returns:** Contact name and phone number\n- **Always call BEFORE:** send_whatsapp_message or schedule_meeting\n\n**2. INSERT (intent=\"insert\")**\n- **Use when:** User confirms adding new contact (after preview)\n- **Required:** intent=\"insert\", contact_name, contact_phone, agent_id\n- **Optional:** email, company\n- **Use ONLY after:** User confirms \"yes\" to add contact preview\n\n**Parameters:**\n```json\n{\n  \"intent\": \"search\" | \"insert\",\n  \"contact_name\": \"John Doe\",\n  \"contact_phone\": \"923001234567\",  // NO + prefix\n  \"email\": \"john@example.com\",       // Optional for insert\n  \"company\": \"Acme Corp\",            // Optional for insert\n  \"agent_id\": \"{{ $json.agentId }}\"\n}\n```\n\n**Phone Format:** NO + prefix (923001234567, not +923001234567)\n\n**After Insert:** Always call store_context",
+        "description": "=Contact Management (Search & Insert)\n\n**Two Modes:**\n\n**1. SEARCH (intent=\"search\")**\n- **Use when:** User wants to message/meet someone, or find contact\n- **Required:** intent=\"search\", contact_name, agent_id\n- **Returns:** Contact name and phone number\n- **Always call BEFORE:** send_whatsapp_message or schedule_meeting\n\n**2. INSERT (intent=\"insert\")**\n- **Use when:** User confirms adding new contact (after preview)\n- **Required:** intent=\"insert\", contact_name, contact_phone, agent_id\n- **Optional:** email, company\n- **Use ONLY after:** User confirms \"yes\" to add contact preview\n\n**Parameters:**\n```json\n{\n  \"intent\": \"search\" | \"insert\",\n  \"contact_name\": \"NAME_PLACEHOLDER\",\n  \"contact_phone\": \"923001234567\",  // NO + prefix\n  \"email\": \"placeholder@example.com\",       // Optional for insert\n  \"company\": \"COMPANY_PLACEHOLDER\",            // Optional for insert\n  \"agent_id\": \"{{ $json.agentId }}\"\n}\n```\n\n**Phone Format:** NO + prefix (923001234567, not +923001234567)\n\n**After Insert:** Always call store_context"
         "workflowId": "={{ $workflow.id }}",
         "specifyInputSchema": true,
-        "jsonSchemaExample": "{\n  \"intent\": \"search\",\n  \"contact_name\": \"John Doe\",\n  \"contact_phone\": \"923001234567\",\n  \"email\": \"john@example.com\",\n  \"company\": \"Acme Corp\",\n  \"agent_id\": \"{{ $json.agentId }}\"\n}"
+        "jsonSchemaExample": "{\n  \"intent\": \"search\",\n  \"contact_name\": \"NAME_PLACEHOLDER\",\n  \"contact_phone\": \"923001234567\",\n  \"email\": \"placeholder@example.com\",\n  \"company\": \"COMPANY_PLACEHOLDER\",\n  \"agent_id\": \"{{ $json.agentId }}\"\n}"
       },
       "id": "77b5d400-e447-40ca-9a28-92fba541ec44",
       "name": "Tool: Manage Contact (Code)2",

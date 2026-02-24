@@ -979,7 +979,7 @@
         "url": "https://erp.nsolbpo.com/api/nsol/bpoleads",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={\n  \"firstname\": \"Marcos Rojas\",\n  \"lastname\": \".\",\n  \"email\": \"byr4cashmr@gmail.com\",\n  \"phone\": \"+1 (954) 692 4138\",\n  \"demo_datetime\": \"tommorow\",\n\"industry\": \"realtors\",\n\"source\": \"AI Agent lead\",\n\"comments\": \"The AI agent called Marcos Rojas from Ensol to offer virtual assistant services for realtors, specifically to help free up time spent on backend tasks. Marcos confirmed he spends about 10 hours a week on such tasks, mainly phone calls, and would benefit from more time to focus on acquiring properties. An appointment was scheduled for a 15-minute Zoom call with a senior consultant.\"\n\n}\n",
+        "jsonBody": "={\n  \"firstname\": \"FIRST_NAME_PLACEHOLDER\",\n  \"lastname\": \"LAST_NAME_PLACEHOLDER\",\n  \"email\": \"placeholder@example.com\",\n  \"phone\": \"+10000000000\",\n  \"demo_datetime\": \"tommorow\",\n\"industry\": \"INDUSTRY_PLACEHOLDER\",\n\"source\": \"SOURCE_PLACEHOLDER\",\n\"comments\": \"COMMENT_PLACEHOLDER\"\n\n}\n",
         "options": {
           "proxy": ""
         }
