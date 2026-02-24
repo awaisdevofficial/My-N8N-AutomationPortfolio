@@ -1,0 +1,177 @@
+{
+  "updatedAt": "2026-02-13T22:11:37.603Z",
+  "createdAt": "2026-02-12T21:08:01.954Z",
+  "id": "3Xk0y4MdaHuXnkna",
+  "name": "My workflow 14",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "content": "Founders",
+        "height": 464,
+        "width": 1120
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -544,
+        -320
+      ],
+      "typeVersion": 1,
+      "id": "079b0c2c-6f5e-4c90-b47b-49e7287b4673",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "Co-founders",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -496,
+        448
+      ],
+      "id": "d6a8e856-9371-4e78-9c3e-a7c5cd381ea3",
+      "name": "Co-founders",
+      "webhookId": "66e6959f-5d5c-459a-a66d-0de65982f345"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "sales-nav ",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -480,
+        -240
+      ],
+      "id": "ee48c188-cfc9-4b16-893c-b77fa8fddc0b",
+      "name": "founders",
+      "webhookId": "29480b26-7429-4625-a6fe-bdcc3fc02f9e"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "profile-scraper",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -480,
+        -48
+      ],
+      "id": "cdbe51f3-80ba-4634-82ad-59108e69f715",
+      "name": "founders-profile-ext",
+      "webhookId": "be9e80fb-797f-4619-933b-de913c836201"
+    },
+    {
+      "parameters": {
+        "content": "Founders",
+        "height": 464,
+        "width": 1120
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -560,
+        256
+      ],
+      "typeVersion": 1,
+      "id": "1a3baa8a-d707-4851-87c5-98088850dd41",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -176,
+        -240
+      ],
+      "id": "3c2ac5bc-7655-4a11-927b-722bcadc0065",
+      "name": "Create a row",
+      "credentials": "[REDACTED]",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.url }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -48,
+        448
+      ],
+      "id": "e7663859-43c0-4847-af47-049dcd378bd2",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "jsCode": "// input is the array you posted\nconst input = $input.all();\n\n// resultObject is a JSON string inside body.resultObject\nconst resultObjectStr = input[0]?.json?.body?.resultObject || \"{}\";\n\nconst resultObject = JSON.parse(resultObjectStr);\n\n// Extract ONLY the URL (jsonUrl)\nconst url = resultObject.jsonUrl;\n\n// Return properly formatted output\nreturn [{ json: { url } }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -256,
+        448
+      ],
+      "id": "17fa0e67-5f2e-4118-a4c4-500c55fb1967",
+      "name": "Code in JavaScript"
+    }
+  ],
+  "connections": {
+    "founders-profile-ext": {
+      "main": [
+        []
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        []
+      ]
+    },
+    "Co-founders": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "triggerCount": 3,
+  "tags": [
+    {
+      "updatedAt": "2025-10-15T12:01:49.775Z",
+      "createdAt": "2025-10-15T12:01:49.775Z",
+      "id": "vqPjQ1pPoVp3pFKR",
+      "name": "Mark Edward"
+    }
+  ]
+}

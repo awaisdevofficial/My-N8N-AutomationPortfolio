@@ -1,0 +1,3571 @@
+{
+  "updatedAt": "2026-02-23T17:15:45.067Z",
+  "createdAt": "2026-02-06T02:08:58.137Z",
+  "id": "BDqG5mWtcsDL6Pns",
+  "name": "genie inbound",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "amount": 0,
+        "unit": "seconds"
+      },
+      "id": "422167d4-5165-4a46-b388-e09ea674c9b7",
+      "name": "Wait 60 Seconds9",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [
+        -1104,
+        -1840
+      ],
+      "webhookId": "f4abb3c3-c205-4168-ad1c-e79e6cffed3f",
+      "retryOnFail": true,
+      "maxTries": 5,
+      "waitBetweenTries": 5000,
+      "notes": "Initial wait before checking call status"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.vapi.ai/call/{{ $json.body.message.call.id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer [REDACTED]"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "9ec819c0-1d72-411c-80ab-5da8522bf8dc",
+      "name": "Check Call Status9",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        -864,
+        -1840
+      ],
+      "retryOnFail": true,
+      "waitBetweenTries": 5000,
+      "maxTries": 5,
+      "notes": "Checks if call has completed"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "condition-1",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "ended",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "condition-2",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "=completed ",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "id": "2ec0cd0e-d089-4ca1-97b9-b0f7a57e8ed6",
+      "name": "Call Completed?9",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -640,
+        -1840
+      ],
+      "retryOnFail": true,
+      "maxTries": 5,
+      "waitBetweenTries": 5000,
+      "notes": "Checks if call is completed"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.provider }}",
+                    "rightValue": "twilio",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "4fd8dc60-7b15-4b6b-b322-7394196d3e46"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "twilio"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "561113e1-c091-4d98-bce6-e845c7776dde",
+                    "leftValue": "={{ $json.body.provider }}",
+                    "rightValue": "telenyx",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "telenyx"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "d8f2ddf6-3b1f-4bb4-82cb-859772076ce9",
+                    "leftValue": "={{ $json.body.provider }}",
+                    "rightValue": "vonage",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "vonage"
+            }
+          ]
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -3776,
+        -2352
+      ],
+      "id": "ec8e8ac8-279c-4602-af6d-34a893507c54",
+      "name": "Switch4"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.vapi.ai/assistant/{{ $json.assistantId }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer [REDACTED]"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        464,
+        -1760
+      ],
+      "id": "40dec176-933c-4d0a-96c7-2f1f99435d8e",
+      "name": "HTTP Request33",
+      "retryOnFail": true,
+      "maxTries": 5,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "jsCode": "// Reference the \"Call Completed?7\" node specifically\nconst items = $('Call Completed?9').all();\n\nreturn items.map(item => {\n  const data = item.json;\n  \n  // Get phone number and remove '+' if it exists\n  let phoneNumber = data.customer?.number || '';\n  if (phoneNumber.startsWith('+')) {\n    phoneNumber = phoneNumber.substring(1);\n  }\n  \n  // Extract transcript with error handling\n  const transcript = data.transcript || \"null\";\n  \n  // Extract timestamps with error handling\n  const startedAt = data.startedAt || \"null\";\n  const endedAt = data.endedAt || \"null\";\n  \n  // Extract minutes from costs array with error handling\n  const minutes = data.costs?.[0]?.minutes || 0;\n  \n  // Extract endedReason\n  const endedReason = data.endedReason || null;\n  \n  // Extract type\n  const callType = data.type || \"null\";\n  \n  // Extract assistantId ✅\n  const assistantId = data.assistantId || null;\n  \n  return {\n    json: {\n      callId: data.id,\n      assistantId: assistantId,\n      summary: data.summary || \"null\",\n      phoneNumber: phoneNumber,\n      transcript: transcript,\n      startedAt: startedAt,\n      endedAt: endedAt,\n      minutes: minutes,\n      endedReason: endedReason,\n      type: callType,\n      artifact: {\n        recordingUrl: data.artifact?.recordingUrl || null,\n        stereoRecordingUrl: data.artifact?.stereoRecordingUrl || null\n      },\n      httpRequestData: {\n        status: \"completed\",\n        calling_link: data.artifact?.recordingUrl || null,\n        description: data.summary || \"null\"\n      }\n    }\n  };\n});\n"
+      },
+      "id": "f9240dbf-bc2d-4fca-bd56-91bf84922ea0",
+      "name": "Analyze Call Summary16",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        176,
+        -1760
+      ],
+      "retryOnFail": true,
+      "maxTries": 5,
+      "waitBetweenTries": 5000,
+      "notes": "Analyzes summary and extracts customer info"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 1. Get the call_ids from the Direct Input (the node immediately before this one)\n// We use .map() to create an array of all call_ids present in the input\nconst validCallIds = $input.all().map(item => item.json.message?.content?.call_id).filter(id => id);\n\n// 2. Reference the \"Call Completed?7\" node\nconst allCallItems = $('Call Completed?9').all();\n\n// 3. Filter and Map the data\n// Only keep items where the 'id' exists in our 'validCallIds' array\nreturn allCallItems\n  .filter(item => validCallIds.includes(item.json.id))\n  .map(item => {\n    const data = item.json;\n    \n    // Get phone number and remove '+' if it exists\n    let phoneNumber = data.customer?.number || '';\n    if (phoneNumber.startsWith('+')) {\n      phoneNumber = phoneNumber.substring(1);\n    }\n    \n    // Extract transcript with error handling\n    const transcript = data.transcript || \"null\";\n    \n    // Extract timestamps with error handling\n    const startedAt = data.startedAt || \"null\";\n    const endedAt = data.endedAt || \"null\";\n    \n    // Extract minutes from costs array with error handling\n    // Note: Checking if data.costs exists before accessing index 0\n    const minutes = data.costs?.[0]?.minutes || 0;\n    \n    // Extract endedReason\n    const endedReason = data.endedReason || null;\n    \n    // Extract type\n    const callType = data.type || \"null\";\n    \n    // Extract assistantId\n    const assistantId = data.assistantId || null;\n    \n    return {\n      json: {\n        callId: data.id,\n        assistantId: assistantId,\n        summary: data.summary || \"null\",\n        phoneNumber: phoneNumber,\n        transcript: transcript,\n        startedAt: startedAt,\n        endedAt: endedAt,\n        minutes: minutes,\n        endedReason: endedReason,\n        type: callType,\n        artifact: {\n          recordingUrl: data.artifact?.recordingUrl || data.recordingUrl || null,\n          stereoRecordingUrl: data.artifact?.stereoRecordingUrl || null\n        },\n        httpRequestData: {\n          status: \"completed\",\n          calling_link: data.artifact?.recordingUrl || data.recordingUrl || null,\n          description: data.summary || \"null\"\n        }\n      }\n    };\n  } );\n"
+      },
+      "id": "52da5f3e-c6b0-4150-a4cf-68a32ced48aa",
+      "name": "Analyze Call Summary17",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        176,
+        -1968
+      ],
+      "retryOnFail": true,
+      "maxTries": 5,
+      "waitBetweenTries": 5000,
+      "notes": "Analyzes summary and extracts customer info"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.vapi.ai/assistant/{{ $json.assistantId }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer [REDACTED]"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        464,
+        -1968
+      ],
+      "id": "1ff2fd66-1a4e-4fb5-a57a-0c92ab5f85d1",
+      "name": "HTTP Request34",
+      "retryOnFail": true,
+      "maxTries": 5,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "2e51ea48-bfcd-4fb7-b19c-a5ad75ab624b",
+              "leftValue": "={{ $json.message.content.Lead }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -48,
+        -1856
+      ],
+      "id": "f1ec82f9-513b-476d-a982-6cee51fba427",
+      "name": "If46"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "inbound_numbers",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $node['Webhook_import_number_and_tool'].json.body.id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "tool_id",
+              "fieldValue": "={{ $json.id }}"
+            },
+            {
+              "fieldId": "number_id",
+              "fieldValue": "={{ $('Https_BYOC_twilio').item.json.id }}"
+            },
+            {
+              "fieldId": "status",
+              "fieldValue": "active"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -2656,
+        -2544
+      ],
+      "id": "c5928336-4828-4c13-a0be-63e6fbd67e4e",
+      "name": "Update a row3",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "tableId": "call_history",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "caller_number",
+              "fieldValue": "={{ $('Check Call Status9').item.json.customer.number }}"
+            },
+            {
+              "fieldId": "recording_url",
+              "fieldValue": "={{ $('Analyze Call Summary16').item.json.artifact.recordingUrl }}"
+            },
+            {
+              "fieldId": "transcript",
+              "fieldValue": "={{ $('Analyze Call Summary16').item.json.transcript }}"
+            },
+            {
+              "fieldId": "agent_id",
+              "fieldValue": "={{ $json.id }}"
+            },
+            {
+              "fieldId": "user_id",
+              "fieldValue": "={{ $json.user_id }}"
+            },
+            {
+              "fieldId": "called_number",
+              "fieldValue": "={{ $json.phone_number }}"
+            },
+            {
+              "fieldId": "call_start_time",
+              "fieldValue": "={{ $json.created_at }}"
+            },
+            {
+              "fieldId": "call_status",
+              "fieldValue": "completed"
+            },
+            {
+              "fieldId": "call_duration",
+              "fieldValue": "={{ (new Date($('Call Completed?9').item.json.endedAt) - new Date($('Call Completed?9').item.json.startedAt)) / 1000 }}\n"
+            },
+            {
+              "fieldId": "is_lead",
+              "fieldValue": "false"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        896,
+        -1760
+      ],
+      "id": "d92d7065-f374-48f7-a16d-a93e0e7b3589",
+      "name": "Create a row",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "voice_agents",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "vapi_id",
+              "keyValue": "={{ $json.id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        672,
+        -1760
+      ],
+      "id": "ee6f0052-391f-4977-a3e5-afbe4cc2e159",
+      "name": "Get a row3",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "tableId": "call_history",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "caller_number",
+              "fieldValue": "={{ $('Check Call Status9').item.json.customer.number }}"
+            },
+            {
+              "fieldId": "recording_url",
+              "fieldValue": "={{ $('Analyze Call Summary17').item.json.artifact.recordingUrl }}"
+            },
+            {
+              "fieldId": "transcript",
+              "fieldValue": "={{ $('Analyze Call Summary17').item.json.transcript }}"
+            },
+            {
+              "fieldId": "agent_id",
+              "fieldValue": "={{ $json.id }}"
+            },
+            {
+              "fieldId": "user_id",
+              "fieldValue": "={{ $json.user_id }}"
+            },
+            {
+              "fieldId": "called_number",
+              "fieldValue": "={{ $json.phone_number }}"
+            },
+            {
+              "fieldId": "call_start_time",
+              "fieldValue": "={{ $json.created_at }}"
+            },
+            {
+              "fieldId": "call_status",
+              "fieldValue": "completed"
+            },
+            {
+              "fieldId": "call_duration",
+              "fieldValue": "={{ (new Date($('Call Completed?9').item.json.endedAt) - new Date($('Call Completed?9').item.json.startedAt)) / 1000 }}\n"
+            },
+            {
+              "fieldId": "is_lead",
+              "fieldValue": "true"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        864,
+        -1968
+      ],
+      "id": "fb765804-19a0-4e6c-84a2-b02e8017bd37",
+      "name": "Create a row1",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "voice_agents",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "vapi_id",
+              "keyValue": "={{ $json.id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        672,
+        -1968
+      ],
+      "id": "299615d3-fc3b-4c24-9767-dd1623e5160a",
+      "name": "Get a row5",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "amount": 1
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -2864,
+        -2544
+      ],
+      "id": "26e59dad-393f-4b5b-b087-924d68fd75cd",
+      "name": "Wait",
+      "webhookId": "fccf9e72-c147-4fee-925f-76292d94a8f0"
+    },
+    {
+      "parameters": {
+        "amount": 15
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -2864,
+        -2352
+      ],
+      "id": "149a6af7-1737-4b4a-aa24-7b040170e754",
+      "name": "Wait1",
+      "webhookId": "fccf9e72-c147-4fee-925f-76292d94a8f0"
+    },
+    {
+      "parameters": {
+        "amount": 1
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -2864,
+        -2160
+      ],
+      "id": "e80797d0-a97f-42ab-affd-5fc63142fecf",
+      "name": "Wait2",
+      "webhookId": "fccf9e72-c147-4fee-925f-76292d94a8f0"
+    },
+    {
+      "parameters": {},
+      "id": "ba774bee-c372-4ee9-aebf-08affc694957",
+      "name": "When clicking 'Test workflow'",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1824,
+        -864
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "field-sip-username",
+              "name": "sip_username",
+              "value": "96133",
+              "type": "string"
+            },
+            {
+              "id": "field-sip-password",
+              "name": "sip_password",
+              "value": "SIPNsol$$djdfnn548f*dd",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "9adcb099-ccab-4556-ac71-55496a49e2b5",
+      "name": "Set SIP Credentials",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1616,
+        -864
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.vapi.ai/credential",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"provider\": \"byo-sip-trunk\",\n  \"name\": \"DID LOGIC\",\n  \"gateways\": [\n    {\n      \"ip\": \"sip.nyc.didlogic.net\",\n      \"port\": 5060,\n      \"inboundEnabled\": true,\n      \"outboundEnabled\": true\n    }\n  ],\n  \"outboundAuthenticationPlan\": {\n    \"authUsername\": \"{{ $json.sip_username }}\",\n    \"authPassword\": \"{{ $json.sip_password }}\"\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1440,
+        -864
+      ],
+      "id": "fefad632-d5ec-4e38-88f8-a00de4ff94fe",
+      "name": "inbound_agent_creation",
+      "retryOnFail": false,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.vapi.ai/assistant",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"provider\": \"byo-phone-number\",\n  \"number\": \"{{ $json.phone_number }}\",\n  \"credentialId\": \"{{ $json.credential_id }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1168,
+        -864
+      ],
+      "id": "cb3a2553-b7da-4615-8e18-3b9735126608",
+      "name": "inbound_agent_creation1",
+      "retryOnFail": false,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.vapi.ai/credential",
+        "authentication": "[REDACTED]",
+        "genericAuthType": "[REDACTED]",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"provider\": \"byo-sip-trunk\",\n  \"name\": \"CallHippo Trunk\",\n  \"gateways\": [\n    {\n      \"ip\": \"sip.callhippo.com\",\n      \"port\": 5060,\n      \"inboundEnabled\": true,\n      \"outboundEnabled\": true\n    }\n  ],\n  \"outboundAuthenticationPlan\": {\n    \"authUsername\": \"{{ $json.sip_username }}\",\n    \"authPassword\": \"{{ $json.sip_password }}\"\n  }\n}",
+        "options": {}
+      },
+      "id": "63d5abd6-e24f-4d50-8b62-968099adb196",
+      "name": "Create SIP Trunk Credential",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1280,
+        -1296
+      ],
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "field-sip-username",
+              "name": "sip_username",
+              "value": "YOUR_CALLHIPPO_SIP_USERNAME",
+              "type": "string"
+            },
+            {
+              "id": "field-sip-password",
+              "name": "sip_password",
+              "value": "YOUR_CALLHIPPO_SIP_PASSWORD",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "5a818f9b-d4b6-44b6-869b-724dc3e836b3",
+      "name": "Set SIP Credentials1",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1488,
+        -1296
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get all items\nconst items = $input.all();\nconst item = items[0];\n\nif (!item) throw new Error(\"❌ No data received!\");\n\n// Extract JSON data\nconst data = item.json || item;\n\n// --- VALIDATIONS ---\n// FIX: The system prompt is located in 'data.body.script' based on the input structure\nconst systemContent = (data.body?.script || data.message?.content || \"\").trim();\n\nif (!systemContent) throw new Error(\"❌ System prompt missing!\");\n\n// FIRST MESSAGE - Get the base welcome message\nconst baseWelcomeMessage = (\n    data.body?.welcome_message ||\n    data.messageText ||\n    \"\"\n).trim();\n\nif (!baseWelcomeMessage) throw new Error(\"❌ No welcome message found!\");\n\n// ALWAYS prepend the greeting with customer name placeholder\nconst firstMessage = ` ${baseWelcomeMessage}`;\n\n// VOICE - Now dynamic from input\nconst voiceId = data.body?.voice || data.voiceId || \"Kylie\"; // Fallback to \"Kylie\" if not found\n\n// VOICE PROVIDER - Extracting from data.body.voice_provider\nconst voiceProvider = data.body?.voice_provider || data.voice_provider || \"openai\"; // Fallback to \"openai\" if not found\n\n// LANGUAGE\nconst language = data.language || data.body?.language || \"en\"; // Added fallback\n\n// ASSISTANT NAME\nconst botName = data.query?.[\"bot name\"] || data.body?.name || \"assistant\";\n\n// --- CUSTOMER PHONE ---\nconst customerNumber =\n    data.query?.phoneNumber ||\n    data.body?.phone_number ||\n    data.body?.phone ||\n    data.body?.customer_phone ||\n    null;\n\nif (!customerNumber) {\n    console.warn(\"⚠ No phone number found in input — continuing without customer.number\");\n}\n\n// --- VOICE CONFIGURATION ---\n// Base voice config\nconst voiceConfig = {\n    provider: voiceProvider,\n    voiceId: voiceId\n};\n\n// Add model: \"aura-2\" specifically for Deepgram\nif (voiceProvider.toLowerCase() === \"deepgram\") {\n    voiceConfig.model = \"aura-2\";\n}\n\n// --- FINAL OUTPUT ---\nreturn [\n  {\n    json: {\n      name: botName,\n      firstMessage: firstMessage,\n      voicemailDetection: {\n        provider: \"openai\",\n        type: \"transcript\",\n        backoffPlan: {\n          maxRetries: 6,\n          startAtSeconds: 2.5,\n          frequencySeconds: 3\n        },\n        beepMaxAwaitSeconds: 15\n      },\n      firstMessageMode: \"assistant-speaks-first\",\n      model: {\n        provider: \"openai\",\n        model: \"gpt-4o-mini\",\n        messages: [\n          {\n            role: \"system\",\n            content: systemContent\n          }\n        ]\n      },\n      voice: voiceConfig,\n      transcriber: {\n        provider: \"deepgram\",\n        language: language,\n        \"model\": \"nova-2\",\n      },\n      backgroundSound: \"office\",\n      startSpeakingPlan: {\n        waitSeconds: 0.4,\n      },\n      ...(customerNumber ? { customer: { number: customerNumber } } : {})\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -5568,
+        -768
+      ],
+      "id": "b1a8dd01-d3d7-41ef-8b35-c28fcc8d0ad6",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.all();\n\nreturn input.map(item => {\n  const voice =\n    item.json?.body?.voice ??\n    item.json?.voice ??\n    \"\";\n\n  return {\n    json: {\n      voiceId: String(voice).trim(),\n      provider: \"vapi\",\n      language: \"en\",\n      originalLanguage: \"\"\n    }\n  };\n});\n\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3168,
+        544
+      ],
+      "id": "afe053c2-db45-4678-9735-180caf7eec59",
+      "name": "Code3"
+    },
+    {
+      "parameters": {
+        "jsCode": "const html = $json[\"data\"] || $json[\"body\"] || \"\";\nconst output = {\n  websiteUrl: $json[\"websiteUrl\"] || \"\",\n  companyName: \"\",\n  tagline: \"\",\n  keywords: \"\",\n  ogTitle: \"\",\n  ogDescription: \"\",\n  services: [],\n  contactInfo: {},\n  socialLinks: [],\n  favicon: \"\",\n};\n\n// Extract meta tags\noutput.companyName = (html.match(/<meta\\s+property=[\"']og:site_name[\"']\\s+content=[\"'](.*?)[\"']/i) || [])[1] ||\n                     (html.match(/<title>(.*?)<\\/title>/i) || [])[1] || \"\";\n\noutput.tagline = (html.match(/<meta\\s+name=[\"']description[\"']\\s+content=[\"'](.*?)[\"']/i) || [])[1] || \"\";\noutput.ogTitle = (html.match(/<meta\\s+property=[\"']og:title[\"']\\s+content=[\"'](.*?)[\"']/i) || [])[1] || \"\";\noutput.ogDescription = (html.match(/<meta\\s+property=[\"']og:description[\"']\\s+content=[\"'](.*?)[\"']/i) || [])[1] || \"\";\noutput.keywords = (html.match(/<meta\\s+name=[\"']keywords[\"']\\s+content=[\"'](.*?)[\"']/i) || [])[1] || \"\";\n\n// Extract schema.org organization JSON-LD\nconst jsonLdMatch = html.match(/<script[^>]*application\\/ld\\+json[^>]*>([\\s\\S]*?)<\\/script>/i);\nif (jsonLdMatch) {\n  try {\n    const schemaData = JSON.parse(jsonLdMatch[1]);\n    if (schemaData[\"@type\"] === \"Organization\") {\n      output.contactInfo = {\n        email: schemaData.email || \"\",\n        phone: schemaData.telephone || \"\",\n        address: schemaData.address?.streetAddress || \"\",\n      };\n      output.socialLinks = schemaData.sameAs || [];\n      output.companyName ||= schemaData.name;\n    }\n  } catch (err) {}\n}\n\n// Extract social links\nconst socialMatches = [...html.matchAll(/href=[\"'](https?:\\/\\/(www\\.)?(facebook|linkedin|instagram|twitter|youtube)\\.com[^\"']*)[\"']/gi)];\noutput.socialLinks = [...new Set([...output.socialLinks, ...socialMatches.map(m => m[1])])];\n\n// Extract favicon\noutput.favicon = (html.match(/<link[^>]+rel=[\"']icon[\"'][^>]+href=[\"'](.*?)[\"']/i) || [])[1] || \"\";\n\n// Extract potential services\nconst servicesMatch = html.match(/services|solutions|what we do|offerings|capabilities/gi);\nif (servicesMatch) {\n  output.services = [...new Set(servicesMatch.map(s => s.toLowerCase()))];\n}\n\nreturn [output];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3136,
+        144
+      ],
+      "id": "e4c2d9e3-db63-463d-ab9e-918afe7fd085",
+      "name": "Code35"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "63695f45-809a-41fa-944b-829a702a334a",
+              "leftValue": "={{ $json.body.company_name }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -3568,
+        464
+      ],
+      "id": "cec4d8df-ecfd-45c5-9bd2-1c36456f9675",
+      "name": "If3"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Safely get data from the previous node\nconst input = $input.item.json;\n\n// Extract the content\nconst content = input?.message?.content || \"\";\n\n// Return new variable name\nreturn [{ messageText: content }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2528,
+        496
+      ],
+      "id": "e988ed79-b1d9-436a-afd2-4d12bbe79008",
+      "name": "Code36"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "numberInputs": 4,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -2240,
+        624
+      ],
+      "id": "a50ad876-591b-4c3c-ba4b-a8adc3fc381c",
+      "name": "Merge10"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get all items\nconst items = $input.all();\nconst item = items[0];\nif (!item) throw new Error(\"❌ No data received!\");\n\n// Extract JSON data\nconst data = item.json || item;\n\n// --- VALIDATIONS ---\nconst systemContent = data.message?.content?.trim();\nif (!systemContent) throw new Error(\"❌ System prompt missing!\");\n\n// FIRST MESSAGE - Get the base welcome message\nconst baseWelcomeMessage = (\n    data.body?.welcome_message ||\n    data.messageText ||\n    \"\"\n).trim();\nif (!baseWelcomeMessage) throw new Error(\"❌ No welcome message found!\");\n\n// ALWAYS prepend the greeting with customer name placeholder\nconst firstMessage = ` ${baseWelcomeMessage}`;\n\n// VOICE - Now dynamic from input\nconst voiceId = data.body?.voice || data.voiceId || \"Kylie\"; // Fallback to \"Kylie\" if not found\nif (!voiceId) throw new Error(\"❌ Voice ID missing!\");\n\n// VOICE PROVIDER - Extracting from data.body.voice_provider\nconst voiceProvider = data.body?.voice_provider || data.voice_provider || \"openai\"; // Fallback to \"openai\" if not found\n\n// LANGUAGE\nconst language = data.language || data.body?.language;\nif (!language) throw new Error(\"❌ Language missing!\");\n\n// ASSISTANT NAME\nconst botName = data.query?.[\"bot name\"] || data.body?.name || \"assistant\";\n\n// --- CUSTOMER PHONE ---\nconst customerNumber =\n    data.query?.phoneNumber ||\n    data.body?.phone_number ||\n    data.body?.phone ||\n    data.body?.customer_phone ||\n    null;\n\nif (!customerNumber) {\n    console.warn(\"⚠ No phone number found in input — continuing without customer.number\");\n}\n\n// --- VOICE CONFIGURATION ---\n// Base voice config\nconst voiceConfig = {\n    provider: voiceProvider,\n    voiceId: voiceId\n};\n\n// Add model: \"aura-2\" specifically for Deepgram\nif (voiceProvider.toLowerCase() === \"deepgram\") {\n    voiceConfig.model = \"aura-2\";\n}\n\n// --- FINAL OUTPUT ---\nreturn [\n  {\n    json: {\n      name: botName,\n      firstMessage: firstMessage,\n      voicemailDetection: {\n        provider: \"openai\",\n        type: \"transcript\",\n        backoffPlan: {\n          maxRetries: 1,\n          startAtSeconds: 1.5,\n          frequencySeconds: 3\n        },\n        beepMaxAwaitSeconds: 15\n      },\n      firstMessageMode: \"assistant-speaks-first\",\n      model: {\n        provider: \"openai\",\n        model: \"gpt-4o-mini\",\n        messages: [\n          {\n            role: \"system\",\n            content: systemContent\n          }\n        ]\n      },\n      voice: voiceConfig,\n      transcriber: {\n        provider: \"deepgram\",\n        language: \"en\",\n      },\n      backgroundSound: \"office\",\n      startSpeakingPlan: {\n        waitSeconds: 0.2,\n      },\n      ...(customerNumber ? { customer: { number: customerNumber } } : {})\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2000,
+        640
+      ],
+      "id": "9efc4ab5-b385-47e4-9637-ebe03bad3cb6",
+      "name": "Code72"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Array of your phone number IDs\nconst phoneNumberIds = [\n  '4da28407-69d5-4168-952a-6ddaadb52adb', 'e4483f17-6595-4064-bb58-ba7c2ebe3a61'\n];\n\n// Generate random index\nconst randomIndex = Math.floor(Math.random() * phoneNumberIds.length);\n\n// Get random phone number ID\nconst selectedPhoneId = phoneNumberIds[randomIndex];\n\n// Return the result\nreturn [{\n  json: {\n    selectedPhoneId: selectedPhoneId,\n    totalAvailable: phoneNumberIds.length,\n    selectedIndex: randomIndex\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3392,
+        624
+      ],
+      "id": "9b45dabc-0022-4afc-8d8c-a14ea5a12354",
+      "name": "Code73"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Array of your phone number IDs\nconst phoneNumberIds = [\n  'ff3effb9-768b-4423-b193-06aeae8b4a7a',\n  '94d382be-b487-416d-855c-852844afb6ec'\n];\n\n// Generate random index\nconst randomIndex = Math.floor(Math.random() * phoneNumberIds.length);\n\n// Get random phone number ID\nconst selectedPhoneId = phoneNumberIds[randomIndex];\n\n// Return the result\nreturn [{\n  json: {\n    selectedPhoneId: selectedPhoneId,\n    totalAvailable: phoneNumberIds.length,\n    selectedIndex: randomIndex\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3392,
+        464
+      ],
+      "id": "2a5920b2-3617-4d2f-ad78-f71568f7ec98",
+      "name": "Code74"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "numberInputs": 3,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -2880,
+        272
+      ],
+      "id": "b69f7c81-c632-4e62-ab5b-454403098b19",
+      "name": "Merge11"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "voice_agents",
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $('Webhook_create_agent').item.json.body.id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "vapi_id",
+              "fieldValue": "={{ $json.id }}"
+            },
+            {
+              "fieldId": "script",
+              "fieldValue": "={{ $json.model.messages[0].content }}"
+            },
+            {
+              "fieldId": "conversation_agent_link",
+              "fieldValue": "=https://vapi.ai/?demo=true&shareKey=628a3d0a-706d-40f3-8556-e233fd8ba4fc&{{ $json.id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -1472,
+        592
+      ],
+      "id": "fae0fa5d-5d20-4eaa-96b7-40e9186c5e56",
+      "name": "Update a row1",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "inbound_numbers",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "assigned_to_agent_id",
+              "keyValue": "={{ $json.id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -1264,
+        592
+      ],
+      "id": "4c8ac3f4-290a-4ca1-928a-233ff9a66951",
+      "name": "Get a row2",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "inbound_numbers",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "assigned_to_agent_id",
+              "keyValue": "={{ $json.body.agent_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -3392,
+        784
+      ],
+      "id": "2d9c48c0-249a-4676-9592-ea59a5a0e9fc",
+      "name": "Get a row7",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.body.website_url }}",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -3392,
+        976
+      ],
+      "id": "b41d6e72-7a41-4415-af47-1376dd42dc6a",
+      "name": "HTTP Request",
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Simple Timezone Formatter - Returns ONLY formatted IANA timezone\n// Fetches from Webhook and outputs clean timezone format with no extra fields\n\nconst items = $input.all();\nconst output = [];\n\n// Comprehensive timezone abbreviation to IANA format mapping\nconst timezoneMap = {\n  // United States\n  'EST': 'America/New_York', 'EDT': 'America/New_York', 'ET': 'America/New_York',\n  'CST': 'America/Chicago', 'CDT': 'America/Chicago', 'CT': 'America/Chicago',\n  'MST': 'America/Denver', 'MDT': 'America/Denver', 'MT': 'America/Denver',\n  'PST': 'America/Los_Angeles', 'PDT': 'America/Los_Angeles', 'PT': 'America/Los_Angeles',\n  'AKST': 'America/Anchorage', 'AKDT': 'America/Anchorage', 'AKT': 'America/Anchorage',\n  'HST': 'Pacific/Honolulu', 'HDT': 'Pacific/Honolulu', 'HT': 'Pacific/Honolulu',\n  'AZT': 'America/Phoenix',\n  \n  // Canada\n  'AST': 'America/Halifax', 'ADT': 'America/Halifax', 'AT': 'America/Halifax',\n  'NST': 'America/St_Johns', 'NDT': 'America/St_Johns',\n  \n  // Europe\n  'GMT': 'Europe/London', 'BST': 'Europe/London', 'WET': 'Europe/London',\n  'CET': 'Europe/Paris', 'CEST': 'Europe/Paris',\n  'EET': 'Europe/Athens', 'EEST': 'Europe/Athens',\n  \n  // Asia\n  'IST': 'Asia/Kolkata', 'INDIA': 'Asia/Kolkata',\n  'PKT': 'Asia/Karachi', 'PKST': 'Asia/Karachi',\n  'JST': 'Asia/Tokyo', 'JT': 'Asia/Tokyo',\n  'KST': 'Asia/Seoul', 'KT': 'Asia/Seoul',\n  'SGT': 'Asia/Singapore', 'HKT': 'Asia/Hong_Kong',\n  'ICT': 'Asia/Bangkok', 'PHT': 'Asia/Manila',\n  'WIB': 'Asia/Jakarta', 'WITA': 'Asia/Makassar', 'WIT': 'Asia/Jayapura',\n  'GST': 'Asia/Dubai', 'UAE': 'Asia/Dubai',\n  \n  // Australia & Pacific\n  'AEST': 'Australia/Sydney', 'AEDT': 'Australia/Sydney', 'AET': 'Australia/Sydney',\n  'ACST': 'Australia/Adelaide', 'ACDT': 'Australia/Adelaide',\n  'AWST': 'Australia/Perth', 'AWDT': 'Australia/Perth',\n  'NZST': 'Pacific/Auckland', 'NZDT': 'Pacific/Auckland', 'NZT': 'Pacific/Auckland',\n  \n  // South America\n  'BRT': 'America/Sao_Paulo', 'BRST': 'America/Sao_Paulo',\n  'ART': 'America/Argentina/Buenos_Aires',\n  'CLT': 'America/Santiago',\n  \n  // Africa\n  'SAST': 'Africa/Johannesburg',\n  \n  // UTC\n  'UTC': 'UTC', 'GMT': 'UTC', 'Z': 'UTC'\n};\n\n// Get timezone from Webhook\nlet webhookTimezone = null;\ntry {\n  const webhookData = $('Webhook_edit_agent').item.json;\n  \n  if (webhookData.body && webhookData.body.timezone) {\n    webhookTimezone = webhookData.body.timezone;\n  } else if (webhookData.timezone) {\n    webhookTimezone = webhookData.timezone;\n  }\n} catch (error) {\n  // Webhook not found, will try input data\n}\n\nfor (const item of items) {\n  const data = item.json;\n  \n  // Get timezone with priority: Webhook > Input data > Default\n  let inputTimezone = webhookTimezone \n    || data.timezone \n    || (data.body && data.body.timezone)\n    || 'UTC';\n  \n  inputTimezone = String(inputTimezone).trim();\n  \n  let formattedTimezone;\n  \n  // If already in IANA format (contains '/'), use as is\n  if (inputTimezone.includes('/')) {\n    formattedTimezone = inputTimezone;\n  } else {\n    // Convert abbreviation to IANA format\n    const upperInput = inputTimezone.toUpperCase();\n    formattedTimezone = timezoneMap[upperInput] || 'UTC';\n  }\n  \n  // Get business hours from webhook\n  let startTime = '09:00';\n  let endTime = '17:00';\n  let workingDays = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'];\n  \n  try {\n    const webhookData = $('Webhook_edit_agent').item.json;\n    \n    // Try to get from metadata first\n    if (webhookData.body && webhookData.body.metadata) {\n      if (webhookData.body.metadata.call_availability_start) {\n        startTime = webhookData.body.metadata.call_availability_start;\n      }\n      if (webhookData.body.metadata.call_availability_end) {\n        endTime = webhookData.body.metadata.call_availability_end;\n      }\n      if (webhookData.body.metadata.call_availability_days) {\n        workingDays = webhookData.body.metadata.call_availability_days;\n      }\n    }\n    \n    // Try to get from call_availability\n    if (webhookData.body && webhookData.body.call_availability) {\n      if (webhookData.body.call_availability.start_time) {\n        startTime = webhookData.body.call_availability.start_time;\n      }\n      if (webhookData.body.call_availability.end_time) {\n        endTime = webhookData.body.call_availability.end_time;\n      }\n      if (webhookData.body.call_availability.days) {\n        workingDays = webhookData.body.call_availability.days;\n      }\n    }\n  } catch (error) {\n    // Use defaults\n  }\n  \n  // Output formatted data\n  output.push({\n    json: {\n      timezone: formattedTimezone,\n      business_hours: `${startTime} - ${endTime}`,\n      working_days: workingDays\n    }\n  });\n}\n\nreturn output;"
+      },
+      "id": "fb589b9e-61f2-4eaf-860b-0d0190c97ac9",
+      "name": "timezone formatter",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3392,
+        288
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "inbound_numbers",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "phone_number",
+              "keyValue": "={{ $json.body.phone_number }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -5696,
+        -256
+      ],
+      "id": "a390a9af-d9dd-401f-8973-0d1a664cb20b",
+      "name": "Get a row",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "inbound_numbers",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "phone_number",
+              "keyValue": "={{ $json.body.phone_number }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -5248,
+        48
+      ],
+      "id": "dfa25882-b0ec-4d1b-b773-fe3bcf6dfbca",
+      "name": "Get a row6",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "check_number_status",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -5408,
+        48
+      ],
+      "id": "7aa53540-c8cb-4bf5-af8c-4ae053b9f88d",
+      "name": "webhook_check_number_status",
+      "webhookId": "26002b8d-75e4-4e84-b48a-00a599bc3311"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "42a27c0f-d704-4ac1-bf38-e6cf119cc08e",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -4192,
+        464
+      ],
+      "id": "afe124f2-ebd0-44a1-927b-5a2e7da50b93",
+      "name": "Webhook_create_agent",
+      "webhookId": "42a27c0f-d704-4ac1-bf38-e6cf119cc08e"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "b303e3a5-0075-426d-a44f-fd8f038eaf39",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -1360,
+        -1840
+      ],
+      "id": "b129b8b4-fa23-429b-9cfe-5d78a486a275",
+      "name": "Webhook_call_log",
+      "webhookId": "b303e3a5-0075-426d-a44f-fd8f038eaf39"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "import_number",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -4208,
+        -2336
+      ],
+      "id": "6cdc895b-6121-4cca-8715-4e2e8af773ff",
+      "name": "Webhook_import_number_and_tool",
+      "webhookId": "5a40e31d-e4ac-4e89-87b0-34368813baf5"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "edit_agent",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -5744,
+        -768
+      ],
+      "id": "6b9d7f13-f678-46c5-b96e-d1b41e7358af",
+      "name": "Webhook_edit_agent",
+      "webhookId": "2be2b1ae-61a5-4104-8786-fbd1756319b5"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "bind",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -5344,
+        -496
+      ],
+      "id": "835bddf4-630e-4489-bdcd-c61288fcf96c",
+      "name": "Webhook_number_binding",
+      "webhookId": "b33c62dd-17f6-460d-8b92-95316d7c665d"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "un_bind",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -5856,
+        -256
+      ],
+      "id": "3b53f2ab-2dff-4316-a27e-959afd98b159",
+      "name": "Webhook_number_unbinding",
+      "webhookId": "26002b8d-75e4-4e84-b48a-00a599bc3311"
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://api.vapi.ai/assistant/{{ $('Webhook_edit_agent').item.json.body.vapi_id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"name\": {{ JSON.stringify($('Webhook_edit_agent').item.json.body.name) }},\n  \"firstMessage\": {{ JSON.stringify($json.firstMessage) }},\n  \"voicemailDetection\": {\n    \"provider\": {{ JSON.stringify($json.voicemailDetection.provider) }},\n    \"type\": {{ JSON.stringify($json.voicemailDetection.type) }},\n    \"backoffPlan\": {\n      \"maxRetries\": {{ $json.voicemailDetection.backoffPlan.maxRetries }},\n      \"startAtSeconds\": {{ $json.voicemailDetection.backoffPlan.startAtSeconds }},\n      \"frequencySeconds\": {{ $json.voicemailDetection.backoffPlan.frequencySeconds }}\n    },\n    \"beepMaxAwaitSeconds\": 15\n  },\n  \"firstMessageMode\": {{ JSON.stringify($json.firstMessageMode) }},\n  \"model\": {\n    \"provider\": {{ JSON.stringify($json.model.provider) }},\n    \"model\": {{ JSON.stringify($json.model.model) }},\n    \"messages\": [\n      {\n        \"role\": \"system\",\n        \"content\": {{ JSON.stringify($json.model.messages[0].content) }}\n      }\n    ]\n  },\n  \"voice\": {\n    \"provider\": \"deepgram\",\n    \"voiceId\": \"luna\",\n    \"model\": \"aura-2\"\n  },\n  \"transcriber\": {\n    \"provider\": \"deepgram\",\n    \"model\": \"nova-2\",\n    \"language\": \"en\"\n  },\n  \"backgroundSound\": {{ JSON.stringify($json.backgroundSound) }},\n  \"startSpeakingPlan\": {\n    \"waitSeconds\": {{ $json.startSpeakingPlan.waitSeconds }}\n  },\n  \"server\": {\n    \"url\": \"https://auto.nsolbpo.com/webhook/b303e3a5-0075-426d-a44f-fd8f038eaf39\"\n  },\n  \"serverMessages\": [\n    \"end-of-call-report\"\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -5392,
+        -768
+      ],
+      "id": "9cee3169-6abb-4e2e-ab1b-a9512d12111f",
+      "name": "Https_edit_agent",
+      "retryOnFail": false,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://api.vapi.ai/phone-number/{{ $json.number_id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "assistantId",
+              "value": "={{ $('Update a row1').item.json.vapi_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -5136,
+        -496
+      ],
+      "id": "65606d9c-216a-46ad-b05c-fb6302a16684",
+      "name": "Https_vapi_number_binding"
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://api.vapi.ai/phone-number/{{ $json.number_id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n \"assistantId\": null\n} ",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -5520,
+        -256
+      ],
+      "id": "43978d47-74ce-480a-bca7-ac77133075a7",
+      "name": "Https_number-unbinding",
+      "retryOnFail": false,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.vapi.ai/phone-number/",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -5072,
+        48
+      ],
+      "id": "eb70fbc5-5a18-4efb-a0c9-a5365e13215f",
+      "name": "Https_number-Status-Check",
+      "retryOnFail": false,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.vapi.ai/assistant",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"name\": {{ JSON.stringify($('Webhook_create_agent').item.json.body.name) }},\n  \"firstMessage\": {{ JSON.stringify($json.firstMessage) }},\n  \"voicemailDetection\": {\n    \"provider\": {{ JSON.stringify($json.voicemailDetection.provider) }},\n    \"type\": {{ JSON.stringify($json.voicemailDetection.type) }},\n    \"backoffPlan\": {\n      \"maxRetries\": {{ $json.voicemailDetection.backoffPlan.maxRetries }},\n      \"startAtSeconds\": {{ $json.voicemailDetection.backoffPlan.startAtSeconds }},\n      \"frequencySeconds\": {{ $json.voicemailDetection.backoffPlan.frequencySeconds }}\n    },\n    \"beepMaxAwaitSeconds\": 15\n  },\n  \"firstMessageMode\": {{ JSON.stringify($json.firstMessageMode) }},\n  \"model\": {\n    \"provider\": {{ JSON.stringify($json.model.provider) }},\n    \"model\": {{ JSON.stringify($json.model.model) }},\n    \"messages\": [\n      {\n        \"role\": \"system\",\n        \"content\": {{ JSON.stringify($json.model.messages[0].content) }}\n      }\n    ],\n   \"toolIds\": [\n  \"{{ $('Merge10').item.json.tool_id || \"65621e7c-34dc-41bc-9bf6-ee08856502c3\" }}\",\n  \"2c06fb54-3785-4cb7-a4f5-8915ba3df60f\"\n]\n  },\n  \"voice\": {\n    \"provider\": \"deepgram\",\n    \"voiceId\": \"luna\",\n    \"model\": \"aura-2\"\n  },\n  \"transcriber\": {\n    \"provider\": \"deepgram\",\n    \"model\": \"nova-2\",\n    \"language\": \"en\"\n  },\n  \"backgroundSound\": {{ JSON.stringify($json.backgroundSound) }},\n  \"startSpeakingPlan\": {\n    \"waitSeconds\": {{ $json.startSpeakingPlan.waitSeconds }}\n  },\n  \"server\": {\n    \"url\": \"https://auto.nsolbpo.com/webhook/b303e3a5-0075-426d-a44f-fd8f038eaf39\"\n  },\n  \"serverMessages\": [\n    \"end-of-call-report\"\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1760,
+        608
+      ],
+      "id": "600f4edc-d3bd-4701-ae19-86b1cc2a11c9",
+      "name": "Https_agent_creation",
+      "retryOnFail": false,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://api.vapi.ai/phone-number/{{ $json.number_id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "assistantId",
+              "value": "={{ $('Update a row1').item.json.vapi_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -1040,
+        592
+      ],
+      "id": "e4ecfb3c-c95f-4526-a6b7-37e19d261d2b",
+      "name": "Https_number_binding_to_agent"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4.1-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=You are an expert AI voice agent prompt engineer for VAPI inbound calling systems.\n\nYour task is to generate a comprehensive, production-ready system prompt for an AI voice agent based on the provided company information and configuration.\n\nCRITICAL REQUIREMENTS:\n- Output ONLY the final system prompt text\n- NO preamble, explanations, or markdown\n- The prompt must be immediately deployable in VAPI\n- Follow the exact structure and detail level shown below\n- All logic must be explicit and executable\n- Remove all emojis and decorative elements\n- Use clear conditional statements\n\nINPUT PARAMETERS YOU WILL RECEIVE:\n\nCOMPANY INFORMATION:\n- Company Name: {{ $json.companyName }}\n- Website URL: {{ $('Webhook_create_agent').item.json.body.website_url }}\n- Tagline: {{ $json.tagline }}\n- Services: {{ $json.services }}\n- Social Links: {{ $json.socialLinks }}\n- OG Description: [OG_DESCRIPTION]\n\nCONVERSATION SETTINGS:\n- Goal: {{ $('Webhook_create_agent').item.json.body.goal }}\n- Instruction Voice: {{ $('Webhook_create_agent').item.json.body.instruction_voice }}\n- Background: {{ $('Webhook_create_agent').item.json.body.background }}\n- Language: {{ $('Webhook_create_agent').item.json.body.language }}\n\nBUSINESS HOURS CONFIGURATION:\n- Timezone: {{ $('timezone formatter').item.json.timezone }}\n- Business Days: {{ $('timezone formatter').item.json.working_days }}\n- Operating Hours: {{ $('timezone formatter').item.json.business_hours }}\n\nAGENT CONFIGURATION:\n- Agent Name: \n\nOUTPUT STRUCTURE:\n\nGenerate a system prompt with the following sections in this exact order:\n\n---\n\nCRITICAL: BUSINESS HOURS CHECK - FIRST ACTION\n\nSTEP 1: AUTOMATIC TIME DETECTION\nImmediately upon call connection, execute getCurrentTime() function with the business timezone.\n\nSTEP 2: EVALUATE BUSINESS HOURS STATUS\nCheck the returned 'isOpen' field from getCurrentTime() response.\n\nIF isOpen === false:\nImmediately respond with:\nWe are currently unavailable. Our business hours are [use businessHoursSummary from response]. Please leave a voicemail with your name, phone number, and reason for calling, and we will return your call during our next business day. Thank you.\" (then wait for the user to record the voicemail)\n\nTHEN: End the call. Do NOT proceed to greeting or any other conversation.\n\nIF isOpen === true:\nProceed to the greeting script below.\n\n---\n\nIDENTITY AND MISSION\n\nName:  from {{ $json.companyName }}\nRole: Professional inbound customer service AI voice agent\nMission: {{ $('Webhook_create_agent').item.json.body.goal }}\nBackground: {{ $('Webhook_create_agent').item.json.body.background }}\nTarget Audience: [Based on SERVICES_LIST]\n\nCommunication Style: [INSTRUCTION_VOICE]\nLanguage: English\n- Timezone: {{ $('timezone formatter').item.json.timezone }}\n- Business Days: {{ $('timezone formatter').item.json.working_days }}\n- Operating Hours: {{ $('timezone formatter').item.json.business_hours }}\n\n---\n\nSTEP 1: GREETING SCRIPT\n\n\nSTEP 2: PATH RESPONSES BASED ON CALLER NEED\n\nPATH A: ASKING ABOUT SPECIFIC SERVICE\n\"Absolutely! Let me tell you about that. [Provide relevant service information from SERVICES_LIST clearly and concisely]. Does this sound like what you are looking for?\"\n\nWAIT FOR ANSWER - Then ask follow-up questions naturally based on their response.\n\nQualifying Questions to Ask Naturally:\n- \"What specific challenge are you trying to solve?\"\n- \"Have you tried anything like this before?\"\n- \"What would success look like for you?\"\n- \"What made you reach out today?\"\n- \"Is this for personal use or business?\"\n\nONLY AFTER they show genuine interest through engagement, ask multiple questions, or mention specific needs - THEN offer demo/consultation.\n\nPATH B: GENERAL INQUIRY\n\"Sure! I would love to help. What brings you to [COMPANY_NAME] today?\"\n\nLISTEN - Let them explain, then route to appropriate path.\n\nPATH C: PRICING INQUIRY\n\"Great question! Our pricing depends on [specific factors]. To give you the most accurate information, can I ask a few quick questions about what you are looking for?\"\n\nAsk 2-3 qualifying questions, then provide relevant pricing information.\n\nPATH D: COMPLAINT/ISSUE\n\"I understand, and I am here to help resolve this for you. Can you tell me more about what happened?\"\n\nLISTEN with empathy - Take notes mentally.\n\n\"I really appreciate you bringing this to my attention. Here is what I can do...\"\n\nProvide solution or escalation path.\n\nPATH E: EXISTING CUSTOMER CHECK-IN\n\"Thanks for calling! Are you an existing customer or is this your first time reaching out?\"\n\nIf existing: \"Perfect! What can I help you with today?\"\nIf new: \"Welcome! What brings you to us?\"\n\n---\n\nSTEP 3: DEMO/CONSULTATION OFFER - ONLY WHEN CLEAR INTEREST IS SHOWN\n\nSigns Customer is Genuinely Interested:\n- They ask multiple questions about the service\n- They mention specific problems or needs\n- They ask about pricing, schedule, or how it works\n- They engage in back-and-forth conversation naturally\n- They ask \"tell me more\" or similar phrases\n- They share details about their situation\n- Their tone shifts from curious to evaluative\n\nDemo Offer Script - Use ONLY when above signals are present:\n\"Based on what you are telling me, I think a quick [demo/consultation] would really help. We can walk through exactly how this would work for your situation. Would you be open to that?\"\n\nPAUSE - Wait for scheduling response.\n\n---\n\nENHANCED OBJECTION HANDLING FOR INBOUND\n\nObjection: \"I am just calling to get information\"\nResponse: \"Absolutely! That is exactly what I am here for. What specifically would you like to know?\"\nProvide information, then gauge interest level through their follow-up questions.\n\nObjection: \"I need to think about it\"\nResponse: \"Of course! That makes total sense. Is there any specific information I can provide that would help you make your decision?\"\nAddress concerns, then offer to follow up.\n\nObjection: \"This sounds expensive\"\nResponse: \"I totally understand. Most of our clients felt the same way initially. What they found is [value proposition from OG_DESCRIPTION]. Can I ask what you are comparing this to?\"\n\nObjection: \"I need to talk to my [partner/boss/team]\"\nResponse: \"That makes perfect sense! Would it help if I sent you some information you could share with them? What questions do you think they will have?\"\n\nObjection: \"Can you just email me the information?\"\nResponse: \"Sure! I can absolutely do that. Just so I send you the most relevant info, what specifically are you most interested in?\"\nGet email, ask 1-2 qualifying questions, then send information.\n\nObjection: \"I am working with another company\"\nResponse: \"Got it! How is that going for you? I am not here to push you away from something that is working - just curious what made you call us today?\"\n\nObjection: \"I do not have time right now\"\nResponse: \"No problem at all! I appreciate you even taking this call. When would be a better time for me to reach back out?\"\n\n---\n\nCONTACT INFORMATION RESPONSE\n\nWhen someone asks for contact details, phone number, email, or address:\n\"Absolutely! Let me give you that information slowly so you can write it down.\"\n\nPhone Number:\n\"Our phone number is [read digit by digit with pauses]: [X-X-X] pause [X-X-X] pause [X-X-X-X]. Let me repeat that: [full number again].\"\n\nEmail:\n\"Our email is [spell it out letter by letter]: [example: S-A-L-E-S at company dot com]. That is [repeat full email].\"\n\nWebsite:\n\"Our website is [spell clearly]: [WEBSITE_URL spelled out].\"\n\nAddress if applicable:\n\"Our address is [state clearly with pauses]: [Street], [City], [State/Province], [Postal Code].\"\n\nSocial Media if asked:\n[Provide SOCIAL_LINKS spelled out clearly]\n\n\"Did you get all that, or would you like me to repeat anything?\"\n\n---\n\nINFORMATION COLLECTION SEQUENCE\n\nWhen booking a demo/consultation or capturing lead information:\n\n1. First Name:\n\"Perfect! Let me get your information. What is your first name?\"\nWAIT\n\"Great, [Name]!\"\n\n2. Last Name:\n\"And your last name?\"\nWAIT\n\"Got it, [Full Name].\"\n\n3. Email Address - SPELL-OUT CONFIRMATION:\n\"What is the best email address to send the confirmation to?\"\nWAIT - Listen carefully\n\"Let me make sure I got that right: [spell out what you heard letter by letter]. Is that correct?\"\nWAIT for confirmation\n\n4. Phone Number - DIGIT-BY-DIGIT CONFIRMATION:\n\"And what is the best phone number to reach you?\"\nWAIT - Listen carefully\n\"Perfect! Let me confirm: [repeat digit by digit with natural pauses]. Is that right?\"\nWAIT for confirmation\n\n5. Timezone - CRITICAL FOR SCHEDULING:\n\"Just to make sure I schedule this at the right time for you - what timezone are you in?\"\nWAIT\n\"Got it, [timezone].\"\n\nWHY THIS MATTERS:\n- Business operates in: [TIMEZONE]\n- Caller may be in different timezone\n- Appointment time must be confirmed in CALLER'S timezone\n- Internally convert to business timezone for calendar\n\n6. Company/Business Name if B2B:\n\"And what is the name of your company?\"\nWAIT\n\"Perfect!\"\n\n7. Specific Need/Goal conversational:\n\"Just so we make the most of our time together - what is the main thing you are hoping to solve or achieve?\"\nWAIT and LISTEN - This is valuable information\n\n---\n\nBOOKING TIME RULES - CRITICAL\n\nSCHEDULING PREFERENCES:\n- NEVER list out multiple time options\n- ALWAYS ask open-ended: \"When works best for you?\"\n- Let THEM suggest the time first\n- Only book on the hour: 9 AM, 10 AM, 2 PM, etc.\n- If they suggest :30 or :15, gently redirect: \"We typically schedule on the hour - would [nearest hour] work instead?\"\n\nTIME FORMAT PRESERVATION - CRITICAL:\n- NEVER change the time format the caller provides\n- If caller says \"AM\" keep it as AM\n- If caller says \"PM\" keep it as PM\n- If caller says \"10 AM\" confirm as \"10 AM\" not \"10:00\" or \"10 in the morning\"\n- If caller says \"2 PM\" confirm as \"2 PM\" not \"14:00\" or \"2 in the afternoon\"\n- Always repeat back the EXACT time format they used for confirmation\n- Example: Caller says \"3 PM\" You say \"Perfect, I have you down for 3 PM\"\n\nTIMEZONE-AWARE SCHEDULING:\n\nWhen caller is in SAME timezone as business:\n\"Perfect! I have you down for [DAY] at [TIME in their exact format] [TIMEZONE]. You will get a confirmation email at [their email] with all the details.\"\n\nWhen caller is in DIFFERENT timezone:\n\"Perfect! I have you down for [DAY] at [TIME in their exact format] [CALLER'S TIMEZONE]. That is [CONVERTED TIME] [BUSINESS TIMEZONE] on our end. You will get a confirmation email with all the details.\"\n\nExample:\nCaller in PST books 2 PM, Business in EST:\n\"Perfect! I have you down for Tuesday at 2 PM Pacific Time. That is 5 PM Eastern Time on our end. You will get a confirmation email at john@email.com with all the details.\"\n\nScheduling Script:\n\"When would work best for you?\"\nWAIT - let them suggest\n\nIf they give a good time: \"Perfect! I have you down for [DAY] at [TIME in their exact format] [THEIR TIMEZONE]. You will get a confirmation email at [their email] with all the details.\"\n\nIf they are unsure: \"No problem! What days generally work well for you - earlier in the week or later?\"\n\nIf they suggest off-hour time: \"We schedule on the hour to make sure we have enough time to dive deep. Would [nearest hour] work for you instead?\"\n\n---\n\nCRITICAL SPEECH PATTERN RULES\n\nMAX 1-2 SENTENCES PER RESPONSE:\n- Keep responses SHORT and conversational\n- Avoid long monologues\n- Break up information into digestible pieces\n- Let the conversation flow naturally\n\nNATURAL FILLERS AND CONFIRMATIONS:\nUse these sparingly and authentically:\n- \"Sure\"\n- \"Look\"\n- \"I mean\"\n- \"You know what\"\n- \"Got it\"\n- \"Perfect\"\n- \"Absolutely\"\n- \"That makes sense\"\n- \"I hear you\"\n\nPAUSE STRATEGICALLY:\n- After asking a question - ALWAYS wait\n- After providing information - give them space to respond\n- When they are thinking - do not fill the silence immediately\n\nAVOID:\n- Corporate jargon\n- Robotic phrases\n- Repetitive language\n- Over-enthusiasm - sound genuine, not fake\n- Talking over the caller\n- Interrupting mid-thought\n\nMETA-AWARENESS PHRASES:\nWhen appropriate, acknowledge the conversation:\n- \"You are asking great questions\"\n- \"I can tell this is important to you\"\n- \"You are really thinking this through\"\n\n---\n\nCONVERSATION FLOW RULES\n\nINBOUND CALL FLOW:\n1. AUTOMATIC - Execute getCurrentTime() function immediately upon call connection\n2. AUTOMATIC - Check isOpen field from getCurrentTime() response\n3. IF isOpen === false - Deliver voicemail message and end call immediately\n4. IF isOpen === true - Proceed to greeting\n5. Greet professionally and warmly\n6. Ask how you can help\n7. LISTEN to their need\n8. Provide relevant information concisely\n9. Ask qualifying questions naturally\n10. Address objections with empathy\n11. Gauge genuine interest level\n12. Offer demo/consultation ONLY when appropriate\n13. Collect information systematically including timezone\n14. Confirm next steps clearly with timezone awareness\n15. Close warmly\n\nONE QUESTION AT A TIME:\n- Never overwhelm with multiple questions\n- Ask - Wait - Listen - Respond - Next question\n- Build naturally on their answers\n\nACTIVE LISTENING SIGNALS:\n- \"I hear you\"\n- \"That makes sense\"\n- \"Tell me more about that\"\n- \"Interesting\"\n- Paraphrase what they said to show understanding\n\nNATURAL TRANSITIONS:\n- \"So based on what you are telling me...\"\n- \"That is exactly why...\"\n- \"Here is what I am thinking...\"\n- \"Let me ask you this...\"\n\n---\n\nTONE AND ENERGY RULES\n\nVOCAL CHARACTERISTICS:\n- Warm and approachable not cold or robotic\n- Professional but conversational\n- Confident without being pushy\n- Empathetic when handling concerns\n- Energetic but not hyper\n- Clear articulation\n- Natural pacing not too fast or slow\n\nMATCH THEIR ENERGY:\n- If they are formal be more professional\n- If they are casual relax slightly\n- If they are rushed be efficient\n- If they are detailed be thorough\n- If they are frustrated be calm and empathetic\n\nEMOTIONAL INTELLIGENCE:\n- Recognize when they are excited share appropriate enthusiasm\n- Recognize when they are skeptical be understanding and patient\n- Recognize when they are confused slow down and clarify\n- Recognize when they are ready to move forward guide them smoothly\n\n---\n\nCONVERSATION ENDING RULES\n\nONLY END WHEN:\n- The caller explicitly says goodbye\n- The caller says they have everything they need\n- The caller says they will call back\n- The caller indicates they are done: \"that is all\", \"thank you, bye\", etc.\n- You have completed a booking and confirmed all details\n- isOpen === false after business hours check\n\nNEVER END ABRUPTLY:\n- Always confirm they have everything\n- Always leave door open for questions\n- Always thank them for calling\n\nCLOSING SCRIPT OPTIONS:\n\nAfter successful booking:\n\"Perfect, [Name]! You are all set for [Day] at [Time in their format] [Their Timezone]. You will get a confirmation email shortly. Is there anything else I can help you with today?\"\nIf NO: \"Great! Thanks so much for calling [COMPANY_NAME]. Looking forward to speaking with you on [Day]!\"\n\nAfter providing information:\n\"Did that answer your question, or is there anything else you would like to know?\"\nIf NO more questions: \"Perfect! Thanks for calling [COMPANY_NAME]. Feel free to reach out anytime if you think of anything else!\"\n\nWhen they need to think:\n\"Absolutely! Take your time. Do you want me to send you an email with everything we discussed?\"\nGet email if yes, then close: \"Done! It will be in your inbox shortly. Thanks for calling, and reach out anytime!\"\n\nStandard professional close:\n\"Thanks so much for calling [COMPANY_NAME], [Name]. Have a great day!\"\n\n---\n\nFREQUENTLY ASKED QUESTIONS\n\nQ: What services do you offer?\nA: [Provide clear, concise overview based on SERVICES_LIST]\n\nQ: How much does it cost?\nA: [Provide pricing structure or explain that pricing is customized based on needs]\n\nQ: How long have you been in business?\nA: [Provide company background from BACKGROUND]\n\nQ: What makes you different from competitors?\nA: [Highlight unique value propositions from OG_DESCRIPTION and TAGLINE]\n\nQ: Do you offer [specific service]?\nA: [Yes explain briefly using SERVICES_LIST OR No offer alternative]\n\nQ: What is your availability?\nA: \"We are available [HOURS_SUMMARY]. When would work best for you?\"\n\nQ: What timezone are you in?\nA: \"We operate in [TIMEZONE]. What timezone are you in so I can schedule accordingly?\"\n\nQ: Can I visit your website?\nA: \"Absolutely! Our website is [WEBSITE_URL spelled out clearly].\"\n\nQ: How can I follow you on social media?\nA: [Provide SOCIAL_LINKS if available]\n\nQ: Can I get a refund/cancel?\nA: [Provide relevant policy information]\n\nQ: Do you work with [specific industry/type of client]?\nA: [Yes give relevant example OR Clarify ideal client if different]\n\nQ: How long does [process/service] take?\nA: [Provide realistic timeline]\n\nQ: Who will I be working with?\nA: [Explain team structure or account management process]\n\n---\n\nCULTURAL SENSITIVITY AND PROFESSIONAL STANDARDS\n\nRESPECTFUL COMMUNICATION:\n- Never make assumptions about the caller\n- Use inclusive language\n- Be patient with language barriers\n- Respect all backgrounds and situations\n- Maintain professional boundaries\n\nPRIVACY AND CONFIDENTIALITY:\n- Only collect necessary information\n- Assure them their information is secure\n- Do not share sensitive details over phone unless verified\n\nACCESSIBILITY:\n- Speak clearly for those with hearing difficulties\n- Be patient with those who need extra time\n- Offer to repeat information without frustration\n- Accommodate different communication styles\n\n---\n\nESCALATION PROTOCOLS\n\nWHEN TO ESCALATE TO HUMAN:\n- Highly technical questions beyond scope\n- Billing disputes or complex account issues\n- Legal or compliance questions\n- Angry/abusive callers who need human intervention\n- Urgent emergencies\n- VIP/high-value prospects if applicable\n\nEscalation Script:\n\"I want to make sure you get the best help with this. Let me connect you with [specialist/manager] who can handle this perfectly. Can you hold for just a moment?\"\n\n---\n\nFINAL CRITICAL REMINDERS\n\nALWAYS execute getCurrentTime() function FIRST immediately upon call connection\nALWAYS check isOpen field before any conversation\nALWAYS deliver voicemail message and end call if isOpen === false\nNEVER proceed to greeting if outside business hours\nALWAYS collect caller's timezone when scheduling\nALWAYS confirm appointment time in caller's timezone\nALWAYS convert and note time in business timezone internally\nMAX 1-2 sentences per response\nAsk ONE question at a time\nUse natural fillers authentically\nNEVER list multiple time options\nPRESERVE exact AM/PM format caller provides\nOnly end when caller signals goodbye OR after voicemail message\nCollect information systematically\nShow genuine interest and empathy\nRepresent [COMPANY_NAME] professionally\nMake every caller feel heard and valued\nBe helpful, not pusty\nSound human, not robotic\nBuild trust through active listening\nGuide interested callers naturally to next steps\n\n---\n\nEND OF SYSTEM PROMPT"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -2592,
+        288
+      ],
+      "id": "4e5346f5-24f5-460e-9846-05cf5b46d035",
+      "name": "vapi_script_generator",
+      "executeOnce": true,
+      "retryOnFail": true,
+      "maxTries": 5,
+      "waitBetweenTries": 5000,
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4.1-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Convert \"{{ $('Webhook_create_agent').item.json.body.welcome_message }}\" into {{ $json.originalLanguage }}. Always give only the message with no other extra text. Always include {{ $('Webhook_create_agent').item.json.body.company_name }} in a natural way that makes it clear the caller has reached {{ $('Webhook_create_agent').item.json.body.company_name }}. Add a warm, human name to make the greeting welcoming (e.g., 'Hello! Thank you for calling {{ $('Webhook_create_agent').item.json.body.company_name }}, this is Zara speaking. How may I assist you today?')."
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -2848,
+        448
+      ],
+      "id": "2007165f-23c9-4f85-8a62-c7809f9d8092",
+      "name": "vapi_first_message_generator",
+      "retryOnFail": true,
+      "maxTries": 5,
+      "waitBetweenTries": 5000,
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.body.website_url }}",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -3392,
+        144
+      ],
+      "id": "3671e5c2-0786-47d2-97b7-70d229582b41",
+      "name": "Https_web_scraper",
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4.1-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=You are an expert note-taker. Given the transcript of the call, produce a 4-5 sentence summary and extract the following information:Lead Qualification:Lead Status: Only mark as \"YES\" if the customer shows genuine interest (asks questions, expresses need, wants to book, or provides contact information). Mark as \"NO\" if customer declines, shows no interest, or ends call without engagement or says \"person is not availaible \".\nYou are given a call transcript and summary. Analyze the transcript and determine if the client is a qualified lead.\n\nDEFINITION OF A LEAD (Lead:true):\n- A real human conversation (NOT voicemail).\n- if the customer shows genuine interest (asks questions, expresses need, wants to book, or provides contact information)\n- Call duration is clearly longer than 30 seconds OR shows meaningful back-and-forth.\n- The client explicitly:\n  - Agrees to a meeting or appointment, OR\n  - Asks to be called back later, OR\n  - Shows clear interest in continuing the \nconversation (e.g., \"yes, call me later\", \"let’s schedule\", \"send me details\", \"I’m interested\").\n-if it passes all above then check - the transcript must be greater than 250 words but it should be checked always but in last\n\nNOT A LEAD (Lead:false):\n- Any voicemail, including:\n  - Automated messages\n  - \"Please leave a message\"\n  - No human interaction\n- Short calls (15–30 seconds) with no clear intent.\n\nIMPORTANT:\n- If there is ANY doubt, mark Lead:true.\n- Voicemails must ALWAYS be Lead:false.\n\nOUTPUT FORMAT (must match EXACTLY):\nLead:true/false\ntranscript: <the transcript exactly as provided, unchanged>\n\nfirst decision on be summary and why call ended. only if according to summary it becomes true then final decision should be taken on transcript. if summary is not availaible it is not lead \n\nTranscript:\n<<<TRANSCRIPT_START>>>\n{{ $node['Call Completed?9'].json.transcript }}\n<<<TRANSCRIPT_END>>>\n\nBelow is summary\n{{ $node['Call Completed?9'].json.summary }}\n\nbelow is why call ended\n{{ $node['Call Completed?9'].json.endedReason }}\n\nin  output always return this call id too no matter what\n{{ $node['Check Call Status9'].json.id }}"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -352,
+        -1856
+      ],
+      "id": "780c8e1f-853f-4316-9702-fd852624787b",
+      "name": "lead_tester",
+      "retryOnFail": true,
+      "maxTries": 5,
+      "waitBetweenTries": 5000,
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.vapi.ai/phone-number",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "number",
+              "value": "={{ $json.body.phone_number }}"
+            },
+            {
+              "name": "provider",
+              "value": "twilio"
+            },
+            {
+              "name": "twilioAccountSid",
+              "value": "={{ $json.body.twilio_account_sid }}"
+            },
+            {
+              "name": "twilioAuthToken",
+              "value": "={{ $json.body.twilio_auth_token }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -3408,
+        -2528
+      ],
+      "id": "282eda74-8134-4b31-bf38-66bd3c1ed215",
+      "name": "Https_BYOC_twilio",
+      "retryOnFail": false,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.vapi.ai/tool",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"type\": \"transferCall\",\n  \"function\": {\n    \"name\": \"transferToSupport\",\n    \"description\": \"{{ $('Webhook_import_number_and_tool').item.json.body.call_transfer_reason }}\"\n  },\n  \"destinations\": [\n    {\n      \"type\": \"number\",\n      \"number\": \"{{ $('Webhook_import_number_and_tool').item.json.body.call_forwarding_number }}\",\n      \"message\": \"I am transferring your call. Please stay on the line.\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -3136,
+        -2528
+      ],
+      "id": "0a085815-ad58-43d9-8654-c97090137a68",
+      "name": "Https_call_transfer_tool",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.vapi.ai/tool",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"type\": \"transferCall\",\n  \"function\": {\n    \"name\": \"transferToSupport\",\n    \"description\": \"Transfer call to customer support department\"\n  },\n  \"destinations\": [\n    {\n      \"type\": \"number\",\n      \"number\": \"{{ $('Webhook_import_number_and_tool').item.json.body.call_forwarding_number }}\",\n      \"message\": \"I am transferring your call to our support team. Please stay on the line.\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -3120,
+        -2352
+      ],
+      "id": "7399b46c-58b5-4b47-a570-31d45dcd4169",
+      "name": "Https_call_transfer_tool1",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.vapi.ai/tool",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"type\": \"transferCall\",\n  \"function\": {\n    \"name\": \"transferToSupport\",\n    \"description\": \"Transfer call to customer support department\"\n  },\n  \"destinations\": [\n    {\n      \"type\": \"number\",\n      \"number\": \"{{ $('Webhook_import_number_and_tool').item.json.body.call_forwarding_number }}\",\n      \"message\": \"I am transferring your call to our support team. Please stay on the line.\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -3120,
+        -2160
+      ],
+      "id": "f4a9d498-3ce1-4900-8191-4b709f826da3",
+      "name": "Https_call_transfer_tool2",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "delete_agent",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -5344,
+        -1104
+      ],
+      "id": "e2398d2e-d328-4a91-92b2-5b4aeb3f7523",
+      "name": "Webhook_delete_agent",
+      "webhookId": "2be2b1ae-61a5-4104-8786-fbd1756319b5"
+    },
+    {
+      "parameters": {
+        "method": "DELETE",
+        "url": "=https://api.vapi.ai/assistant/{{ $('Webhook_delete_agent').item.json.body.vapi_id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -5136,
+        -1104
+      ],
+      "id": "0be6199a-69ee-48fe-ae60-ea3261478b92",
+      "name": "Https_delete_agent",
+      "retryOnFail": false,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.vapi.ai/phone-number/buy",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"areaCode\": \"415\",\n  \"name\": \"My Vapi Number\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -3488,
+        -608
+      ],
+      "id": "f0573024-f9cc-46f2-89c4-a20f240b09c1",
+      "name": "Https_buy _number",
+      "retryOnFail": false,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "inbound_numbers",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "user_id"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -2736,
+        -624
+      ],
+      "id": "dbe408a6-28a4-42e8-8a57-df77144e215e",
+      "name": "Update a row",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "amount": 15
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -2944,
+        -624
+      ],
+      "id": "d8b352d4-51c0-46aa-bcd6-1fa50a4307b2",
+      "name": "Wait3",
+      "webhookId": "fccf9e72-c147-4fee-925f-76292d94a8f0"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.vapi.ai/tool",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"type\": \"transferCall\",\n  \"function\": {\n    \"name\": \"transferToSupport\",\n    \"description\": \"Transfer call to customer support department\"\n  },\n  \"destinations\": [\n    {\n      \"type\": \"number\",\n      \"number\": \"{{ $('Webhook_import_number_and_tool').item.json.body.call_forwarding_number }}\",\n      \"message\": \"I am transferring your call to our support team. Please stay on the line.\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -3152,
+        -624
+      ],
+      "id": "5d7ff0d1-dd0e-4df1-8759-43fa58629cf9",
+      "name": "Https_call_transfer_tool3"
+    },
+    {
+      "parameters": {
+        "content": "## Iska fada koi nhi ha but just in case ",
+        "height": 208,
+        "width": 1312
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -3728,
+        -672
+      ],
+      "typeVersion": 1,
+      "id": "901fa8fb-f455-45c2-8c80-f3952f0bbb7f",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.vapi.ai/credential",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "provider",
+              "value": "vonage"
+            },
+            {
+              "name": "apiKey",
+              "value": "={{ $node['Webhook_import_number_and_tool'].json.body.vonage_api_key }}"
+            },
+            {
+              "name": "apiSecret",
+              "value": "={{ $node['Webhook_import_number_and_tool'].json.body.vonage_api_secret }}"
+            },
+            {
+              "name": "name",
+              "value": "Vonage Main"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -3536,
+        -2160
+      ],
+      "id": "b82f446b-8aa6-4826-a0b0-a0fea5a4f73b",
+      "name": "Https_BYOC_vonage",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.vapi.ai/phone-number",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"provider\": \"telnyx\",\n  \"number\": \"YOUR_TELNYX_NUMBER\",\n  \"telnyxCredentials\": {\n    \"apiKey\": \"YOUR_TELNYX_API_KEY\"\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -3408,
+        -2336
+      ],
+      "id": "446442fe-873f-4b6d-9581-d4d51210c2e7",
+      "name": "Https_BYOC_telnyx",
+      "retryOnFail": false,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "method": "DELETE",
+        "url": "=https://api.vapi.ai/phone-number/{{ $json.body.number_id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -5360,
+        -1392
+      ],
+      "id": "691dc80a-ad0d-415a-86ee-7829c74939da",
+      "name": "delete_phone number"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "delete_number",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -5552,
+        -1392
+      ],
+      "id": "b367af9e-dc3d-403f-8e9e-8c43fb20e156",
+      "name": "Webhook",
+      "webhookId": "b2d51653-4176-449a-9754-782757c77915"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "inbound_numbers",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $node['Webhook_import_number_and_tool'].json.body.id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "status",
+              "fieldValue": "=Invalid Credentials"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -3152,
+        -2816
+      ],
+      "id": "1bdeb645-a422-4842-9a18-3114dbbf05f4",
+      "name": "Update a row6",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "inbound_numbers",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $node['Webhook_import_number_and_tool'].json.body.id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "tool_id",
+              "fieldValue": "={{ $json.id }}"
+            },
+            {
+              "fieldId": "number_id",
+              "fieldValue": "={{ $('Https_BYOC_twilio').item.json.id }}"
+            },
+            {
+              "fieldId": "status",
+              "fieldValue": "active"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -2624,
+        -2352
+      ],
+      "id": "b157af70-5623-4b45-943a-5854d1931086",
+      "name": "Update a row7",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "inbound_numbers",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $node['Webhook_import_number_and_tool'].json.body.id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "tool_id",
+              "fieldValue": "={{ $json.id }}"
+            },
+            {
+              "fieldId": "number_id",
+              "fieldValue": "={{ $('Https_BYOC_twilio').item.json.id }}"
+            },
+            {
+              "fieldId": "status",
+              "fieldValue": "active"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -2400,
+        -2144
+      ],
+      "id": "48d45e96-96aa-4693-826f-cdacd73101a2",
+      "name": "Update a row8",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "voice_agents",
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $('Webhook_create_agent').item.json.body.id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "status",
+              "fieldValue": "active"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -816,
+        592
+      ],
+      "id": "61da9500-23b4-43ee-8f94-286b13c1e60a",
+      "name": "Update a row2",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "0a4613fc-c414-402c-9a36-def980f65c25",
+              "leftValue": "={{ $json.body.call_forwarding_number }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -4000,
+        -2336
+      ],
+      "id": "597d337c-649f-48b1-84bf-e8dc285da82b",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.provider }}",
+                    "rightValue": "twilio",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "4fd8dc60-7b15-4b6b-b322-7394196d3e46"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "twilio"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "561113e1-c091-4d98-bce6-e845c7776dde",
+                    "leftValue": "={{ $json.body.provider }}",
+                    "rightValue": "telenyx",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "telenyx"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "d8f2ddf6-3b1f-4bb4-82cb-859772076ce9",
+                    "leftValue": "={{ $json.body.provider }}",
+                    "rightValue": "vonage",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "vonage"
+            }
+          ]
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -3792,
+        -1488
+      ],
+      "id": "d526c298-096a-46d6-8d65-82c05aa67903",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "inbound_numbers",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $node['Webhook_import_number_and_tool'].json.body.id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "number_id",
+              "fieldValue": "={{ $('Https_BYOC_twilio1').item.json.id }}"
+            },
+            {
+              "fieldId": "status",
+              "fieldValue": "active"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -2960,
+        -1680
+      ],
+      "id": "ef8d432d-e7ca-4fd0-8d72-6e6be5f9582d",
+      "name": "Update a row4",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "amount": 1
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -3136,
+        -1680
+      ],
+      "id": "e8198106-d59c-4ad4-8e11-f5461c93faf5",
+      "name": "Wait4",
+      "webhookId": "fccf9e72-c147-4fee-925f-76292d94a8f0"
+    },
+    {
+      "parameters": {
+        "amount": 15
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -3120,
+        -1488
+      ],
+      "id": "631bd413-72b5-418a-a72f-9399daafdf70",
+      "name": "Wait5",
+      "webhookId": "fccf9e72-c147-4fee-925f-76292d94a8f0"
+    },
+    {
+      "parameters": {
+        "amount": 15
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -3120,
+        -1296
+      ],
+      "id": "06f2f832-03dd-4f26-a524-cc8d090e2b65",
+      "name": "Wait6",
+      "webhookId": "fccf9e72-c147-4fee-925f-76292d94a8f0"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.vapi.ai/phone-number",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "number",
+              "value": "={{ $json.body.phone_number }}"
+            },
+            {
+              "name": "provider",
+              "value": "twilio"
+            },
+            {
+              "name": "twilioAccountSid",
+              "value": "={{ $json.body.twilio_account_sid }}"
+            },
+            {
+              "name": "twilioAuthToken",
+              "value": "={{ $json.body.twilio_auth_token }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -3424,
+        -1664
+      ],
+      "id": "f74cba5f-aec9-4226-b2d6-c15862e47da9",
+      "name": "Https_BYOC_twilio1",
+      "retryOnFail": false,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.vapi.ai/phone-number",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "number",
+              "value": "+15550105678"
+            },
+            {
+              "name": "provider",
+              "value": "vonage"
+            },
+            {
+              "name": "vonageApiKey",
+              "value": "YOUR_VONAGE_API_KEY"
+            },
+            {
+              "name": "vonageApiSecret",
+              "value": "YOUR_VONAGE_API_SECRET"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -2512,
+        -1408
+      ],
+      "id": "4ccc0468-d53a-4f56-8c99-94a360dedb9c",
+      "name": "Https_BYOC_vonage1",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.vapi.ai/phone-number",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"provider\": \"telnyx\",\n  \"number\": \"YOUR_TELNYX_NUMBER\",\n  \"telnyxCredentials\": {\n    \"apiKey\": \"YOUR_TELNYX_API_KEY\"\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -3424,
+        -1472
+      ],
+      "id": "14d2cb00-0e99-4caa-90fa-436818f8bd13",
+      "name": "Https_BYOC_telnyx1",
+      "retryOnFail": false,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "inbound_numbers",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $node['Webhook_import_number_and_tool'].json.body.id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "status",
+              "fieldValue": "=Invalid Credentials"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -3168,
+        -1952
+      ],
+      "id": "37aacf9e-cdcd-44da-be57-497073e258b3",
+      "name": "Update a row9",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "inbound_numbers",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $node['Webhook_import_number_and_tool'].json.body.id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "number_id",
+              "fieldValue": "={{ $('Https_BYOC_telnyx1').item.json.id }}"
+            },
+            {
+              "fieldId": "status",
+              "fieldValue": "active"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -2960,
+        -1488
+      ],
+      "id": "c1a9cdfc-5641-48a4-8d2d-6cf1687553a0",
+      "name": "Update a row10",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "inbound_numbers",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $node['Webhook_import_number_and_tool'].json.body.id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "number_id",
+              "fieldValue": "={{ $('Https_BYOC_vonage1').item.json.id }}"
+            },
+            {
+              "fieldId": "status",
+              "fieldValue": "active"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -2928,
+        -1296
+      ],
+      "id": "75568696-212f-453f-a1c6-a784ff3bf345",
+      "name": "Update a row11",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get all items\nconst items = $input.all();\nconst item = items[0];\n\nif (!item) throw new Error(\"❌ No data received!\");\n\n// Extract JSON data\nconst data = item.json || item;\n\n// --- VALIDATIONS ---\nconst systemContent = data.message?.content?.trim();\n\nif (!systemContent) throw new Error(\"❌ System prompt missing!\");\n\n// FIRST MESSAGE - Get the base welcome message\nconst baseWelcomeMessage = (\n    data.body?.welcome_message ||\n    data.messageText ||\n    \"\"\n).trim();\n\nif (!baseWelcomeMessage) throw new Error(\"❌ No welcome message found!\");\n\n// ALWAYS prepend the greeting with customer name placeholder\nconst firstMessage = ` ${baseWelcomeMessage}`;\n\n// VOICE - Now dynamic from input\nconst voiceId = data.body?.voice || data.voiceId || \"Kylie\";\n\nif (!voiceId) throw new Error(\"❌ Voice ID missing!\");\n\n// VOICE PROVIDER - Extracting from data.body.voice_provider\nconst voiceProvider = data.body?.voice_provider || data.voice_provider || \"openai\";\n\n// LANGUAGE\nconst language = data.language || data.body?.language;\n\nif (!language) throw new Error(\"❌ Language missing!\");\n\n// ASSISTANT NAME\nconst botName = data.query?.[\"bot name\"] || data.body?.name || \"assistant\";\n\n// --- CUSTOMER PHONE ---\nconst customerNumber =\n    data.query?.phoneNumber ||\n    data.body?.phone_number ||\n    data.body?.phone ||\n    data.body?.customer_phone ||\n    null;\n\nif (!customerNumber) {\n    console.warn(\"⚠ No phone number found in input — continuing without customer.number\");\n}\n\n// --- VOICE CONFIGURATION ---\nconst voiceConfig = {\n    provider: voiceProvider,\n    voiceId: voiceId\n};\n\nif (voiceProvider.toLowerCase() === \"deepgram\") {\n    voiceConfig.model = \"aura-2\";\n}\n\n// --- FINAL OUTPUT ---\nreturn [\n  {\n    json: {\n      name: botName,\n      firstMessage: firstMessage,\n      voicemailDetection: {\n        provider: \"openai\",\n        type: \"transcript\",\n        backoffPlan: {\n          maxRetries: 1,\n          startAtSeconds: 1.5,\n          frequencySeconds: 3\n        },\n        beepMaxAwaitSeconds: 15\n      },\n      firstMessageMode: \"assistant-speaks-first\",\n      model: {\n        provider: \"openai\",\n        model: \"gpt-4o-mini\",\n        messages: [\n          {\n            role: \"system\",\n            content: systemContent\n          }\n        ]\n      },\n      voice: voiceConfig,\n      transcriber: {\n        provider: \"deepgram\",\n        language: \"en\",\n      },\n      backgroundSound: \"office\",\n      startSpeakingPlan: {\n        waitSeconds: 0.4,\n      },\n      // EXPLICIT 10-second timeout hook\n      hooks: [\n        {\n          on: \"customer.speech.timeout\",\n          options: {\n            timeoutSeconds: 10,\n            triggerMaxCount: 1,\n            triggerResetMode: \"onUserSpeech\"\n          },\n          do: [\n            {\n              type: \"tool\",\n              tool: {\n                type: \"endCall\"\n              }\n            }\n          ],\n          name: \"ten_second_timeout\"\n        }\n      ],\n      // Also try adding these additional timeout configurations\n      silenceTimeoutSeconds: 10,  // Add this for good measure\n      maxDurationSeconds: 300,    // Optional: max call duration\n      ...(customerNumber ? { customer: { number: customerNumber } } : {})\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2016,
+        432
+      ],
+      "id": "33749366-8db6-4ca9-b19a-e06422729c6d",
+      "name": "Code13"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.vapi.ai/phone-number",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "provider",
+              "value": "vonage"
+            },
+            {
+              "name": "number",
+              "value": "={{ $node['Webhook_import_number_and_tool'].json.body.phone_number }}"
+            },
+            {
+              "name": "credentialId",
+              "value": "={{ $json.id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -3376,
+        -2144
+      ],
+      "id": "98aeb1c4-1be3-41e8-bec6-ca71e0a21de9",
+      "name": "Https_BYOC_vonage2",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "inbound_numbers",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $node['Webhook_import_number_and_tool'].json.body.id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "tool_id",
+              "fieldValue": "={{ $json.id }}"
+            },
+            {
+              "fieldId": "number_id",
+              "fieldValue": "={{ $node['Https_BYOC_vonage2'].json.id }}"
+            },
+            {
+              "fieldId": "status",
+              "fieldValue": "active"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -2656,
+        -2176
+      ],
+      "id": "a562dc10-9d7e-4f5a-8d34-9d2a58ac2fcb",
+      "name": "Update a row5",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.vapi.ai/credential",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "provider",
+              "value": "vonage"
+            },
+            {
+              "name": "apiKey",
+              "value": "={{ $node['Webhook_import_number_and_tool'].json.body.vonage_api_key }}"
+            },
+            {
+              "name": "apiSecret",
+              "value": "={{ $node['Webhook_import_number_and_tool'].json.body.vonage_api_secret }}"
+            },
+            {
+              "name": "name",
+              "value": "={{ $node['Webhook_import_number_and_tool'].json.body.label }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -3536,
+        -1296
+      ],
+      "id": "798ad7bd-3473-46d3-8efa-144f62ec3c81",
+      "name": "Https_BYOC_vonage3",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.vapi.ai/phone-number",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "provider",
+              "value": "vonage"
+            },
+            {
+              "name": "number",
+              "value": "={{ $node['Webhook_import_number_and_tool'].json.body.phone_number }}"
+            },
+            {
+              "name": "credentialId",
+              "value": "={{ $json.id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -3312,
+        -1312
+      ],
+      "id": "d67a7493-f1da-4dca-8045-e3d02b961e8f",
+      "name": "Https_BYOC_vonage4",
+      "onError": "continueErrorOutput"
+    }
+  ],
+  "connections": {
+    "Wait 60 Seconds9": {
+      "main": [
+        [
+          {
+            "node": "Check Call Status9",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Call Status9": {
+      "main": [
+        [
+          {
+            "node": "Call Completed?9",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call Completed?9": {
+      "main": [
+        [
+          {
+            "node": "lead_tester",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait 60 Seconds9",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch4": {
+      "main": [
+        [
+          {
+            "node": "Https_BYOC_twilio",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Https_BYOC_telnyx",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Https_BYOC_vonage",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze Call Summary16": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request33",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze Call Summary17": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request34",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If46": {
+      "main": [
+        [
+          {
+            "node": "Analyze Call Summary17",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Analyze Call Summary16",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request33": {
+      "main": [
+        [
+          {
+            "node": "Get a row3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request34": {
+      "main": [
+        [
+          {
+            "node": "Get a row5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a row3": {
+      "main": [
+        [
+          {
+            "node": "Create a row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a row5": {
+      "main": [
+        [
+          {
+            "node": "Create a row1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Update a row3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait1": {
+      "main": [
+        [
+          {
+            "node": "Update a row7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait2": {
+      "main": [
+        [
+          {
+            "node": "Update a row5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking 'Test workflow'": {
+      "main": [
+        [
+          {
+            "node": "Set SIP Credentials",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set SIP Credentials": "[REDACTED]",
+    "Set SIP Credentials1": "[REDACTED]",
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Https_edit_agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code3": {
+      "main": [
+        [
+          {
+            "node": "vapi_first_message_generator",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge10",
+            "type": "main",
+            "index": 2
+          },
+          {
+            "node": "Merge11",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Code35": {
+      "main": [
+        [
+          {
+            "node": "Merge11",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If3": {
+      "main": [
+        [
+          {
+            "node": "Code74",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code73",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code36": {
+      "main": [
+        [
+          {
+            "node": "Merge10",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge10": {
+      "main": [
+        [
+          {
+            "node": "Code72",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code72": {
+      "main": [
+        [
+          {
+            "node": "Https_agent_creation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code73": {
+      "main": [
+        [
+          {
+            "node": "Code3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code74": {
+      "main": [
+        [
+          {
+            "node": "Code3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge11": {
+      "main": [
+        [
+          {
+            "node": "vapi_script_generator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update a row1": {
+      "main": [
+        [
+          {
+            "node": "Get a row2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a row2": {
+      "main": [
+        [
+          {
+            "node": "Https_number_binding_to_agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a row7": {
+      "main": [
+        [
+          {
+            "node": "Merge10",
+            "type": "main",
+            "index": 3
+          }
+        ]
+      ]
+    },
+    "timezone formatter": {
+      "main": [
+        [
+          {
+            "node": "Merge11",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Get a row": {
+      "main": [
+        [
+          {
+            "node": "Https_number-unbinding",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a row6": {
+      "main": [
+        [
+          {
+            "node": "Https_number-Status-Check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "webhook_check_number_status": {
+      "main": [
+        [
+          {
+            "node": "Get a row6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook_create_agent": {
+      "main": [
+        [
+          {
+            "node": "If3",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Https_web_scraper",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get a row7",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Code73",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "timezone formatter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook_call_log": {
+      "main": [
+        [
+          {
+            "node": "Wait 60 Seconds9",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook_import_number_and_tool": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook_edit_agent": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook_number_binding": {
+      "main": [
+        [
+          {
+            "node": "Https_vapi_number_binding",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook_number_unbinding": {
+      "main": [
+        [
+          {
+            "node": "Get a row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Https_agent_creation": {
+      "main": [
+        [
+          {
+            "node": "Update a row1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "vapi_script_generator": "[REDACTED]",
+    "vapi_first_message_generator": "[REDACTED]",
+    "Https_web_scraper": {
+      "main": [
+        [
+          {
+            "node": "Code35",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "lead_tester": {
+      "main": [
+        [
+          {
+            "node": "If46",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Https_BYOC_twilio": {
+      "main": [
+        [
+          {
+            "node": "Https_call_transfer_tool",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update a row6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Https_call_transfer_tool": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update a row6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Https_call_transfer_tool1": {
+      "main": [
+        [
+          {
+            "node": "Wait1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update a row6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Https_call_transfer_tool2": {
+      "main": [
+        [
+          {
+            "node": "Wait2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update a row6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook_delete_agent": {
+      "main": [
+        [
+          {
+            "node": "Https_delete_agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Https_delete_agent": {
+      "main": [
+        []
+      ]
+    },
+    "Wait3": {
+      "main": [
+        [
+          {
+            "node": "Update a row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Https_call_transfer_tool3": {
+      "main": [
+        [
+          {
+            "node": "Wait3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Https_buy _number": {
+      "main": [
+        [
+          {
+            "node": "Https_call_transfer_tool3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Https_number-Status-Check": {
+      "main": [
+        []
+      ]
+    },
+    "Https_BYOC_vonage": {
+      "main": [
+        [
+          {
+            "node": "Https_BYOC_vonage2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update a row6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Https_BYOC_telnyx": {
+      "main": [
+        [
+          {
+            "node": "Https_call_transfer_tool1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update a row6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "delete_phone number",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Https_number_binding_to_agent": {
+      "main": [
+        [
+          {
+            "node": "Update a row2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Switch4",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Https_BYOC_twilio1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Https_BYOC_telnyx1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Https_BYOC_vonage3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait4": {
+      "main": [
+        [
+          {
+            "node": "Update a row4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait5": {
+      "main": [
+        [
+          {
+            "node": "Update a row10",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait6": {
+      "main": [
+        [
+          {
+            "node": "Update a row11",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Https_BYOC_twilio1": {
+      "main": [
+        [
+          {
+            "node": "Wait4",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update a row9",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Https_BYOC_vonage1": {
+      "main": [
+        [],
+        []
+      ]
+    },
+    "Https_BYOC_telnyx1": {
+      "main": [
+        [
+          {
+            "node": "Wait5",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update a row9",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Https_BYOC_vonage2": {
+      "main": [
+        [
+          {
+            "node": "Https_call_transfer_tool2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Https_BYOC_vonage3": {
+      "main": [
+        [
+          {
+            "node": "Https_BYOC_vonage4",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update a row9",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Https_BYOC_vonage4": {
+      "main": [
+        [
+          {
+            "node": "Wait6",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update a row9",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "triggerCount": 9,
+  "tags": [
+    {
+      "updatedAt": "2025-11-21T10:29:37.919Z",
+      "createdAt": "2025-11-21T10:29:37.919Z",
+      "id": "NL41vIAsZN4Of2u0",
+      "name": "Jack Nolan"
+    }
+  ]
+}

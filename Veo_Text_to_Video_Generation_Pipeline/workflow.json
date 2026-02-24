@@ -1,0 +1,3568 @@
+{
+  "updatedAt": "2026-02-03T23:50:32.203Z",
+  "createdAt": "2025-10-25T07:30:39.526Z",
+  "id": "in5Y2ibUaI31k1EY",
+  "name": "Veo Image-to-Video Generation",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b34fe4e3-2f92-5bbf-b088-9262870482b2",
+              "name": "video_url_3",
+              "value": "={{ JSON.parse($json.data.resultJson).resultUrls[0] }}",
+              "type": "string"
+            },
+            {
+              "id": "c34fe4e3-2f92-5bbf-b088-9262870482b3",
+              "name": "video_url_1",
+              "value": "={{ $('Video 1 URL2').item.json.video_url_1 }}",
+              "type": "string"
+            },
+            {
+              "id": "d34fe4e3-2f92-5bbf-b088-9262870482b4",
+              "name": "video_url_2",
+              "value": "={{ $('Video 2 URL1').item.json.video_url_2 }}",
+              "type": "string"
+            },
+            {
+              "id": "e34fe4e3-2f92-5bbf-b088-9262870482b5",
+              "name": "video_prompt_4",
+              "value": "={{ $('Video Prompts2').item.json.video_prompt_4 }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -2304,
+        2016
+      ],
+      "id": "a9d00492-c9d9-495a-bdc4-e71fd8f40451",
+      "name": "Video 3 URL"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "7h1c1c41-ee67-6g51-c3c2-g90eccfdcd22",
+              "leftValue": "={{ $json.data.state }}",
+              "rightValue": "success",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1408,
+        2016
+      ],
+      "id": "56d92e19-a636-4d3f-b7b4-553386c7fca3",
+      "name": "If Video 4 Ready"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f44gf5f4-3g03-6ccg-c199-0373981593c6",
+              "name": "video_url_4",
+              "value": "={{ JSON.parse($json.data.resultJson).resultUrls[0] }}",
+              "type": "string"
+            },
+            {
+              "id": "g44gf5f4-3g03-6ccg-c199-0373981593c7",
+              "name": "video_url_1",
+              "value": "={{ $('Video 1 URL2').item.json.video_url_1 }}",
+              "type": "string"
+            },
+            {
+              "id": "h44gf5f4-3g03-6ccg-c199-0373981593c8",
+              "name": "video_url_2",
+              "value": "={{ $('Video 2 URL1').item.json.video_url_2 }}",
+              "type": "string"
+            },
+            {
+              "id": "i44gf5f4-3g03-6ccg-c199-0373981593c9",
+              "name": "video_url_3",
+              "value": "={{ $('Video 3 URL').item.json.video_url_3 }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1184,
+        2016
+      ],
+      "id": "1fcbf363-c27c-4081-a16d-9aa01f35c50e",
+      "name": "All Four Video URLs"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "363abbd9-5ed8-4b6a-b1a0-739893a02fff",
+              "name": "video_prompt_1",
+              "value": "A man sits with his wife and two children in their living room, watching funny cartoons together on TV. The family looks relaxed and happy, enjoying the cartoon. The room is cozy with warm lighting and comfortable seating.",
+              "type": "string"
+            },
+            {
+              "id": "463abbd9-5ed8-4b6a-b1a0-739893a02ggg",
+              "name": "video_prompt_2",
+              "value": "The family continues watching TV, now laughing together at a funny scene. The children are pointing at the screen excitedly while the parents smile warmly. The evening atmosphere is peaceful and joyful.",
+              "type": "string"
+            },
+            {
+              "id": "563abbd9-5ed8-4b6a-b1a0-739893a02hhh",
+              "name": "video_prompt_3",
+              "value": "The family is now standing up, clapping and cheering at the TV screen. The children are jumping with excitement while the parents laugh along. The living room is filled with happiness and energy.",
+              "type": "string"
+            },
+            {
+              "id": "663abbd9-5ed8-4b6a-b1a0-739893a02iii",
+              "name": "video_prompt_4",
+              "value": "The family gathers together for a group hug, still smiling from the fun cartoon. The children are hugging their parents tightly while everyone shares a warm moment of togetherness.",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -5664,
+        2016
+      ],
+      "id": "f3ca874f-09c3-4e22-a1d7-320c85690f9d",
+      "name": "Video Prompts2"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.kie.ai/api/v1/jobs/createTask",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"sora-2-text-to-video\",\n  \"input\": {\n    \"prompt\": \"{{ $json.video_prompt_1 }}\",\n    \"aspect_ratio\": \"landscape\",\n    \"n_frames\": \"10\",\n    \"remove_watermark\": true\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -5440,
+        2016
+      ],
+      "id": "53a6cb95-64d9-4c85-9bba-781880abd95c",
+      "name": "Text to Video 5"
+    },
+    {
+      "parameters": {
+        "amount": 10
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -5216,
+        2016
+      ],
+      "id": "f69169bc-2a16-476a-9eb1-3689d718bba8",
+      "name": "Wait 5",
+      "webhookId": "9fd30610-c0b9-4f5c-9af5-89b821c11ec3"
+    },
+    {
+      "parameters": {
+        "url": "https://api.kie.ai/api/v1/jobs/recordInfo",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "taskId",
+              "value": "={{ $json.data.taskId }}"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -4992,
+        1936
+      ],
+      "id": "89ec16c0-8c06-4e4c-a6b2-e7d09702d6e4",
+      "name": "Get Video 5"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "4f9a9a29-cc45-4e39-a1a0-e78caadbab09",
+              "leftValue": "={{ $json.data.state }}",
+              "rightValue": "success",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -4768,
+        2016
+      ],
+      "id": "3f109c76-066c-474b-a2ab-06be6c3e97e8",
+      "name": "If Video 1 Ready2"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "714ed3d2-1e81-4aae-a977-8151769371a7",
+              "name": "video_url_1",
+              "value": "={{ JSON.parse($json.data.resultJson).resultUrls[0] }}",
+              "type": "string"
+            },
+            {
+              "id": "814ed3d2-1e81-4aae-a977-8151769371a8",
+              "name": "video_prompt_2",
+              "value": "={{ $('Video Prompts2').item.json.video_prompt_2 }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -4544,
+        2016
+      ],
+      "id": "f151c8c5-f98e-495f-8cb5-7b718cc5cf32",
+      "name": "Video 1 URL2"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.kie.ai/api/v1/jobs/createTask",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"sora-2-text-to-video\",\n  \"input\": {\n    \"prompt\": \"{{ $json.video_prompt_2 }}\",\n    \"aspect_ratio\": \"landscape\",\n    \"n_frames\": \"10\",\n    \"remove_watermark\": true\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -4320,
+        2016
+      ],
+      "id": "b7617af0-6095-4794-b111-b6c6fb4967b3",
+      "name": "Text to Video 6"
+    },
+    {
+      "parameters": {
+        "amount": 10
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -4096,
+        2016
+      ],
+      "id": "0ac8b4cb-aff0-465d-9671-62dd7c51f2b0",
+      "name": "Wait 6",
+      "webhookId": "afd30610-c0b9-4f5c-9af5-89b821c11ed4"
+    },
+    {
+      "parameters": {
+        "url": "https://api.kie.ai/api/v1/jobs/recordInfo",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "taskId",
+              "value": "={{ $json.data.taskId }}"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -3872,
+        1936
+      ],
+      "id": "8a851902-d2f3-4c1f-952a-316aa2646450",
+      "name": "Get Video 6"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "5f9a9a29-cc45-4e39-a1a0-e78caadbab10",
+              "leftValue": "={{ $json.data.state }}",
+              "rightValue": "success",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -3648,
+        2016
+      ],
+      "id": "3ddc622e-3e0f-405d-b0fb-5061cf036e8a",
+      "name": "If Video 2 Ready2"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "824ed3d2-1e81-4aae-a977-8151769371a9",
+              "name": "video_url_2",
+              "value": "={{ JSON.parse($json.data.resultJson).resultUrls[0] }}",
+              "type": "string"
+            },
+            {
+              "id": "924ed3d2-1e81-4aae-a977-8151769371b0",
+              "name": "video_url_1",
+              "value": "={{ $('Video 1 URL2').item.json.video_url_1 }}",
+              "type": "string"
+            },
+            {
+              "id": "a24ed3d2-1e81-4aae-a977-8151769371b1",
+              "name": "video_prompt_3",
+              "value": "={{ $('Video Prompts2').item.json.video_prompt_3 }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -3424,
+        2016
+      ],
+      "id": "c04e7515-c423-4582-829c-954469bac2af",
+      "name": "Video 2 URL1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.kie.ai/api/v1/jobs/createTask",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"sora-2-text-to-video\",\n  \"input\": {\n    \"prompt\": \"{{ $json.video_prompt_3 }}\",\n    \"aspect_ratio\": \"landscape\",\n    \"n_frames\": \"10\",\n    \"remove_watermark\": true\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -3200,
+        2016
+      ],
+      "id": "46d4797a-bfeb-4f09-9d50-aade3a588527",
+      "name": "Text to Video 7"
+    },
+    {
+      "parameters": {
+        "amount": 10
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -2976,
+        2016
+      ],
+      "id": "28005294-0f6d-48ac-accc-a8cd4cb89487",
+      "name": "Wait 7",
+      "webhookId": "bge40720-d1c0-5g6d-0bg6-90c932d22fe5"
+    },
+    {
+      "parameters": {
+        "url": "https://api.kie.ai/api/v1/jobs/recordInfo",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "taskId",
+              "value": "={{ $json.data.taskId }}"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -2752,
+        1936
+      ],
+      "id": "432f48ed-9dcd-4ddf-9dd3-4c7463e809b9",
+      "name": "Get Video 7"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "6g0b0b30-dd56-5f40-b2b1-f89dbbecbc11",
+              "leftValue": "={{ $json.data.state }}",
+              "rightValue": "success",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -2528,
+        2016
+      ],
+      "id": "e187d662-3a6b-4410-a505-c9500238a042",
+      "name": "If Video 3 Ready1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.kie.ai/api/v1/jobs/createTask",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"sora-2-text-to-video\",\n  \"input\": {\n    \"prompt\": \"{{ $json.video_prompt_4 }}\",\n    \"aspect_ratio\": \"landscape\",\n    \"n_frames\": \"10\",\n    \"remove_watermark\": true\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -2080,
+        2016
+      ],
+      "id": "055fc616-4fa8-4ddc-bf37-93c1298a38b2",
+      "name": "Text to Video 8"
+    },
+    {
+      "parameters": {
+        "amount": 10
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -1856,
+        2016
+      ],
+      "id": "b2bad020-78b8-450e-84cb-b181b16f7150",
+      "name": "Wait 8",
+      "webhookId": "chf51831-e2d1-6h7e-1ch7-01d043e33gf6"
+    },
+    {
+      "parameters": {
+        "url": "https://api.kie.ai/api/v1/jobs/recordInfo",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "taskId",
+              "value": "={{ $json.data.taskId }}"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1632,
+        1936
+      ],
+      "id": "897c744b-f6e7-4db7-8b5e-b5b0f3832fd9",
+      "name": "Get Video 8"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://vercel-ffmpeg-merge-api.vercel.app/api/merge",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"inputUrls\": [\n    \"{{ $json.video_url_1 }}\",\n    \"{{ $json.video_url_2 }}\",\n    \"{{ $json.video_url_3 }}\",\n    \"{{ $json.video_url_4 }}\"\n  ],\n  \"outputFormat\": \"mp4\"\n}",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "responseFormat": "file",
+              "outputPropertyName": "merged_video"
+            }
+          }
+        }
+      },
+      "name": "Merge Videos (FFmpeg API)1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -960,
+        2016
+      ],
+      "id": "1b04259d-8226-4de8-a4fa-583e0098beb7",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO meetings (\n  contact_phone,\n  contact_name,\n  title,\n  date_time,\n  purpose,\n  location,\n  status,\n  created_by_phone,\n  created_at\n)\nVALUES ($1, $2, $3, $4, $5, $6, 'scheduled', $1, NOW())\nRETURNING id, contact_phone, contact_name, title, date_time, purpose, location, status, created_by_phone, created_at;\n",
+        "options": {
+          "queryReplacement": "={{ [\n  $json.contactPhone,\n  $json.contactName,\n  $json.title,\n  $json.dateTime,\n  $json.purpose,\n  $json.location\n] }}"
+        }
+      },
+      "id": "244efc54-5624-425a-a825-d399ec36490c",
+      "name": "Save Meeting to DB",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        -4336,
+        3024
+      ],
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "jsCode": "const meeting = $input.first().json;\n\nconst invitationMessage = `📅 **Meeting Invitation**\\n\\n**Title:** ${meeting.title}\\n**Date & Time:** ${meeting.date_time}\\n**Location:** ${meeting.location}\\n**Purpose:** ${meeting.purpose}\\n\\n---\\n\\nThis meeting has been scheduled. Please confirm your attendance or let us know if you need to reschedule.\\n\\n`;\n\nreturn [{\n  json: {\n    meetingId: meeting.id,\n    contactPhone: meeting.contact_phone,\n    contactName: meeting.contact_name,\n    invitationMessage: invitationMessage,\n    meetingDetails: meeting\n  }\n}];"
+      },
+      "id": "6f90759e-a9b9-4832-b4d1-0c9a085ee0c7",
+      "name": "Format Invitation",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4112,
+        3024
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE meetings \nSET \n  status = 'invitation_sent',\n  updated_at = NOW()\nWHERE id = $1\nRETURNING id, status, updated_at;",
+        "options": {
+          "queryReplacement": "={{ [$('Format Invitation').item.json.meetingId] }}"
+        }
+      },
+      "id": "d2971ec8-d438-4193-a1a3-5aac7cd1b018",
+      "name": "Update Meeting Status",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        -3680,
+        3024
+      ],
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "jsCode": "const meeting = $('Format Invitation').item.json.meetingDetails;\nconst contactName = $('Format Invitation').item.json.contactName;\nconst error = $input.first().json;\n\nreturn [{\n  json: {\n    success: true,\n    message: `⚠️ Meeting scheduled with ${contactName}, but invitation failed to send.\\n\\n📅 **${meeting.title}**\\n🕐 ${meeting.date_time}\\n📍 ${meeting.location}\\n\\n❌ WhatsApp Error: ${error.message || 'Unknown error'}\\n\\nPlease send the invitation manually.`,\n    details: {\n      meetingId: meeting.id,\n      contactPhone: meeting.contact_phone,\n      contactName: meeting.contact_name,\n      title: meeting.title,\n      dateTime: meeting.date_time,\n      purpose: meeting.purpose,\n      location: meeting.location,\n      status: 'scheduled',\n      invitationSent: false,\n      error: error.message || 'Failed to send WhatsApp invitation'\n    }\n  }\n}];"
+      },
+      "id": "049f836d-b5ef-4029-836f-d7baf4bbfab9",
+      "name": "Handle Send Error",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3680,
+        2816
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const errorData = $input.first().json;\n\nreturn [{\n  json: {\n    success: false,\n    message: errorData.message,\n    details: null\n  }\n}];"
+      },
+      "id": "c8cad244-5a0d-4971-b2f9-b285ecde7634",
+      "name": "Format Validation Error",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4336,
+        2816
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json.query || {};\n\nconst contactPhoneRaw = (input.contact_phone || '').trim();\nconst contactPhone = contactPhoneRaw.replace(/\\+/g, '');\nconst contactName = (input.contact_name || '').trim();\nconst title = (input.title || '').trim();\nconst dateTime = (input.date_time || '').trim();\nconst purpose = (input.purpose || '').trim();\nconst location = (input.location || 'Virtual').trim();\n\nconst errors = [];\n\n// Basic validation\nif (!contactPhone || contactPhone.length < 10 || isNaN(Number(contactPhone))) {\n  errors.push('Valid contact phone number required (must be numeric, min 10 digits)');\n}\n\nif (!contactName) {\n  errors.push('Contact name is required');\n}\n\nif (!title || title.length < 3) {\n  errors.push('Meeting title required (min 3 characters)');\n}\n\nif (!dateTime) {\n  errors.push('Meeting date and time required');\n}\n\nif (!purpose || purpose.length < 5) {\n  errors.push('Meeting purpose required (min 5 characters)');\n}\n\nif (errors.length > 0) {\n  return [\n    {\n      json: {\n        error: true,\n        success: false,\n        message: `❌ Validation failed:\\n${errors.join('\\n')}`\n      }\n    }\n  ];\n}\n\n// Sanitization helper\nconst sanitize = (str) =>\n  str.replace(/[\\x00-\\x08\\x0B\\x0C\\x0E-\\x1F\\x7F]/g, '').substring(0, 1000);\n\nreturn [\n  {\n    json: {\n      contactPhone: parseInt(contactPhone, 10),\n      contactName: sanitize(contactName),\n      title: sanitize(title),\n      dateTime: sanitize(dateTime),\n      purpose: sanitize(purpose),\n      location: sanitize(location)\n    }\n  }\n];\n"
+      },
+      "id": "ed5674d4-77c2-4cea-8c5c-fe0cdc79e2ee",
+      "name": "Validate Input2",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4784,
+        2928
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "check-error",
+              "leftValue": "={{ $json.contactName }}",
+              "rightValue": true,
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "32dd740e-89c6-4ce0-847d-9fe403b86281",
+      "name": "Is Valid?4",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -4560,
+        2928
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const meeting = $('Format Invitation').item.json.meetingDetails;\nconst contactName = $('Format Invitation').item.json.contactName;\n\nreturn [{\n  json: {\n    success: true,\n    message: `✅ Meeting scheduled successfully with ${contactName}!\\n\\n📅 **${meeting.title}**\\n🕐 ${meeting.date_time}\\n📍 ${meeting.location}\\n\\n✉️ Invitation sent via WhatsApp.`,\n    details: {\n      meetingId: meeting.id,\n      contactPhone: meeting.contact_phone,\n      contactName: meeting.contact_name,\n      title: meeting.title,\n      dateTime: meeting.date_time,\n      purpose: meeting.purpose,\n      location: meeting.location,\n      status: 'invitation_sent',\n      createdAt: meeting.created_at\n    }\n  }\n}];"
+      },
+      "id": "319db7b7-b984-4381-89f5-cff1e4ad0b3e",
+      "name": "Format Success Response2",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3456,
+        3024
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "f5c38824-db36-4437-a10b-70afb45b857c",
+      "name": "Execute Workflow Trigger",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [
+        -5728,
+        3392
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://wc.ycsols.com/api/send-message",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "message",
+              "value": "={{ $json.invitationMessage }}"
+            },
+            {
+              "name": "numbers",
+              "value": "={{ $json.meetingDetails.contact_phone }}"
+            },
+            {
+              "name": "x-api-key",
+              "value": "=M5QfCwNGsZeiUnJ0VKWUyzkYwgeVylFU"
+            },
+            {
+              "name": "messageType",
+              "value": "TEXT"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "fd9b3127-df32-4575-9d1e-27005aad8a47",
+      "name": "Send Meeting Confirmation to Director1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -3904,
+        3024
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json.query || {};\n\n// Extract and normalize fields\nconst senderPhoneRaw = (input.sender_phone || '').trim();\nconst senderPhone = senderPhoneRaw.replace(/\\+/g, '');\n\nconst contactPhoneRaw = (input.contact_phone || '').trim();\nconst contactPhone = contactPhoneRaw.replace(/\\+/g, '');\n\nconst contactName = (input.contact_name || '').trim();\nconst title = (input.title || '').trim();\nconst dateTime = (input.date_time || '').trim();\nconst purpose = (input.purpose || '').trim();\nconst location = (input.location || 'Virtual').trim();\nconst agentId = (input.agent_id || '').trim();\nconst userId = (input.user_id || '').trim(); // NEW: Extract user_id\n\nconst errors = [];\n\n// ---- VALIDATIONS ----\nif (!senderPhone || senderPhone.length < 10 || isNaN(Number(senderPhone))) {\n  errors.push('Valid sender phone number required (must be numeric, min 10 digits)');\n}\n\nif (!contactPhone || contactPhone.length < 10 || isNaN(Number(contactPhone))) {\n  errors.push('Valid contact phone number required (must be numeric, min 10 digits)');\n}\n\nif (!contactName) {\n  errors.push('Contact name is required');\n}\n\nif (!title || title.length < 3) {\n  errors.push('Meeting title required (min 3 characters)');\n}\n\nif (!dateTime) {\n  errors.push('Meeting date and time required');\n}\n\nif (!purpose || purpose.length < 5) {\n  errors.push('Meeting purpose required (min 5 characters)');\n}\n\nif (!agentId) {\n  errors.push('Agent ID is required');\n}\n\nif (!userId) {\n  errors.push('User ID is required'); // NEW: Validate user_id\n}\n\n// ---- RETURN VALIDATION ERRORS ----\nif (errors.length > 0) {\n  return [{\n    json: {\n      error: true,\n      success: false,\n      message: `❌ Validation failed:\\n${errors.join('\\n')}`\n    }\n  }];\n}\n\n// ---- SANITIZATION FUNCTION ----\nconst sanitize = (str) =>\n  str.replace(/[\\x00-\\x08\\x0B\\x0C\\x0E-\\x1F\\x7F]/g, '').substring(0, 1000);\n\n// ---- SUCCESS OUTPUT ----\nreturn [{\n  json: {\n    senderPhone: parseInt(senderPhone, 10),\n    contactPhone: parseInt(contactPhone, 10),\n    contactName: sanitize(contactName),\n    title: sanitize(title),\n    dateTime: sanitize(dateTime),\n    purpose: sanitize(purpose),\n    location: sanitize(location),\n    agentId: sanitize(agentId),\n    userId: sanitize(userId) // NEW: Include user_id in output\n  }\n}];"
+      },
+      "id": "c88376fd-a242-4909-bd49-b6266eca2354",
+      "name": "Validate Input",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -5424,
+        3568
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "check-error",
+              "leftValue": "={{ $json.contactName }}",
+              "rightValue": true,
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "f70221cb-2b59-4bb5-bbf9-7a595652f582",
+      "name": "Is Valid?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -5200,
+        3568
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const meeting = $('Format Invitation1').item.json.meetingDetails;\nconst contactName = $('Format Invitation1').item.json.contactName;\n\nreturn [{\n  json: {\n    success: true,\n    message: `✅ Meeting invitation sent to ${contactName}!\\n\\n📅 **${meeting.title}**\\n🕐 ${meeting.date_time}\\n📍 ${meeting.location}\\n\\n⏳ Status: Waiting for confirmation\\n\\nI'll notify you once ${contactName} responds.`,\n    details: {\n      meetingId: meeting.id,\n      contactPhone: meeting.contact_phone,\n      contactName: meeting.contact_name,\n      title: meeting.title,\n      dateTime: meeting.date_time,\n      purpose: meeting.purpose,\n      location: meeting.location,\n      status: 'pending_confirmation',\n      createdAt: meeting.created_at\n    }\n  }\n}];"
+      },
+      "id": "28a9b7dc-a316-43e2-aea5-8093f7cad37a",
+      "name": "Format Success Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4256,
+        3664
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const errorData = $input.first().json;\n\nreturn [{\n  json: {\n    success: false,\n    message: errorData.message,\n    details: null\n  }\n}];"
+      },
+      "id": "bf6dee79-9d62-43c7-aa24-05a9af3af6ae",
+      "name": "Format Validation Error1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4976,
+        3456
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO meetings (\n  contact_phone,\n  contact_name,\n  title,\n  date_time,\n  purpose,\n  location,\n  status,\n  scheduler_phone,\n  user_id,\n  created_at\n)\nVALUES (\n  $1,\n  $2,\n  $3,\n  $4,\n  $5,\n  $6,\n  'pending_confirmation',\n  $7,\n  $8,\n  NOW()\n)\nRETURNING \n  id,\n  contact_phone,\n  contact_name,\n  title,\n  date_time,\n  purpose,\n  location,\n  status,\n  scheduler_phone,\n  user_id,\n  created_at;",
+        "options": {
+          "queryReplacement": "={{ [\n  $json.contactPhone,\n  $json.contactName,\n  $json.title,\n  $json.dateTime,\n  $json.purpose,\n  $json.location,\n  $json.senderPhone,\n  $json.userId\n] }}"
+        }
+      },
+      "id": "bf054500-6f29-4a29-88e1-0205791b862c",
+      "name": "Save Meeting to DB1",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        -4976,
+        3664
+      ],
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "jsCode": "const meeting = $input.first().json;\nconst agentId = $('Is Valid?').first().json.agentId; // Get agentId from 'Is Valid?' node\nconst userId = meeting.user_id || meeting.userId; // Extract userId from meeting\n\nconst invitationMessage = `📅 **Meeting Invitation**\\n\\n**Title:** ${meeting.title}\\n**Date & Time:** ${meeting.date_time}\\n**Location:** ${meeting.location}\\n**Purpose:** ${meeting.purpose}\\n\\n---\\n\\nPlease reply with:\\n✅ \"OK\" or \"YES\" to confirm\\n❌ \"NO\" or \"RESCHEDULE\" if you need to change the time\\n\\nWaiting for your confirmation...`;\n\n// Add agentId and userId to meetingDetails\nconst enrichedMeetingDetails = {\n  ...meeting,\n  agent_id: agentId,\n  user_id: userId\n};\n\nreturn [{\n  json: {\n    meetingId: meeting.id,\n    contactPhone: meeting.contact_phone,\n    contactName: meeting.contact_name,\n    invitationMessage: invitationMessage,\n    meetingDetails: enrichedMeetingDetails\n  }\n}];"
+      },
+      "id": "1a13f3eb-fe8d-4e79-ae1e-57a63d9c5b20",
+      "name": "Format Invitation1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4752,
+        3664
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const meeting = $('Format Invitation1').item.json.meetingDetails;\nconst contactName = $('Format Invitation1').item.json.contactName;\nconst error = $input.first().json;\n\nreturn [{\n  json: {\n    success: false,\n    message: `❌ Failed to send meeting invitation to ${contactName}.\\n\\nError: ${error.message || 'Unknown error'}\\n\\nPlease try scheduling again.`,\n    details: {\n      meetingId: meeting.id,\n      error: error.message\n    }\n  }\n}];"
+      },
+      "id": "975ff237-0aa9-4f68-8d45-39ea0ccc9b42",
+      "name": "Handle Send Error1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4224,
+        3424
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "resource": "video",
+        "modelId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        0,
+        1312
+      ],
+      "id": "aeb2e7c1-a1c9-414c-b51d-8a97b8811ce9",
+      "name": "Generate a video",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "core-prompt",
+              "name": "core_prompt",
+              "value": "A middle-aged man with short brown hair, black rectangular glasses, clean-shaven face, wearing a royal blue casual button-up shirt. His wife has shoulder-length straight brown hair parted in the middle, wearing a forest green knit sweater. An 8-year-old boy with short dark brown hair wearing a bright red t-shirt with visible collar. A 6-year-old girl with long brown hair in a ponytail wearing a sunshine yellow dress with short sleeves. They are seated on a beige linen fabric sofa with visible texture and wooden legs. The living room has cream-colored matte walls. A traditional wooden coffee table with dark finish sits in front of the sofa. Soft golden evening light comes from a brass floor lamp positioned to the left, creating warm ambient illumination with soft shadows. The camera is positioned at eye level, 8 feet from the sofa, using a 35mm lens equivalent. Cinematic 24fps, warm color grading with enhanced golden tones, slight film grain. Consistent exposure and white balance throughout.",
+              "type": "string"
+            },
+            {
+              "id": "clip-actions",
+              "name": "clip_actions",
+              "value": "=[\"The family watches colorful cartoons on a 55-inch flat-screen TV mounted on the wall. All four members sit close together on the sofa, faces illuminated by the TV's soft glow. Their expressions are relaxed and content. The father has his arm around his wife's shoulder. The children sit between their parents, leaning slightly forward. Subtle ambient movement only - occasional blinks and small head movements. Static camera.\",\n\"The family bursts into laughter while still seated on the sofa in the exact same positions. The children's faces light up with joy as they point excitedly at the TV screen with their right hands. The mother covers her mouth while laughing. The father's eyes crinkle with genuine amusement behind his glasses. Same lighting, same camera position, continuous from previous clip. Maintain all character details and clothing exactly.\"\n\n]",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "cb221145-b043-4560-8614-d353e69b1bf7",
+      "name": "Set Core Prompt & Actions5",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -6336,
+        -2368
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Combine core prompt and actions\nconst corePrompt = $input.first().json.core_prompt;\nconst actions = $input.first().json.clip_actions;\n\nreturn actions.map((action, i) => ({\n  json: {\n    prompt: `${corePrompt} ${action}`,\n    index: i\n  }\n}));"
+      },
+      "id": "f1633b24-fb88-418d-926f-a94f155bc32c",
+      "name": "Combine Core + Actions5",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -6128,
+        -2368
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "video",
+        "modelId": {
+          "__rl": true,
+          "value": "models/veo-3.0-generate-001",
+          "mode": "list",
+          "cachedResultName": "models/veo-3.0-generate-001"
+        },
+        "prompt": "={{ $json.prompt }}",
+        "options": {
+          "aspectRatio": "16:9"
+        }
+      },
+      "id": "5d8d1102-c62c-4696-9313-92b0021e133e",
+      "name": "Generate Video Clip (Gemini)3",
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        -5904,
+        -2368
+      ],
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "functionCode": "// Collect all video binary data from Gemini outputs\n// Prepare them for multipart/form-data upload to merge API\nconst items = $input.all();\n\nif (items.length < 2) {\n  throw new Error(`Need at least 2 videos to merge. Found: ${items.length}`);\n}\n\nconsole.log(`Collecting ${items.length} videos for merging...`);\n\n// Collect all binary data from items\nconst videoBinaries = {};\nconst videoMetadata = [];\n\nfor (let i = 0; i < items.length; i++) {\n  const item = items[i];\n  \n  // Find binary data (Gemini outputs binary in different formats)\n  let binaryData = null;\n  let binaryKey = null;\n  \n  // Check common binary property names\n  if (item.binary) {\n    const binaryKeys = Object.keys(item.binary);\n    if (binaryKeys.length > 0) {\n      binaryKey = binaryKeys[0]; // Use first available binary key\n      binaryData = item.binary[binaryKey];\n    }\n  }\n  \n  if (!binaryData) {\n    throw new Error(`No binary data found for video ${i + 1}. Available keys: ${Object.keys(item).join(', ')}`);\n  }\n  \n  // Validate binary data has content\n  const size = binaryData.fileSize || binaryData.data?.length || 0;\n  if (size === 0) {\n    throw new Error(`Video ${i + 1} is empty (0 bytes). Check that Gemini video generation succeeded.`);\n  }\n  \n  console.log(`Video ${i + 1}: ${size} bytes, MIME: ${binaryData.mimeType || 'video/mp4'}`);\n  \n  // Store binary with field name for multipart (file0, file1, file2, etc.)\n  // n8n expects binary data in the format it was received\n  videoBinaries[`file${i}`] = binaryData;\n  videoMetadata.push({\n    index: i,\n    size: size,\n    mimeType: binaryData.mimeType || 'video/mp4',\n    fileName: binaryData.fileName || `video_${i}.mp4`\n  });\n}\n\nconsole.log(`✓ Collected ${items.length} videos ready for multipart upload`);\n\n// Return single item with all binaries attached\nreturn [{\n  json: {\n    video_count: items.length,\n    message: `Ready to merge ${items.length} videos`,\n    videos: videoMetadata\n  },\n  binary: videoBinaries\n}];"
+      },
+      "id": "b5a7fea1-931f-47f6-bdee-7ed7cc17db10",
+      "name": "Collect Video Binaries",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        -5344,
+        -2816
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://vercel-ffmpeg-merge-api.vercel.app/api/merge",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": []
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {}
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "merged_video"
+            }
+          },
+          "timeout": 300000
+        }
+      },
+      "id": "c5331204-6d08-4d51-a169-5dca10aec2bf",
+      "name": "Merge Videos (Direct)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -4816,
+        -2848
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://vercel-ffmpeg-merge-api.vercel.app/api/merge",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": []
+        },
+        "sendBody": true,
+        "specifyBody": "multipart-form-data",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "merged_video"
+            }
+          },
+          "timeout": 300000
+        }
+      },
+      "id": "473d9857-9a64-4beb-866c-ed9ab349f7eb",
+      "name": "Merge Videos (Multipart)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -4704,
+        -3344
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "core-prompt",
+              "name": "core_prompt",
+              "value": "A middle-aged man with short brown hair, black rectangular glasses, clean-shaven face, wearing a royal blue casual button-up shirt. His wife has shoulder-length straight brown hair parted in the middle, wearing a forest green knit sweater. An 8-year-old boy with short dark brown hair wearing a bright red t-shirt with visible collar. A 6-year-old girl with long brown hair in a ponytail wearing a sunshine yellow dress with short sleeves. They are seated on a beige linen fabric sofa with visible texture and wooden legs. The living room has cream-colored matte walls. A traditional wooden coffee table with dark finish sits in front of the sofa. Soft golden evening light comes from a brass floor lamp positioned to the left, creating warm ambient illumination with soft shadows. The camera is positioned at eye level, 8 feet from the sofa, using a 35mm lens equivalent. Cinematic 24fps, warm color grading with enhanced golden tones, slight film grain. Consistent exposure and white balance throughout.",
+              "type": "string"
+            },
+            {
+              "id": "clip-actions",
+              "name": "clip_actions",
+              "value": "=[\"The family watches colorful cartoons on a 55-inch flat-screen TV mounted on the wall. All four members sit close together on the sofa, faces illuminated by the TV's soft glow. Their expressions are relaxed and content. The father has his arm around his wife's shoulder. The children sit between their parents, leaning slightly forward. Subtle ambient movement only - occasional blinks and small head movements. Static camera.\",\n\"The family bursts into laughter while still seated on the sofa in the exact same positions. The children's faces light up with joy as they point excitedly at the TV screen with their right hands. The mother covers her mouth while laughing. The father's eyes crinkle with genuine amusement behind his glasses. Same lighting, same camera position, continuous from previous clip. Maintain all character details and clothing exactly.\"]",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "9b3e6e1f-f507-448f-bbf7-bd7bffa0ceba",
+      "name": "Set Core Prompt and Actions4",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -5584,
+        -3344
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Combine core prompt and actions\nconst corePrompt = $input.first().json.core_prompt;\nconst actions = $input.first().json.clip_actions;\n\nreturn actions.map((action, i) => ({\n  json: {\n    prompt: `${corePrompt} ${action}`,\n    index: i\n  }\n}));"
+      },
+      "id": "48498504-ce56-4dac-8c38-d709ee79ef8e",
+      "name": "Combine Core and Actions4",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -5376,
+        -3344
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "video",
+        "modelId": {
+          "__rl": true,
+          "value": "models/veo-2.0-generate-001",
+          "mode": "list"
+        },
+        "prompt": "={{ $json.prompt }}",
+        "options": {
+          "aspectRatio": "16:9"
+        }
+      },
+      "id": "e53588b0-8857-4758-8e24-17987f553d12",
+      "name": "Generate Video Clip Gemini4",
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        -5152,
+        -3344
+      ],
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "functionCode": "// Collect all video binary data from Gemini outputs\n// Prepare them for multipart/form-data upload to merge API\nconst items = $input.all();\n\nif (items.length < 2) {\n  throw new Error(`Need at least 2 videos to merge. Found: ${items.length}`);\n}\n\nconsole.log(`Collecting ${items.length} videos for merging...`);\n\n// Collect all binary data from items\nconst videoBinaries = {};\nconst videoMetadata = [];\n\nfor (let i = 0; i < items.length; i++) {\n  const item = items[i];\n  \n  // Find binary data (Gemini outputs binary in different formats)\n  let binaryData = null;\n  let binaryKey = null;\n  \n  // Check common binary property names\n  if (item.binary) {\n    const binaryKeys = Object.keys(item.binary);\n    if (binaryKeys.length > 0) {\n      binaryKey = binaryKeys[0]; // Use first available binary key\n      binaryData = item.binary[binaryKey];\n    }\n  }\n  \n  if (!binaryData) {\n    throw new Error(`No binary data found for video ${i + 1}. Available keys: ${Object.keys(item).join(', ')}`);\n  }\n  \n  // Validate binary data has content\n  const size = binaryData.fileSize || binaryData.data?.length || 0;\n  if (size === 0) {\n    throw new Error(`Video ${i + 1} is empty (0 bytes). Check that Gemini video generation succeeded.`);\n  }\n  \n  console.log(`Video ${i + 1}: ${size} bytes, MIME: ${binaryData.mimeType || 'video/mp4'}`);\n  \n  // Store binary with field name for multipart (file0, file1, file2, etc.)\n  // n8n expects binary data in the format it was received\n  videoBinaries[`file${i}`] = binaryData;\n  videoMetadata.push({\n    index: i,\n    size: size,\n    mimeType: binaryData.mimeType || 'video/mp4',\n    fileName: binaryData.fileName || `video_${i}.mp4`\n  });\n}\n\nconsole.log(`✓ Collected ${items.length} videos ready for multipart upload`);\n\n// Return single item with all binaries attached\nreturn [{\n  json: {\n    video_count: items.length,\n    message: `Ready to merge ${items.length} videos`,\n    videos: videoMetadata\n  },\n  binary: videoBinaries\n}];"
+      },
+      "id": "d14b47ad-c16f-44c6-b389-024ee87ab2c6",
+      "name": "Collect Video Binaries2",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        -4928,
+        -3344
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "core-prompt",
+              "name": "core_prompt",
+              "value": "A middle-aged man with short brown hair, black rectangular glasses, clean-shaven face, wearing a royal blue casual button-up shirt. His wife has shoulder-length straight brown hair parted in the middle, wearing a forest green knit sweater. An 8-year-old boy with short dark brown hair wearing a bright red t-shirt with visible collar. A 6-year-old girl with long brown hair in a ponytail wearing a sunshine yellow dress with short sleeves. They are seated on a beige linen fabric sofa with visible texture and wooden legs. The living room has cream-colored matte walls. A traditional wooden coffee table with dark finish sits in front of the sofa. Soft golden evening light comes from a brass floor lamp positioned to the left, creating warm ambient illumination with soft shadows. The camera is positioned at eye level, 8 feet from the sofa, using a 35mm lens equivalent. Cinematic 24fps, warm color grading with enhanced golden tones, slight film grain. Consistent exposure and white balance throughout.",
+              "type": "string"
+            },
+            {
+              "id": "clip-actions",
+              "name": "clip_actions",
+              "value": "=[\"The family watches colorful cartoons on a 55-inch flat-screen TV mounted on the wall. All four members sit close together on the sofa, faces illuminated by the TV's soft glow. Their expressions are relaxed and content. The father has his arm around his wife's shoulder. The children sit between their parents, leaning slightly forward. Subtle ambient movement only - occasional blinks and small head movements. Static camera.\",\n\"The family bursts into laughter while still seated on the sofa in the exact same positions. The children's faces light up with joy as they point excitedly at the TV screen with their right hands. The mother covers her mouth while laughing. The father's eyes crinkle with genuine amusement behind his glasses. Same lighting, same camera position, continuous from previous clip. Maintain all character details and clothing exactly.\"\n\n]",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "afcae5db-cfb3-491c-a7ab-7da702964ca7",
+      "name": "Set Core Prompt and Actions",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -6288,
+        -3120
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Combine core prompt and actions\nconst corePrompt = $input.first().json.core_prompt;\nconst actions = $input.first().json.clip_actions;\n\nreturn actions.map((action, i) => ({\n  json: {\n    prompt: `${corePrompt} ${action}`,\n    index: i\n  }\n}));"
+      },
+      "id": "1bf6afda-dad1-4edd-9c1a-d6377c612284",
+      "name": "Combine Core and Actions",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -6080,
+        -3120
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "video",
+        "modelId": {
+          "__rl": true,
+          "value": "models/veo-3.0-generate-001",
+          "mode": "list",
+          "cachedResultName": "models/veo-3.0-generate-001"
+        },
+        "prompt": "={{ $json.prompt }}",
+        "options": {
+          "aspectRatio": "16:9"
+        }
+      },
+      "id": "7c1a92c5-373e-4a2b-85ed-d863ee6f9473",
+      "name": "Generate Video Clip Gemini",
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        -5856,
+        -3120
+      ],
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:3000/api/merge",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": []
+        },
+        "sendBody": true,
+        "specifyBody": "multipart-form-data",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "merged_video"
+            }
+          },
+          "timeout": 300000
+        }
+      },
+      "id": "fd995216-29e9-4316-81cf-2913c92af35d",
+      "name": "Merge Videos (Local API)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -5408,
+        -3120
+      ]
+    },
+    {
+      "parameters": {
+        "functionCode": "// Verify merged video was received\nconst item = $input.item;\n\nif (!item.binary || !item.binary.merged_video) {\n  throw new Error('No merged video received from API. Check server logs.');\n}\n\nconst mergedVideo = item.binary.merged_video;\nconst size = mergedVideo.fileSize || mergedVideo.data?.length || 0;\n\nif (size === 0) {\n  throw new Error('Merged video is empty (0 bytes). Check merge API logs.');\n}\n\nconsole.log(`✓ Merged video received: ${(size / 1024 / 1024).toFixed(2)} MB`);\n\nreturn [{\n  json: {\n    success: true,\n    merged_video_size: size,\n    merged_video_size_mb: (size / 1024 / 1024).toFixed(2),\n    message: 'Videos merged successfully!',\n    timestamp: new Date().toISOString()\n  },\n  binary: {\n    merged_video: mergedVideo\n  }\n}];"
+      },
+      "id": "48120c12-1bd9-4b53-aed3-585fd054bcff",
+      "name": "Verify Merged Video",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        -5200,
+        -3120
+      ]
+    },
+    {
+      "parameters": {
+        "functionCode": "// Collect all video binary data from Gemini outputs\n// Prepare them for multipart/form-data upload to local merge API\nconst items = $input.all();\n\nif (items.length < 2) {\n  throw new Error(`Need at least 2 videos to merge. Found: ${items.length}`);\n}\n\nconsole.log(`Collecting ${items.length} videos for merging...`);\n\n// Collect all binary data from items\nconst videoBinaries = {};\nconst videoMetadata = [];\n\nfor (let i = 0; i < items.length; i++) {\n  const item = items[i];\n  \n  // Find binary data (Gemini outputs binary in different formats)\n  let binaryData = null;\n  let binaryKey = null;\n  \n  // Check common binary property names\n  if (item.binary) {\n    const binaryKeys = Object.keys(item.binary);\n    if (binaryKeys.length > 0) {\n      binaryKey = binaryKeys[0]; // Use first available binary key\n      binaryData = item.binary[binaryKey];\n    }\n  }\n  \n  if (!binaryData) {\n    throw new Error(`No binary data found for video ${i + 1}. Available keys: ${Object.keys(item).join(', ')}`);\n  }\n  \n  // Validate binary data has content\n  const size = binaryData.fileSize || binaryData.data?.length || 0;\n  if (size === 0) {\n    throw new Error(`Video ${i + 1} is empty (0 bytes). Check that Gemini video generation succeeded.`);\n  }\n  \n  console.log(`Video ${i + 1}: ${size} bytes, MIME: ${binaryData.mimeType || 'video/mp4'}`);\n  \n  // Store binary with field name for multipart (file0, file1, file2, etc.)\n  // n8n expects binary data in the format it was received\n  videoBinaries[`file${i}`] = binaryData;\n  videoMetadata.push({\n    index: i,\n    size: size,\n    mimeType: binaryData.mimeType || 'video/mp4',\n    fileName: binaryData.fileName || `video_${i}.mp4`\n  });\n}\n\nconsole.log(`✓ Collected ${items.length} videos ready for multipart upload`);\n\n// Return single item with all binaries attached\nreturn [{\n  json: {\n    video_count: items.length,\n    message: `Ready to merge ${items.length} videos`,\n    videos: videoMetadata\n  },\n  binary: videoBinaries\n}];"
+      },
+      "id": "3843204b-1dd3-4a0d-9712-1033a2e599bc",
+      "name": "Collect Video Binaries1",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        -5632,
+        -3120
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "core-prompt",
+              "name": "core_prompt",
+              "value": "A middle-aged man with short brown hair, black rectangular glasses, clean-shaven face, wearing a royal blue casual button-up shirt. His wife has shoulder-length straight brown hair parted in the middle, wearing a forest green knit sweater. An 8-year-old boy with short dark brown hair wearing a bright red t-shirt with visible collar. A 6-year-old girl with long brown hair in a ponytail wearing a sunshine yellow dress with short sleeves. They are seated on a beige linen fabric sofa with visible texture and wooden legs. The living room has cream-colored matte walls. A traditional wooden coffee table with dark finish sits in front of the sofa. Soft golden evening light comes from a brass floor lamp positioned to the left, creating warm ambient illumination with soft shadows. The camera is positioned at eye level, 8 feet from the sofa, using a 35mm lens equivalent. Cinematic 24fps, warm color grading with enhanced golden tones, slight film grain. Consistent exposure and white balance throughout.",
+              "type": "string"
+            },
+            {
+              "id": "clip-actions",
+              "name": "clip_actions",
+              "value": "=[\"The family watches colorful cartoons on a 55-inch flat-screen TV mounted on the wall. All four members sit close together on the sofa, faces illuminated by the TV's soft glow. Their expressions are relaxed and content. The father has his arm around his wife's shoulder. The children sit between their parents, leaning slightly forward. Subtle ambient movement only - occasional blinks and small head movements. Static camera.\",\"The family bursts into laughter while still seated on the sofa in the exact same positions. The children's faces light up with joy as they point excitedly at the TV screen with their right hands. The mother covers her mouth while laughing. The father's eyes crinkle with genuine amusement behind his glasses. Same lighting, same camera position, continuous from previous clip. Maintain all character details and clothing exactly.\",\"The family begins to stand up from the sofa, rising together in unison. The children jump up first with arms raised, clapping their hands above their heads. The parents follow, standing and clapping at chest level. All four faces show excitement and joy. The father's blue shirt and mother's green sweater remain clearly visible. Same golden lamp light, same cream walls, same camera angle. Clothing and character features unchanged.\",\"The family forms a tight group hug standing in front of the beige sofa. The parents embrace from the sides while the children hug from the front, arms wrapped around everyone. All four faces are visible and smiling warmly. The father's glasses catch a subtle glint from the floor lamp. The mother's green sweater and children's red and yellow clothing are clearly visible. Same warm golden lighting from the floor lamp, same cream walls, same eye-level camera angle. Complete visual continuity with all previous clips.\"]",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "210b2315-f17d-4f49-a00e-3795ef182ee0",
+      "name": "Set Core Prompt and Actions1",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -5072,
+        -2976
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Combine core prompt and actions\nconst corePrompt = $input.first().json.core_prompt;\nconst actions = $input.first().json.clip_actions;\n\nreturn actions.map((action, i) => ({\n  json: {\n    prompt: `${corePrompt} ${action}`,\n    index: i\n  }\n}));"
+      },
+      "id": "6dc459e6-bdff-4f6c-a4dd-e4a6b81f43a7",
+      "name": "Combine Core and Actions1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4864,
+        -2976
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "video",
+        "modelId": {
+          "__rl": true,
+          "value": "models/veo-2.0-generate-001",
+          "mode": "list"
+        },
+        "prompt": "={{ $json.prompt }}",
+        "options": {
+          "aspectRatio": "16:9"
+        }
+      },
+      "id": "328e8e3c-7dc1-4242-be80-73a250a75696",
+      "name": "Generate Video Clip Gemini1",
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        -4640,
+        -2976
+      ],
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "functionCode": "// Collect all video binary data from Gemini outputs\n// Prepare them for multipart/form-data upload to merge API\nconst items = $input.all();\n\nif (items.length < 2) {\n  throw new Error(`Need at least 2 videos to merge. Found: ${items.length}`);\n}\n\nconsole.log(`Collecting ${items.length} videos for merging...`);\n\n// Collect all binary data from items\nconst videoBinaries = {};\nconst videoMetadata = [];\n\nfor (let i = 0; i < items.length; i++) {\n  const item = items[i];\n  \n  // Find binary data (Gemini outputs binary in different formats)\n  let binaryData = null;\n  let binaryKey = null;\n  \n  // Check common binary property names\n  if (item.binary) {\n    const binaryKeys = Object.keys(item.binary);\n    if (binaryKeys.length > 0) {\n      binaryKey = binaryKeys[0]; // Use first available binary key\n      binaryData = item.binary[binaryKey];\n    }\n  }\n  \n  if (!binaryData) {\n    throw new Error(`No binary data found for video ${i + 1}. Available keys: ${Object.keys(item).join(', ')}`);\n  }\n  \n  // Validate binary data has content\n  const size = binaryData.fileSize || binaryData.data?.length || 0;\n  if (size === 0) {\n    throw new Error(`Video ${i + 1} is empty (0 bytes). Check that Gemini video generation succeeded.`);\n  }\n  \n  console.log(`Video ${i + 1}: ${size} bytes, MIME: ${binaryData.mimeType || 'video/mp4'}`);\n  \n  // Store binary with field name for multipart (file0, file1, file2, etc.)\n  // n8n expects binary data in the format it was received\n  videoBinaries[`file${i}`] = binaryData;\n  videoMetadata.push({\n    index: i,\n    size: size,\n    mimeType: binaryData.mimeType || 'video/mp4',\n    fileName: binaryData.fileName || `video_${i}.mp4`\n  });\n}\n\nconsole.log(`✓ Collected ${items.length} videos ready for multipart upload`);\n\n// Return single item with all binaries attached\nreturn [{\n  json: {\n    video_count: items.length,\n    message: `Ready to merge ${items.length} videos`,\n    videos: videoMetadata\n  },\n  binary: videoBinaries\n}];"
+      },
+      "id": "83c33177-7f1e-41b8-8563-e2e3581322d9",
+      "name": "Collect Video Binaries3",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        -4416,
+        -2976
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:3000/api/merge",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": []
+        },
+        "sendBody": true,
+        "specifyBody": "multipart-form-data",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "merged_video"
+            }
+          },
+          "timeout": 300000
+        }
+      },
+      "id": "05eceb31-1384-4c73-994d-b97fa1f886a5",
+      "name": "Merge Videos (Multipart)1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -4192,
+        -2976
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "core-prompt",
+              "name": "core_prompt",
+              "value": "A middle-aged man with short brown hair, black rectangular glasses, clean-shaven face, wearing a royal blue casual button-up shirt. His wife has shoulder-length straight brown hair parted in the middle, wearing a forest green knit sweater. An 8-year-old boy with short dark brown hair wearing a bright red t-shirt with visible collar. A 6-year-old girl with long brown hair in a ponytail wearing a sunshine yellow dress with short sleeves. They are seated on a beige linen fabric sofa with visible texture and wooden legs. The living room has cream-colored matte walls. A traditional wooden coffee table with dark finish sits in front of the sofa. Soft golden evening light comes from a brass floor lamp positioned to the left, creating warm ambient illumination with soft shadows. The camera is positioned at eye level, 8 feet from the sofa, using a 35mm lens equivalent. Cinematic 24fps, warm color grading with enhanced golden tones, slight film grain. Consistent exposure and white balance throughout.",
+              "type": "string"
+            },
+            {
+              "id": "clip-actions",
+              "name": "clip_actions",
+              "value": "=[\"The family watches colorful cartoons on a 55-inch flat-screen TV mounted on the wall. All four members sit close together on the sofa, faces illuminated by the TV's soft glow. Their expressions are relaxed and content. The father has his arm around his wife's shoulder. The children sit between their parents, leaning slightly forward. Subtle ambient movement only - occasional blinks and small head movements. Static camera.\",\n\"The family bursts into laughter while still seated on the sofa in the exact same positions. The children's faces light up with joy as they point excitedly at the TV screen with their right hands. The mother covers her mouth while laughing. The father's eyes crinkle with genuine amusement behind his glasses. Same lighting, same camera position, continuous from previous clip. Maintain all character details and clothing exactly.\"]",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "7a8e6e11-6b39-42de-8a19-60d7e8e161ec",
+      "name": "Set Core Prompt and Actions2",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -5920,
+        -3536
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Combine core prompt and actions\nconst corePrompt = $input.first().json.core_prompt;\nconst actions = $input.first().json.clip_actions;\n\nreturn actions.map((action, i) => ({\n  json: {\n    prompt: `${corePrompt} ${action}`,\n    index: i\n  }\n}));"
+      },
+      "id": "b621d18e-afe1-44ea-83d9-56a8d82b6b41",
+      "name": "Combine Core and Actions2",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -5712,
+        -3536
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "video",
+        "modelId": {
+          "__rl": true,
+          "value": "models/veo-3.0-generate-001",
+          "mode": "list",
+          "cachedResultName": "models/veo-3.0-generate-001"
+        },
+        "prompt": "={{ $json.prompt }}",
+        "options": {
+          "aspectRatio": "16:9"
+        }
+      },
+      "id": "e6affcb0-dfbc-41aa-9a06-2f2b4c28e4f1",
+      "name": "Generate Video Clip Gemini2",
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        -5488,
+        -3536
+      ],
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "functionCode": "// Collect all video binary data from Gemini outputs\n// Prepare them for multipart/form-data upload to local merge API\nconst items = $input.all();\n\nif (items.length < 2) {\n  throw new Error(`Need at least 2 videos to merge. Found: ${items.length}`);\n}\n\nconsole.log(`Collecting ${items.length} videos for merging...`);\n\n// Collect all binary data from items\nconst videoBinaries = {};\nconst videoMetadata = [];\n\nfor (let i = 0; i < items.length; i++) {\n  const item = items[i];\n  \n  // Find binary data (Gemini outputs binary in different formats)\n  let binaryData = null;\n  let binaryKey = null;\n  \n  // Check common binary property names\n  if (item.binary) {\n    const binaryKeys = Object.keys(item.binary);\n    if (binaryKeys.length > 0) {\n      binaryKey = binaryKeys[0]; // Use first available binary key\n      binaryData = item.binary[binaryKey];\n    }\n  }\n  \n  if (!binaryData) {\n    throw new Error(`No binary data found for video ${i + 1}. Available keys: ${Object.keys(item).join(', ')}`);\n  }\n  \n  // Validate binary data has content\n  const size = binaryData.fileSize || binaryData.data?.length || 0;\n  if (size === 0) {\n    throw new Error(`Video ${i + 1} is empty (0 bytes). Check that Gemini video generation succeeded.`);\n  }\n  \n  console.log(`Video ${i + 1}: ${size} bytes, MIME: ${binaryData.mimeType || 'video/mp4'}`);\n  \n  // Store binary with field name for multipart (file0, file1, file2, etc.)\n  // n8n expects binary data in the format it was received\n  videoBinaries[`file${i}`] = binaryData;\n  videoMetadata.push({\n    index: i,\n    size: size,\n    mimeType: binaryData.mimeType || 'video/mp4',\n    fileName: binaryData.fileName || `video_${i}.mp4`\n  });\n}\n\nconsole.log(`✓ Collected ${items.length} videos ready for multipart upload`);\n\n// Return single item with all binaries attached\nreturn [{\n  json: {\n    video_count: items.length,\n    message: `Ready to merge ${items.length} videos`,\n    videos: videoMetadata\n  },\n  binary: videoBinaries\n}];"
+      },
+      "id": "a63ef85d-51c3-4d3d-9b10-f0eb0549c45b",
+      "name": "Collect Video Binaries4",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        -5264,
+        -3536
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:3000/api/merge",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": []
+        },
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "file0",
+              "value": "={{ $binary.file0 }}"
+            },
+            {
+              "name": "file1",
+              "value": "={{ $binary.file1 }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "merged_video"
+            }
+          },
+          "timeout": 300000
+        }
+      },
+      "id": "a7042a1a-f43c-4aa1-90a1-6323fbb45f25",
+      "name": "Merge Videos (Local API)1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -5040,
+        -3536
+      ]
+    },
+    {
+      "parameters": {
+        "functionCode": "// Verify merged video was received\nconst item = $input.item;\n\nif (!item.binary || !item.binary.merged_video) {\n  throw new Error('No merged video received from API. Check server logs.');\n}\n\nconst mergedVideo = item.binary.merged_video;\nconst size = mergedVideo.fileSize || mergedVideo.data?.length || 0;\n\nif (size === 0) {\n  throw new Error('Merged video is empty (0 bytes). Check merge API logs.');\n}\n\nconsole.log(`✓ Merged video received: ${(size / 1024 / 1024).toFixed(2)} MB`);\n\nreturn [{\n  json: {\n    success: true,\n    merged_video_size: size,\n    merged_video_size_mb: (size / 1024 / 1024).toFixed(2),\n    message: 'Videos merged successfully!',\n    timestamp: new Date().toISOString()\n  },\n  binary: {\n    merged_video: mergedVideo\n  }\n}];"
+      },
+      "id": "b26bd017-31fc-41f0-829a-343d6e6c1430",
+      "name": "Verify Merged Video1",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        -4832,
+        -3536
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "core-prompt",
+              "name": "core_prompt",
+              "value": "A middle-aged man with short brown hair, black rectangular glasses, clean-shaven face, wearing a royal blue casual button-up shirt. His wife has shoulder-length straight brown hair parted in the middle, wearing a forest green knit sweater. An 8-year-old boy with short dark brown hair wearing a bright red t-shirt with visible collar. A 6-year-old girl with long brown hair in a ponytail wearing a sunshine yellow dress with short sleeves. They are seated on a beige linen fabric sofa with visible texture and wooden legs. The living room has cream-colored matte walls. A traditional wooden coffee table with dark finish sits in front of the sofa. Soft golden evening light comes from a brass floor lamp positioned to the left, creating warm ambient illumination with soft shadows. The camera is positioned at eye level, 8 feet from the sofa, using a 35mm lens equivalent. Cinematic 24fps, warm color grading with enhanced golden tones, slight film grain. Consistent exposure and white balance throughout.",
+              "type": "string"
+            },
+            {
+              "id": "clip-actions",
+              "name": "clip_actions",
+              "value": "=[\"The family watches colorful cartoons on a 55-inch flat-screen TV mounted on the wall. All four members sit close together on the sofa, faces illuminated by the TV's soft glow. Their expressions are relaxed and content. The father has his arm around his wife's shoulder. The children sit between their parents, leaning slightly forward. Subtle ambient movement only - occasional blinks and small head movements. Static camera.\",\"The family bursts into laughter while still seated on the sofa in the exact same positions. The children's faces light up with joy as they point excitedly at the TV screen with their right hands. The mother covers her mouth while laughing. The father's eyes crinkle with genuine amusement behind his glasses. Same lighting, same camera position, continuous from previous clip. Maintain all character details and clothing exactly.\",\"The family begins to stand up from the sofa, rising together in unison. The children jump up first with arms raised, clapping their hands above their heads. The parents follow, standing and clapping at chest level. All four faces show excitement and joy. The father's blue shirt and mother's green sweater remain clearly visible. Same golden lamp light, same cream walls, same camera angle. Clothing and character features unchanged.\",\"The family forms a tight group hug standing in front of the beige sofa. The parents embrace from the sides while the children hug from the front, arms wrapped around everyone. All four faces are visible and smiling warmly. The father's glasses catch a subtle glint from the floor lamp. The mother's green sweater and children's red and yellow clothing are clearly visible. Same warm golden lighting from the floor lamp, same cream walls, same eye-level camera angle. Complete visual continuity with all previous clips.\"]",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "6d4afe70-f07a-4ca5-b69f-ba5ba25235fc",
+      "name": "Set Core Prompt and Actions3",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -5968,
+        -3792
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Combine core prompt and actions\nconst corePrompt = $input.first().json.core_prompt;\nconst actions = $input.first().json.clip_actions;\n\nreturn actions.map((action, i) => ({\n  json: {\n    prompt: `${corePrompt} ${action}`,\n    index: i\n  }\n}));"
+      },
+      "id": "c1ae1977-2c10-4ed3-80eb-4ab2084d24a4",
+      "name": "Combine Core and Actions3",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -5760,
+        -3792
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "video",
+        "modelId": {
+          "__rl": true,
+          "value": "models/veo-2.0-generate-001",
+          "mode": "list"
+        },
+        "prompt": "={{ $json.prompt }}",
+        "options": {
+          "aspectRatio": "16:9"
+        }
+      },
+      "id": "4b6bffe4-ae98-4f07-8262-6c01b7d929ac",
+      "name": "Generate Video Clip Gemini3",
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        -5536,
+        -3792
+      ],
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "functionCode": "// Collect all video binary data from Gemini outputs\n// Prepare them for multipart/form-data upload to merge API\nconst items = $input.all();\n\nif (items.length < 2) {\n  throw new Error(`Need at least 2 videos to merge. Found: ${items.length}`);\n}\n\nconsole.log(`Collecting ${items.length} videos for merging...`);\n\n// Collect all binary data from items\nconst videoBinaries = {};\nconst videoMetadata = [];\n\nfor (let i = 0; i < items.length; i++) {\n  const item = items[i];\n  \n  // Find binary data (Gemini outputs binary in different formats)\n  let binaryData = null;\n  let binaryKey = null;\n  \n  // Check common binary property names\n  if (item.binary) {\n    const binaryKeys = Object.keys(item.binary);\n    if (binaryKeys.length > 0) {\n      binaryKey = binaryKeys[0]; // Use first available binary key\n      binaryData = item.binary[binaryKey];\n    }\n  }\n  \n  if (!binaryData) {\n    throw new Error(`No binary data found for video ${i + 1}. Available keys: ${Object.keys(item).join(', ')}`);\n  }\n  \n  // Validate binary data has content\n  const size = binaryData.fileSize || binaryData.data?.length || 0;\n  if (size === 0) {\n    throw new Error(`Video ${i + 1} is empty (0 bytes). Check that Gemini video generation succeeded.`);\n  }\n  \n  console.log(`Video ${i + 1}: ${size} bytes, MIME: ${binaryData.mimeType || 'video/mp4'}`);\n  \n  // Store binary with field name for multipart (file0, file1, file2, etc.)\n  // n8n expects binary data in the format it was received\n  videoBinaries[`file${i}`] = binaryData;\n  videoMetadata.push({\n    index: i,\n    size: size,\n    mimeType: binaryData.mimeType || 'video/mp4',\n    fileName: binaryData.fileName || `video_${i}.mp4`\n  });\n}\n\nconsole.log(`✓ Collected ${items.length} videos ready for multipart upload`);\n\n// Return single item with all binaries attached\nreturn [{\n  json: {\n    video_count: items.length,\n    message: `Ready to merge ${items.length} videos`,\n    videos: videoMetadata\n  },\n  binary: videoBinaries\n}];"
+      },
+      "id": "b36b5698-49f0-4e4e-976c-0a4ce3340c86",
+      "name": "Collect Video Binaries5",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        -5312,
+        -3792
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:3000/api/merge",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": []
+        },
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "file0",
+              "value": "={{ $binary.file0 }}"
+            },
+            {
+              "name": "file1",
+              "value": "={{ $binary.file1 }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "merged_video"
+            }
+          },
+          "timeout": 300000
+        }
+      },
+      "id": "6b32d797-ecd2-40ff-8e45-fb6696d77c20",
+      "name": "Merge Videos (Multipart)2",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -5088,
+        -3792
+      ]
+    },
+    {
+      "parameters": {
+        "functionCode": "// Convert all video binaries to base64 for reliable transmission\n// This avoids multipart form data issues in n8n\nconst items = $input.all();\n\nif (items.length < 2) {\n  throw new Error(`Need at least 2 videos to merge. Found: ${items.length}`);\n}\n\nconsole.log(`Converting ${items.length} videos to base64 for merging...`);\n\n// Convert all videos to base64\nconst base64Videos = [];\n\nfor (let i = 0; i < items.length; i++) {\n  const item = items[i];\n  \n  // Find binary data\n  let binaryData = null;\n  let binaryKey = null;\n  \n  if (item.binary) {\n    const binaryKeys = Object.keys(item.binary);\n    if (binaryKeys.length > 0) {\n      binaryKey = binaryKeys[0];\n      binaryData = item.binary[binaryKey];\n    }\n  }\n  \n  if (!binaryData) {\n    throw new Error(`No binary data found for video ${i + 1}`);\n  }\n  \n  // Extract base64 from n8n binary format\n  let base64String = null;\n  \n  // n8n stores binary data in different formats\n  if (binaryData.data && typeof binaryData.data === 'string') {\n    // Already a base64 string, remove data URL prefix if present\n    base64String = binaryData.data.replace(/^data:.*?;base64,/, '');\n  } else if (binaryData.data && Buffer.isBuffer(binaryData.data)) {\n    // Convert Buffer to base64\n    base64String = binaryData.data.toString('base64');\n  } else if (typeof binaryData === 'string') {\n    base64String = binaryData.replace(/^data:.*?;base64,/, '');\n  } else {\n    // Try to get data from the binary object\n    const data = binaryData.data || binaryData;\n    if (Buffer.isBuffer(data)) {\n      base64String = data.toString('base64');\n    } else if (typeof data === 'string') {\n      base64String = data.replace(/^data:.*?;base64,/, '');\n    } else {\n      throw new Error(`Cannot extract base64 from video ${i + 1}. Binary structure: ${JSON.stringify(Object.keys(binaryData))}`);\n    }\n  }\n  \n  if (!base64String || base64String.length === 0) {\n    throw new Error(`Video ${i + 1} base64 data is empty`);\n  }\n  \n  console.log(`Video ${i + 1}: ${base64String.length} base64 characters`);\n  base64Videos.push(base64String);\n}\n\nconsole.log(`✓ Converted ${items.length} videos to base64, ready for merge API`);\n\n// Return single item with all base64 videos\nreturn [{\n  json: {\n    inputBase64: base64Videos,\n    outputFormat: \"mp4\",\n    video_count: items.length,\n    message: `Ready to merge ${items.length} videos`\n  }\n}];"
+      },
+      "id": "f1c8f182-ada7-4ff1-9ef4-05609a8163f5",
+      "name": "Convert Videos to Base64",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        -5248,
+        -4000
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "core-prompt",
+              "name": "core_prompt",
+              "value": "A middle-aged man with short brown hair, black rectangular glasses, clean-shaven face, wearing a royal blue casual button-up shirt. His wife has shoulder-length straight brown hair parted in the middle, wearing a forest green knit sweater. An 8-year-old boy with short dark brown hair wearing a bright red t-shirt with visible collar. A 6-year-old girl with long brown hair in a ponytail wearing a sunshine yellow dress with short sleeves. They are seated on a beige linen fabric sofa with visible texture and wooden legs. The living room has cream-colored matte walls. A traditional wooden coffee table with dark finish sits in front of the sofa. Soft golden evening light comes from a brass floor lamp positioned to the left, creating warm ambient illumination with soft shadows. The camera is positioned at eye level, 8 feet from the sofa, using a 35mm lens equivalent. Cinematic 24fps, warm color grading with enhanced golden tones, slight film grain. Consistent exposure and white balance throughout.",
+              "type": "string"
+            },
+            {
+              "id": "clip-actions",
+              "name": "clip_actions",
+              "value": "=[\"The family watches colorful cartoons on a 55-inch flat-screen TV mounted on the wall. All four members sit close together on the sofa, faces illuminated by the TV's soft glow. Their expressions are relaxed and content. The father has his arm around his wife's shoulder. The children sit between their parents, leaning slightly forward. Subtle ambient movement only - occasional blinks and small head movements. Static camera.\",\"The family bursts into laughter while still seated on the sofa in the exact same positions. The children's faces light up with joy as they point excitedly at the TV screen with their right hands. The mother covers her mouth while laughing. The father's eyes crinkle with genuine amusement behind his glasses. Same lighting, same camera position, continuous from previous clip. Maintain all character details and clothing exactly.\",\"The family begins to stand up from the sofa, rising together in unison. The children jump up first with arms raised, clapping their hands above their heads. The parents follow, standing and clapping at chest level. All four faces show excitement and joy. The father's blue shirt and mother's green sweater remain clearly visible. Same golden lamp light, same cream walls, same camera angle. Clothing and character features unchanged.\",\"The family forms a tight group hug standing in front of the beige sofa. The parents embrace from the sides while the children hug from the front, arms wrapped around everyone. All four faces are visible and smiling warmly. The father's glasses catch a subtle glint from the floor lamp. The mother's green sweater and children's red and yellow clothing are clearly visible. Same warm golden lighting from the floor lamp, same cream walls, same eye-level camera angle. Complete visual continuity with all previous clips.\"]",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "f0219939-d9c3-4e7f-95be-72ad01790bc0",
+      "name": "Set Core Prompt and Actions5",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -5904,
+        -4000
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Combine core prompt and actions\nconst corePrompt = $input.first().json.core_prompt;\nconst actions = $input.first().json.clip_actions;\n\nreturn actions.map((action, i) => ({\n  json: {\n    prompt: `${corePrompt} ${action}`,\n    index: i\n  }\n}));"
+      },
+      "id": "2f04d5b4-4627-40b8-aa2e-e21b87597542",
+      "name": "Combine Core and Actions5",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -5696,
+        -4000
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "video",
+        "modelId": {
+          "__rl": true,
+          "value": "models/veo-2.0-generate-001",
+          "mode": "list"
+        },
+        "prompt": "={{ $json.prompt }}",
+        "options": {
+          "aspectRatio": "16:9"
+        }
+      },
+      "id": "e4f6a5c3-925f-4c78-afc7-e4d46e31d20d",
+      "name": "Generate Video Clip Gemini5",
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        -5472,
+        -4000
+      ],
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:3000/api/merge",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ inputBase64: $json.inputBase64, outputFormat: $json.outputFormat }) }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "merged_video"
+            }
+          },
+          "timeout": 300000
+        }
+      },
+      "id": "a7d74bc1-b104-4e4a-8010-a15d68d10b69",
+      "name": "Merge Videos (Local API)2",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -5024,
+        -4000
+      ]
+    },
+    {
+      "parameters": {
+        "functionCode": "// Verify merged video was received\nconst item = $input.item;\n\nif (!item.binary || !item.binary.merged_video) {\n  throw new Error('No merged video received from API. Check server logs.');\n}\n\nconst mergedVideo = item.binary.merged_video;\nconst size = mergedVideo.fileSize || mergedVideo.data?.length || 0;\n\nif (size === 0) {\n  throw new Error('Merged video is empty (0 bytes). Check merge API logs.');\n}\n\nconsole.log(`✓ Merged video received: ${(size / 1024 / 1024).toFixed(2)} MB`);\n\nreturn [{\n  json: {\n    success: true,\n    merged_video_size: size,\n    merged_video_size_mb: (size / 1024 / 1024).toFixed(2),\n    message: 'Videos merged successfully!',\n    timestamp: new Date().toISOString()\n  },\n  binary: {\n    merged_video: mergedVideo\n  }\n}];"
+      },
+      "id": "37bfe0cb-d68b-49e3-8625-b94d86d213a6",
+      "name": "Verify Merged Video2",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        -4816,
+        -4000
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "core-prompt",
+              "name": "core_prompt",
+              "value": "A middle-aged man with short brown hair, black rectangular glasses, clean-shaven face, wearing a royal blue casual button-up shirt. His wife has shoulder-length straight brown hair parted in the middle, wearing a forest green knit sweater. An 8-year-old boy with short dark brown hair wearing a bright red t-shirt with visible collar. A 6-year-old girl with long brown hair in a ponytail wearing a sunshine yellow dress with short sleeves. They are seated on a beige linen fabric sofa with visible texture and wooden legs. The living room has cream-colored matte walls. A traditional wooden coffee table with dark finish sits in front of the sofa. Soft golden evening light comes from a brass floor lamp positioned to the left, creating warm ambient illumination with soft shadows. The camera is positioned at eye level, 8 feet from the sofa, using a 35mm lens equivalent. Cinematic 24fps, warm color grading with enhanced golden tones, slight film grain. Consistent exposure and white balance throughout.",
+              "type": "string"
+            },
+            {
+              "id": "clip-actions",
+              "name": "clip_actions",
+              "value": "=[\"The family watches colorful cartoons on a 55-inch flat-screen TV mounted on the wall. All four members sit close together on the sofa, faces illuminated by the TV's soft glow. Their expressions are relaxed and content. The father has his arm around his wife's shoulder. The children sit between their parents, leaning slightly forward. Subtle ambient movement only - occasional blinks and small head movements. Static camera.\",\"The family bursts into laughter while still seated on the sofa in the exact same positions. The children's faces light up with joy as they point excitedly at the TV screen with their right hands. The mother covers her mouth while laughing. The father's eyes crinkle with genuine amusement behind his glasses. Same lighting, same camera position, continuous from previous clip. Maintain all character details and clothing exactly.\",\"The family begins to stand up from the sofa, rising together in unison. The children jump up first with arms raised, clapping their hands above their heads. The parents follow, standing and clapping at chest level. All four faces show excitement and joy. The father's blue shirt and mother's green sweater remain clearly visible. Same golden lamp light, same cream walls, same camera angle. Clothing and character features unchanged.\",\"The family forms a tight group hug standing in front of the beige sofa. The parents embrace from the sides while the children hug from the front, arms wrapped around everyone. All four faces are visible and smiling warmly. The father's glasses catch a subtle glint from the floor lamp. The mother's green sweater and children's red and yellow clothing are clearly visible. Same warm golden lighting from the floor lamp, same cream walls, same eye-level camera angle. Complete visual continuity with all previous clips.\"]",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "8c919f77-97b3-4097-8a94-8b20e5710559",
+      "name": "Set Core Prompt and Actions6",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -5792,
+        -4192
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Combine core prompt and actions\nconst corePrompt = $input.first().json.core_prompt;\nconst actions = $input.first().json.clip_actions;\n\nreturn actions.map((action, i) => ({\n  json: {\n    prompt: `${corePrompt} ${action}`,\n    index: i\n  }\n}));"
+      },
+      "id": "dcaf3cfc-dd55-4c97-92f9-d1354c266e46",
+      "name": "Combine Core and Actions6",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -5584,
+        -4192
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "video",
+        "modelId": {
+          "__rl": true,
+          "value": "models/veo-2.0-generate-001",
+          "mode": "list"
+        },
+        "prompt": "={{ $json.prompt }}",
+        "options": {
+          "aspectRatio": "16:9"
+        }
+      },
+      "id": "6e46224e-32ee-4fc0-ab23-faf7ed1a9254",
+      "name": "Generate Video Clip Gemini6",
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        -5360,
+        -4192
+      ],
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "functionCode": "// Convert all video binaries to base64 for reliable transmission\n// This avoids multipart form data issues in n8n\nconst items = $input.all();\n\nif (items.length < 2) {\n  throw new Error(`Need at least 2 videos to merge. Found: ${items.length}`);\n}\n\nconsole.log(`Converting ${items.length} videos to base64 for merging...`);\n\n// Convert all videos to base64\nconst base64Videos = [];\n\nfor (let i = 0; i < items.length; i++) {\n  const item = items[i];\n  \n  // Find binary data\n  let binaryData = null;\n  let binaryKey = null;\n  \n  if (item.binary) {\n    const binaryKeys = Object.keys(item.binary);\n    if (binaryKeys.length > 0) {\n      binaryKey = binaryKeys[0];\n      binaryData = item.binary[binaryKey];\n    }\n  }\n  \n  if (!binaryData) {\n    throw new Error(`No binary data found for video ${i + 1}`);\n  }\n  \n  // Extract base64 from n8n binary format\n  let base64String = null;\n  \n  // n8n stores binary data in different formats\n  if (binaryData.data && typeof binaryData.data === 'string') {\n    // Already a base64 string, remove data URL prefix if present\n    base64String = binaryData.data.replace(/^data:.*?;base64,/, '');\n  } else if (binaryData.data && Buffer.isBuffer(binaryData.data)) {\n    // Convert Buffer to base64\n    base64String = binaryData.data.toString('base64');\n  } else if (typeof binaryData === 'string') {\n    base64String = binaryData.replace(/^data:.*?;base64,/, '');\n  } else {\n    // Try to get data from the binary object\n    const data = binaryData.data || binaryData;\n    if (Buffer.isBuffer(data)) {\n      base64String = data.toString('base64');\n    } else if (typeof data === 'string') {\n      base64String = data.replace(/^data:.*?;base64,/, '');\n    } else {\n      throw new Error(`Cannot extract base64 from video ${i + 1}. Binary structure: ${JSON.stringify(Object.keys(binaryData))}`);\n    }\n  }\n  \n  if (!base64String || base64String.length === 0) {\n    throw new Error(`Video ${i + 1} base64 data is empty`);\n  }\n  \n  console.log(`Video ${i + 1}: ${base64String.length} base64 characters`);\n  base64Videos.push(base64String);\n}\n\nconsole.log(`✓ Converted ${items.length} videos to base64, ready for merge API`);\n\n// Return single item with all base64 videos\nreturn [{\n  json: {\n    inputBase64: base64Videos,\n    outputFormat: \"mp4\",\n    video_count: items.length,\n    message: `Ready to merge ${items.length} videos`\n  }\n}];"
+      },
+      "id": "a14fb6b3-b609-4052-a9d4-5a596dc0c2e6",
+      "name": "Convert Videos to Base",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        -5136,
+        -4192
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://127.0.0.1:3000/api/merge",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ inputBase64: $json.inputBase64, outputFormat: $json.outputFormat }) }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "merged_video"
+            }
+          },
+          "timeout": 300000
+        }
+      },
+      "id": "3cb571c9-2b9b-47ec-8fa4-d68e927c0e43",
+      "name": "Merge Videos (Local API)3",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -4912,
+        -4192
+      ]
+    },
+    {
+      "parameters": {
+        "functionCode": "// Verify merged video was received\nconst item = $input.item;\n\nif (!item.binary || !item.binary.merged_video) {\n  throw new Error('No merged video received from API. Check server logs.');\n}\n\nconst mergedVideo = item.binary.merged_video;\nconst size = mergedVideo.fileSize || mergedVideo.data?.length || 0;\n\nif (size === 0) {\n  throw new Error('Merged video is empty (0 bytes). Check merge API logs.');\n}\n\nconsole.log(`✓ Merged video received: ${(size / 1024 / 1024).toFixed(2)} MB`);\n\nreturn [{\n  json: {\n    success: true,\n    merged_video_size: size,\n    merged_video_size_mb: (size / 1024 / 1024).toFixed(2),\n    message: 'Videos merged successfully!',\n    timestamp: new Date().toISOString()\n  },\n  binary: {\n    merged_video: mergedVideo\n  }\n}];"
+      },
+      "id": "1360a6d5-ccf3-40db-a843-fad21e3e8991",
+      "name": "Verify Merged Video3",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        -4704,
+        -4192
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://pa.duhanashrah.ai/api/webhooks/send-message",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "agentId",
+              "value": "={{ $json.meetingDetails.agent_id }}"
+            },
+            {
+              "name": "to",
+              "value": "={{ $json.meetingDetails.contact_phone }}"
+            },
+            {
+              "name": "message",
+              "value": "={{ $json.invitationMessage }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "d089cdef-d789-46d1-b21b-15b6635c30af",
+      "name": "Send Meeting Invitation1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -4496,
+        3664
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "55c3dae4-0c3e-4a8c-ba35-0ec4b3644919",
+              "leftValue": "={{ $json.isVideo }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -7472,
+        -688
+      ],
+      "id": "75b74265-822b-4979-91b5-b0f4958ec299",
+      "name": "If3"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "generate-media",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -8192,
+        -688
+      ],
+      "id": "b8e238dd-e75a-473e-87ae-1932b141dd12",
+      "name": "Generate-Media",
+      "webhookId": "867b78a4-d107-4501-bb2e-ee957b1c71a9"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "content_calendar",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "keyValue": "={{ $json.body.post_id }}"
+            },
+            {
+              "keyName": "calendar_id",
+              "keyValue": "={{ $json.body.calendar_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -7968,
+        -784
+      ],
+      "id": "766477a9-2f27-43e1-b858-4b7d3ebad09b",
+      "name": "Get a row1",
+      "executeOnce": true,
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "brands",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "keyValue": "={{ $json.body.brand_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -8000,
+        -576
+      ],
+      "id": "ec1acc7a-f8a4-494a-9388-a809fcbc1790",
+      "name": "Get a row6",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -7744,
+        -688
+      ],
+      "id": "01c5f9ee-10aa-4a82-b90b-8f8bbc45645d",
+      "name": "Merge7"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop through all input items\nconst results = [];\n\nfor (const item of $input.all()) {\n  try {\n    // Parse the media_prompt JSON string\n    const mediaPromptObj = JSON.parse(item.json.media_prompt);\n    \n    // Essential fields to preserve\n    const essentialData = {\n      id: item.json.id,\n      brand_id: item.json.brand_id,\n      post_id: item.json.id,\n      calendar_id: item.json.calendar_id\n    };\n    \n    // Group prompts by scene number\n    const sceneMap = new Map();\n    \n    Object.entries(mediaPromptObj).forEach(([key, value]) => {\n      // Extract scene number\n      const sceneMatch = key.match(/scene\\s+(\\d+)/i);\n      const sceneNumber = sceneMatch ? parseInt(sceneMatch[1]) : null;\n      \n      if (!sceneMap.has(sceneNumber)) {\n        sceneMap.set(sceneNumber, {\n          ...essentialData,\n          scene_number: sceneNumber\n        });\n      }\n      \n      if (key.toLowerCase().includes('visual prompt')) {\n        sceneMap.get(sceneNumber).visual_prompt = value.trim();\n      } else if (key.toLowerCase().includes('image to video')) {\n        sceneMap.get(sceneNumber).video_prompt = value.trim();\n      }\n    });\n    \n    // Convert map to array and sort by scene number\n    Array.from(sceneMap.values())\n      .sort((a, b) => a.scene_number - b.scene_number)\n      .forEach(scene => results.push(scene));\n    \n  } catch (error) {\n    results.push({\n      error: `Failed to parse media_prompt: ${error.message}`\n    });\n  }\n}\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -7168,
+        -704
+      ],
+      "id": "ca698e8c-e293-4593-a71f-b881bb61d010",
+      "name": "Code in JavaScript2"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get ALL input items from previous node\nconst items = $input.all();\n\nconst outputs = [];\n\n// Loop through each input item\nfor (let itemIndex = 0; itemIndex < items.length; itemIndex++) {\n  const item = items[itemIndex];\n  \n  // Get binary keys from THIS item\n  const binaryKeys = Object.keys(item.binary || {});\n  \n  if (binaryKeys.length === 0) {\n    console.log(`No binary data in item ${itemIndex}, skipping...`);\n    continue;\n  }\n  \n  // Get video prompts from Code in JavaScript2\n  const videoPromptRaw = $('Code in JavaScript2').first().json.video_prompt;\n  \n  // Convert to array if it's a single string\n  let videoPrompts = [];\n  if (typeof videoPromptRaw === 'string') {\n    videoPrompts = [videoPromptRaw];\n  } else if (Array.isArray(videoPromptRaw)) {\n    videoPrompts = videoPromptRaw;\n  } else {\n    videoPrompts = [\"Camera slowly zooms in, subject comes to life\"];\n  }\n  \n  if (videoPrompts.length === 0) {\n    videoPrompts = [\"Camera slowly zooms in, subject comes to life\"];\n  }\n  \n  // Get reference images if available (optional)\n  // Expected format: array of base64 encoded images\n  let referenceImages = [];\n  if ($('Code in JavaScript2').first().json.reference_images) {\n    referenceImages = $('Code in JavaScript2').first().json.reference_images;\n  }\n  \n  // Process each binary key in this item\n  for (let binaryIdx = 0; binaryIdx < binaryKeys.length; binaryIdx++) {\n    const key = binaryKeys[binaryIdx];\n    const binaryData = item.binary[key];\n    const base64Image = binaryData.data;\n    \n    // Use corresponding prompt for each image (in order)\n    const promptIndex = itemIndex % videoPrompts.length;\n    const prompt = videoPrompts[promptIndex];\n    \n    outputs.push({\n      json: {\n        prompt: prompt,\n        imageBase64: base64Image,\n        referenceImages: referenceImages,\n        imageIndex: itemIndex,\n        totalImages: items.length,\n        promptIndex: promptIndex,\n        totalPrompts: videoPrompts.length,\n        imageKey: key,\n        MimeType:$input.first().json.fileName\n      }\n    });\n  }\n}\n\nif (outputs.length === 0) {\n  throw new Error('No binary images found in any input items');\n}\n\nreturn outputs;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -6704,
+        -704
+      ],
+      "id": "3ac2b16e-7199-47f1-ba64-684c86270e1a",
+      "name": "Prepare Veo Data"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/veo-3.1-generate-preview:predictLongRunning",
+        "authentication": "[REDACTED]",
+        "nodeCredentialType": "[REDACTED]",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "=Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"instances\": [\n    {\n      \"prompt\": \"{{ $json.prompt }}\",\n      \"image\": {\n        \"bytesBase64Encoded\": \"{{ $json.imageBase64 }}\",\n        \"mimeType\": \"{{ $json.MimeType }}\"\n      }\n    }\n  ],\n  \"parameters\": {\n    \"aspectRatio\": \"9:16\",\n    \"resolution\": \"720p\",\n    \"durationSeconds\": 8,\n    \"negativePrompt\": \"cartoon, drawing, low quality, blurry\"\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -6464,
+        -704
+      ],
+      "id": "599aa423-d3bb-4b18-b19a-921431c324be",
+      "name": "Start Veo Generation",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get all items from previous node\nconst items = $input.all();\n\n// Process each operation and preserve all necessary data\nconst results = items.map((item, index) => {\n  const operationName = item.json.name || item.json.operationName;\n  \n  if (!operationName) {\n    throw new Error(`No operation name returned for item ${index}. Response: ${JSON.stringify(item.json)}`);\n  }\n  \n  return {\n    json: {\n      operationName: operationName,\n      operationUrl: `https://generativelanguage.googleapis.com/v1beta/${operationName}`,\n      imageIndex: item.json.imageIndex !== undefined ? item.json.imageIndex : index,\n      promptIndex: item.json.promptIndex !== undefined ? item.json.promptIndex : index,\n      originalPrompt: item.json.originalPrompt || item.json.prompt || '',\n      hasReferenceImages: item.json.hasReferenceImages || false\n    }\n  };\n});\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -6256,
+        -1168
+      ],
+      "id": "9534cb2c-9423-4717-bbb9-64337edc6f25",
+      "name": "Extract Operation Name"
+    },
+    {
+      "parameters": {
+        "fileName": "={{ $json.fileName }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.writeBinaryFile",
+      "typeVersion": 1,
+      "position": [
+        -5408,
+        -1552
+      ],
+      "id": "325afb90-fec3-452e-9991-0a917d5383ea",
+      "name": "Save Video File1"
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash-image",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash-image (Nano Banana)"
+        },
+        "prompt": "={{ $json.visual_prompt }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        -6928,
+        -704
+      ],
+      "id": "4f90eb87-fe7c-4f54-97af-ef27e36f2e0e",
+      "name": "Generate an image1",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "v_1",
+              "fieldType": "file",
+              "acceptFileTypes": "C:\\Users\\Sam Cliff\\Desktop\\v_1.mp4"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.form",
+      "typeVersion": 2.3,
+      "position": [
+        -4928,
+        -784
+      ],
+      "id": "0c5cb0df-1940-4f06-9f41-239a09b22d83",
+      "name": "Form1",
+      "webhookId": "c4cd975a-3280-4599-a1d6-329e3a251e81"
+    },
+    {
+      "parameters": {
+        "fileSelector": "C:\\Users\\Sam Cliff\\Desktop\\v_1.mp4",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        -4928,
+        -640
+      ],
+      "id": "8317527f-66dc-43e8-91b6-32608427d6b0",
+      "name": "Read/Write Files from Disk"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "4f09a51a-d6ff-4713-9135-aa6118405eb2",
+              "name": "url_1",
+              "value": "https://dieozzsqexhptpfwrhxk.supabase.co/storage/v1/object/public/video_upload/v1.mp4",
+              "type": "string"
+            },
+            {
+              "id": "8820cd1f-3802-441a-adf0-058a4b0bceee",
+              "name": "url_2",
+              "value": "https://dieozzsqexhptpfwrhxk.supabase.co/storage/v1/object/public/video_upload/v2.mp4",
+              "type": "string"
+            },
+            {
+              "id": "b5d75076-99b3-40e3-82af-8843f811f238",
+              "name": "url_3",
+              "value": "https://dieozzsqexhptpfwrhxk.supabase.co/storage/v1/object/public/video_upload/v3.mp4",
+              "type": "string"
+            },
+            {
+              "id": "1ee600e5-2104-468c-803f-aa77fc817da3",
+              "name": "url_4",
+              "value": "https://dieozzsqexhptpfwrhxk.supabase.co/storage/v1/object/public/video_upload/v4.mp4",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -4768,
+        -1040
+      ],
+      "id": "1276c6f3-adf5-430e-af8d-deaea1ad0949",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://callow-oralee-uncredulously.ngrok-free.dev/api/merge",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json.videoDownloadUrl }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "merged_video"
+            }
+          },
+          "timeout": 300000
+        }
+      },
+      "id": "cb11ecf3-350b-487c-875b-21c0e4032ca7",
+      "name": "Merge Videos",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -5280,
+        -512
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Only keep items that are NOT done (need to continue polling)\nconst items = $input.all();\n\n// Filter to only incomplete operations\nconst incompleteItems = items.filter(item => {\n  return item.json.done !== true;\n});\n\nif (incompleteItems.length === 0) {\n  // All items are done, stop execution\n  return [];\n}\n\nreturn incompleteItems;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -5568,
+        -528
+      ],
+      "id": "a8a570e7-cbc0-4e76-bee9-e5cacb12b7f4",
+      "name": "Filter Incomplete Only",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get all items from previous node\nconst items = $input.all();\n\n// Process each operation and preserve all necessary data\nconst results = items.map((item, index) => {\n  const operationName = item.json.name || item.json.operationName;\n  \n  if (!operationName) {\n    throw new Error(`No operation name returned for item ${index}. Response: ${JSON.stringify(item.json)}`);\n  }\n  \n  return {\n    json: {\n      operationName: operationName,\n      operationUrl: `https://generativelanguage.googleapis.com/v1beta/${operationName}`,\n      imageIndex: item.json.imageIndex !== undefined ? item.json.imageIndex : index,\n      promptIndex: item.json.promptIndex !== undefined ? item.json.promptIndex : index,\n      originalPrompt: item.json.originalPrompt || item.json.prompt || '',\n      hasReferenceImages: item.json.hasReferenceImages || false\n    }\n  };\n});\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -7360,
+        -368
+      ],
+      "id": "da7dcc4d-f55d-444e-8cb7-415c563440e1",
+      "name": "Extract Operation Name1"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.operationUrl }}",
+        "authentication": "[REDACTED]",
+        "nodeCredentialType": "[REDACTED]",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -6000,
+        -704
+      ],
+      "id": "9ed54c9e-89df-4f1f-8b36-3fbbcdba1009",
+      "name": "Check Operation Status1",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "check-done",
+              "leftValue": "={{ $json.done }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -5808,
+        -704
+      ],
+      "id": "d6b1562f-441a-4b2f-b9ee-f9f071efebfd",
+      "name": "Is Video Ready?1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract video data from all completed operations\nconst items = $input.all();\n\nconst results = items.map((item, index) => {\n  try {\n    const response = item.json.response;\n    \n    // Extract video URI from REST API response structure\n    let videoUri = null;\n    \n    // REST API structure: response.generateVideoResponse.generatedSamples[0].video.uri\n    if (response && response.generateVideoResponse && \n        response.generateVideoResponse.generatedSamples && \n        response.generateVideoResponse.generatedSamples[0]) {\n      videoUri = response.generateVideoResponse.generatedSamples[0].video.uri;\n    }\n    // Fallback to SDK structure if needed\n    else if (response && response.generatedVideos && response.generatedVideos[0]) {\n      videoUri = response.generatedVideos[0].video.uri;\n    }\n    \n    if (!videoUri) {\n      throw new Error(`Could not find video URI in item ${index}. Full response: ${JSON.stringify(response)}`);\n    }\n    \n    // Generate filename with timestamp and index\n    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);\n    const imageIndex = item.json.imageIndex || index;\n    const hasRef = item.json.hasReferenceImages ? '_with_refs' : '';\n    \n    return {\n      json: {\n        videoDownloadUrl: videoUri,\n        fileName: `veo_video_${timestamp}_${imageIndex}${hasRef}.mp4`,\n        imageIndex: imageIndex,\n        promptIndex: item.json.promptIndex || index,\n        prompt: item.json.originalPrompt || '',\n        hasReferenceImages: item.json.hasReferenceImages || false,\n        operationName: item.json.name\n      }\n    };\n  } catch (error) {\n    throw new Error(`Error extracting video from item ${index}: ${error.message}. Full item: ${JSON.stringify(item.json)}`);\n  }\n});\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -5568,
+        -720
+      ],
+      "id": "b47664f8-4fe7-4417-965e-5604ddda60e4",
+      "name": "Extract Video URL1"
+    },
+    {
+      "parameters": {
+        "amount": 180
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -6208,
+        -704
+      ],
+      "id": "e119b0e1-0d02-4542-8b9b-1d71f4c48526",
+      "name": "Wait 30 Seconds",
+      "webhookId": "e9b8c631-9847-4f11-8c44-c9fd972ed7e6"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.operationUrl }}",
+        "authentication": "[REDACTED]",
+        "nodeCredentialType": "[REDACTED]",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -5536,
+        -1280
+      ],
+      "id": "c3760eba-afd4-49cc-9dca-af42dc8838bf",
+      "name": "Check Operation Status2",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "check-done",
+              "leftValue": "={{ $json.done }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -5280,
+        -1280
+      ],
+      "id": "d1509720-87ea-4f41-bf3e-7db04ae14c54",
+      "name": "Is Video Ready?2"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract video data from completed operations\nconst items = $input.all();\n\nconst results = items.map((item, index) => {\n  try {\n    const response = item.json.response;\n    const metadata = item.json._originalMetadata || {};\n    \n    let videoUri = null;\n    \n    if (response && response.generateVideoResponse && \n        response.generateVideoResponse.generatedSamples && \n        response.generateVideoResponse.generatedSamples[0]) {\n      videoUri = response.generateVideoResponse.generatedSamples[0].video.uri;\n    }\n    else if (response && response.generatedVideos && response.generatedVideos[0]) {\n      videoUri = response.generatedVideos[0].video.uri;\n    }\n    \n    if (!videoUri) {\n      throw new Error(`Could not find video URI in item ${index}. Full response: ${JSON.stringify(response)}`);\n    }\n    \n    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);\n    const imageIndex = metadata.imageIndex || index;\n    const hasRef = metadata.hasReferenceImages ? '_with_refs' : '';\n    \n    return {\n      json: {\n        videoDownloadUrl: videoUri,\n        fileName: `veo_video_${timestamp}_${imageIndex}${hasRef}.mp4`,\n        imageIndex: imageIndex,\n        promptIndex: metadata.promptIndex || index,\n        prompt: metadata.originalPrompt || '',\n        hasReferenceImages: metadata.hasReferenceImages || false,\n        operationName: item.json.name\n      }\n    };\n  } catch (error) {\n    throw new Error(`Error extracting video from item ${index}: ${error.message}`);\n  }\n});\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -5040,
+        -1296
+      ],
+      "id": "0301d037-21a6-48a0-bfaa-8dba5e0c823b",
+      "name": "Extract Video URL2"
+    },
+    {
+      "parameters": {
+        "amount": 60
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -5920,
+        -1280
+      ],
+      "id": "f3315edb-def0-48db-98a6-041c175021ff",
+      "name": "Wait 30 Seconds2",
+      "webhookId": "e9b8c631-9847-4f11-8c44-c9fd972ed7e6"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://callow-oralee-uncredulously.ngrok-free.dev/api/merge",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json.videoDownloadUrl }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "merged_video"
+            }
+          },
+          "timeout": 300000
+        }
+      },
+      "id": "5a4b7466-00a7-4046-98cc-ccef4d216b1c",
+      "name": "Merge Videos1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -4704,
+        -1248
+      ]
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -6576,
+        -1152
+      ],
+      "id": "dd43ffa0-4223-4c3a-9f92-3236ba016276",
+      "name": "When clicking ‘Execute workflow’"
+    }
+  ],
+  "connections": {
+    "Video 3 URL": {
+      "main": [
+        [
+          {
+            "node": "Text to Video 8",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Video 4 Ready": {
+      "main": [
+        [
+          {
+            "node": "All Four Video URLs",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait 8",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "All Four Video URLs": {
+      "main": [
+        [
+          {
+            "node": "Merge Videos (FFmpeg API)1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Video Prompts2": {
+      "main": [
+        [
+          {
+            "node": "Text to Video 5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Text to Video 5": {
+      "main": [
+        [
+          {
+            "node": "Wait 5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 5": {
+      "main": [
+        [
+          {
+            "node": "Get Video 5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Video 5": {
+      "main": [
+        [
+          {
+            "node": "If Video 1 Ready2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Video 1 Ready2": {
+      "main": [
+        [
+          {
+            "node": "Video 1 URL2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait 5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Video 1 URL2": {
+      "main": [
+        [
+          {
+            "node": "Text to Video 6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Text to Video 6": {
+      "main": [
+        [
+          {
+            "node": "Wait 6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 6": {
+      "main": [
+        [
+          {
+            "node": "Get Video 6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Video 6": {
+      "main": [
+        [
+          {
+            "node": "If Video 2 Ready2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Video 2 Ready2": {
+      "main": [
+        [
+          {
+            "node": "Video 2 URL1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait 6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Video 2 URL1": {
+      "main": [
+        [
+          {
+            "node": "Text to Video 7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Text to Video 7": {
+      "main": [
+        [
+          {
+            "node": "Wait 7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 7": {
+      "main": [
+        [
+          {
+            "node": "Get Video 7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Video 7": {
+      "main": [
+        [
+          {
+            "node": "If Video 3 Ready1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Video 3 Ready1": {
+      "main": [
+        [
+          {
+            "node": "Video 3 URL",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait 7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Text to Video 8": {
+      "main": [
+        [
+          {
+            "node": "Wait 8",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 8": {
+      "main": [
+        [
+          {
+            "node": "Get Video 8",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Video 8": {
+      "main": [
+        [
+          {
+            "node": "If Video 4 Ready",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Meeting to DB": {
+      "main": [
+        [
+          {
+            "node": "Format Invitation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Invitation": {
+      "main": [
+        [
+          {
+            "node": "Send Meeting Confirmation to Director1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Meeting Status": {
+      "main": [
+        [
+          {
+            "node": "Format Success Response2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Input2": {
+      "main": [
+        [
+          {
+            "node": "Is Valid?4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Valid?4": {
+      "main": [
+        [
+          {
+            "node": "Save Meeting to DB",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Format Validation Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Validate Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Meeting Confirmation to Director1": {
+      "main": [
+        [
+          {
+            "node": "Handle Send Error",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Update Meeting Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Input": {
+      "main": [
+        [
+          {
+            "node": "Is Valid?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Valid?": {
+      "main": [
+        [
+          {
+            "node": "Save Meeting to DB1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Format Validation Error1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Meeting to DB1": {
+      "main": [
+        [
+          {
+            "node": "Format Invitation1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Invitation1": {
+      "main": [
+        [
+          {
+            "node": "Send Meeting Invitation1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Core Prompt & Actions5": {
+      "main": [
+        [
+          {
+            "node": "Combine Core + Actions5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Combine Core + Actions5": {
+      "main": [
+        [
+          {
+            "node": "Generate Video Clip (Gemini)3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Video Clip (Gemini)3": "[REDACTED]",
+    "Collect Video Binaries": {
+      "main": [
+        []
+      ]
+    },
+    "Set Core Prompt and Actions4": {
+      "main": [
+        [
+          {
+            "node": "Combine Core and Actions4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Combine Core and Actions4": {
+      "main": [
+        [
+          {
+            "node": "Generate Video Clip Gemini4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Video Clip Gemini4": "[REDACTED]",
+    "Collect Video Binaries2": {
+      "main": [
+        [
+          {
+            "node": "Merge Videos (Multipart)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Core Prompt and Actions": {
+      "main": [
+        [
+          {
+            "node": "Combine Core and Actions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Combine Core and Actions": {
+      "main": [
+        [
+          {
+            "node": "Generate Video Clip Gemini",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Video Clip Gemini": "[REDACTED]",
+    "Merge Videos (Local API)": {
+      "main": [
+        [
+          {
+            "node": "Verify Merged Video",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Collect Video Binaries1": {
+      "main": [
+        [
+          {
+            "node": "Merge Videos (Local API)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Core Prompt and Actions1": {
+      "main": [
+        [
+          {
+            "node": "Combine Core and Actions1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Combine Core and Actions1": {
+      "main": [
+        [
+          {
+            "node": "Generate Video Clip Gemini1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Video Clip Gemini1": "[REDACTED]",
+    "Collect Video Binaries3": {
+      "main": [
+        [
+          {
+            "node": "Merge Videos (Multipart)1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Core Prompt and Actions2": {
+      "main": [
+        [
+          {
+            "node": "Combine Core and Actions2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Combine Core and Actions2": {
+      "main": [
+        [
+          {
+            "node": "Generate Video Clip Gemini2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Video Clip Gemini2": "[REDACTED]",
+    "Collect Video Binaries4": {
+      "main": [
+        [
+          {
+            "node": "Merge Videos (Local API)1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Videos (Local API)1": {
+      "main": [
+        [
+          {
+            "node": "Verify Merged Video1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Core Prompt and Actions3": {
+      "main": [
+        [
+          {
+            "node": "Combine Core and Actions3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Combine Core and Actions3": {
+      "main": [
+        [
+          {
+            "node": "Generate Video Clip Gemini3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Video Clip Gemini3": "[REDACTED]",
+    "Collect Video Binaries5": {
+      "main": [
+        []
+      ]
+    },
+    "Convert Videos to Base64": {
+      "main": [
+        [
+          {
+            "node": "Merge Videos (Local API)2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Core Prompt and Actions5": {
+      "main": [
+        [
+          {
+            "node": "Combine Core and Actions5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Combine Core and Actions5": {
+      "main": [
+        [
+          {
+            "node": "Generate Video Clip Gemini5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Videos (Local API)2": {
+      "main": [
+        [
+          {
+            "node": "Verify Merged Video2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Core Prompt and Actions6": {
+      "main": [
+        [
+          {
+            "node": "Combine Core and Actions6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Combine Core and Actions6": {
+      "main": [
+        [
+          {
+            "node": "Generate Video Clip Gemini6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert Videos to Base": {
+      "main": [
+        [
+          {
+            "node": "Merge Videos (Local API)3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Videos (Local API)3": {
+      "main": [
+        [
+          {
+            "node": "Verify Merged Video3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Meeting Invitation1": {
+      "main": [
+        [
+          {
+            "node": "Format Success Response",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Handle Send Error1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Success Response": {
+      "main": [
+        []
+      ]
+    },
+    "If3": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Generate-Media": {
+      "main": [
+        [
+          {
+            "node": "Get a row1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get a row6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a row1": {
+      "main": [
+        [
+          {
+            "node": "Merge7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a row6": {
+      "main": [
+        [
+          {
+            "node": "Merge7",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge7": {
+      "main": [
+        [
+          {
+            "node": "If3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript2": {
+      "main": [
+        [
+          {
+            "node": "Generate an image1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Veo Data": {
+      "main": [
+        [
+          {
+            "node": "Start Veo Generation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Start Veo Generation": {
+      "main": [
+        [
+          {
+            "node": "Wait 30 Seconds",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Operation Name": {
+      "main": [
+        [
+          {
+            "node": "Wait 30 Seconds2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate an image1": {
+      "main": [
+        [
+          {
+            "node": "Prepare Veo Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Form1": {
+      "main": [
+        []
+      ]
+    },
+    "Read/Write Files from Disk": {
+      "main": [
+        []
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        []
+      ]
+    },
+    "Filter Incomplete Only": {
+      "main": [
+        [
+          {
+            "node": "Wait 30 Seconds",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Operation Name1": {
+      "main": [
+        []
+      ]
+    },
+    "Check Operation Status1": {
+      "main": [
+        [
+          {
+            "node": "Is Video Ready?1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Video Ready?1": {
+      "main": [
+        [
+          {
+            "node": "Extract Video URL1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Filter Incomplete Only",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 30 Seconds": {
+      "main": [
+        [
+          {
+            "node": "Check Operation Status1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Video URL1": {
+      "main": [
+        [
+          {
+            "node": "Merge Videos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Operation Status2": {
+      "main": [
+        [
+          {
+            "node": "Is Video Ready?2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Video Ready?2": {
+      "main": [
+        [
+          {
+            "node": "Extract Video URL2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait 30 Seconds2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Video URL2": {
+      "main": [
+        [
+          {
+            "node": "Merge Videos1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 30 Seconds2": {
+      "main": [
+        [
+          {
+            "node": "Check Operation Status2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Extract Operation Name",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "triggerCount": 0,
+  "tags": [
+    {
+      "updatedAt": "2025-10-28T07:41:35.810Z",
+      "createdAt": "2025-10-28T07:41:35.810Z",
+      "id": "Bjds4VMsUOfAftkN",
+      "name": "Abdul Wasay"
+    },
+    {
+      "updatedAt": "2025-10-24T04:04:28.048Z",
+      "createdAt": "2025-10-24T04:04:28.048Z",
+      "id": "SgbCkdz8ViP8OAzg",
+      "name": "SamCliff"
+    }
+  ]
+}

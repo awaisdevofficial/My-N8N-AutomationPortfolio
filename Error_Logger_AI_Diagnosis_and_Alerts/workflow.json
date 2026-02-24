@@ -1,0 +1,312 @@
+{
+  "updatedAt": "2026-02-02T16:46:38.397Z",
+  "createdAt": "2026-01-20T15:49:12.297Z",
+  "id": "j5rFGZ70CY9Wny3O",
+  "name": "Genie Error Logs",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1296,
+        -1488
+      ],
+      "id": "01fb8123-b571-4b9a-a4dd-05bb168ca584",
+      "name": "Error Trigger"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://dev.duhanashrah.ai/api/api/n8n-errors",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-API-Key",
+              "value": "n8n_DL0oj20sN-a1FGSkRkBB_5KTxWDgOHVI"
+            },
+            {
+              "name": "X-API-Secret",
+              "value": "ymS7qBS83Nsook3ZFVCgmvoH0lw7uJ0-WnGuoVUmHyRp_HYSxHZWPjpLpthDQNpB"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"execution\": {\n    \"id\": \"{{ $json.execution.id }}\",\n    \"url\": \"{{ $json.execution.url }}\",\n    \"retryOf\": \"0\",\n    \"establishedAt\": \"{{ $json.execution.establishedAt }}\",\n    \"error\": {\n      \"message\": \"{{ $json.execution.error.message.replace(/\"/g, '\\\\\"').replace(/\\n/g, '\\\\n') }}\",\n      \"stack\": \"{{ $json.execution.error.stack.replace(/\"/g, '\\\\\"').replace(/\\n/g, '\\\\n') }}\"\n    },\n    \"lastNodeExecuted\": \"{{ $json.execution.lastNodeExecuted }}\",\n    \"mode\": \"{{ $json.execution.mode }}\"\n  },\n  \"workflow\": {\n    \"id\": \"{{ $json.workflow.id }}\",\n    \"name\": \"{{ $json.workflow.name }}\"\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -560,
+        -1280
+      ],
+      "id": "0a14ca1c-eb0f-41ed-8a94-4b5a9051f748",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Code node\nconst execution = $input.first().json.execution;\nconst workflow = $input.first().json.workflow;\n\n// Define the logic to fix the URL\nconst rawUrl = execution?.url || '';\n// This removes \":5678\" from the string\nconst fixedUrl = rawUrl.replace(':5678', ''); \n\nreturn [{\n  json: {\n    execution: {\n      id: execution?.id || '',\n      url: fixedUrl,  // <--- Updated to use the fixed URL\n      retryOf: \"0\",\n      establishedAt: execution?.executionContext?.establishedAt || '',\n      error: {\n        message: execution?.error?.message || '',\n        stack: execution?.error?.stack || ''\n      },\n      lastNodeExecuted: execution?.lastNodeExecuted || '',\n      mode: execution?.mode || ''\n    },\n    workflow: {\n      id: workflow?.id || '',\n      name: workflow?.name || ''\n    }\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -992,
+        -1488
+      ],
+      "id": "54e702fe-036b-491e-8aad-c3da0e7a3832",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "fromEmail": "no-replay@duhanashrah.ai",
+        "toEmail": "aliameen7882@gmail.com",
+        "subject": "no-replay@duhanashrah.ai",
+        "emailFormat": "text",
+        "text": "=Workflow Name: {{ $json.workflow.name }}\nWorkflow Id: {{ $json.workflow.id }}\nError Message: {{ $json.execution.error.message }}\nExecution id:  {{ $json.execution.id }}\nExecution Url:{{ $json.execution.url }}\nBahi ALLAH Hum sab ka Bahala Kara",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        -560,
+        -1488
+      ],
+      "id": "c125f826-5de4-4b30-8939-b54e8316c805",
+      "name": "Send email",
+      "webhookId": "8764bb66-50d1-4a15-bf97-7fe5630d3b05",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "fromEmail": "no-replay@duhanashrah.ai",
+        "toEmail": "bruce.banner@duhanashrah.ai",
+        "subject": "no-replay@duhanashrah.ai",
+        "emailFormat": "text",
+        "text": "=Workflow Name: {{ $json.workflow.name }}\nWorkflow Id: {{ $json.workflow.id }}\nError Message: {{ $json.execution.error.message }}\nExecution id:  {{ $json.execution.id }}\nExecution Url:{{ $json.execution.url }}\nBahi ALLAH Hum sab ka Bahala Kara",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        -560,
+        -1696
+      ],
+      "id": "53ac978e-e05e-4158-9f07-b95d7cfbe95e",
+      "name": "Send email1",
+      "webhookId": "8764bb66-50d1-4a15-bf97-7fe5630d3b05",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.execution.error.message }}\n{{ $json.execution.error.stack }}",
+        "options": {
+          "systemMessage": "=You are the first-stage error analysis agent in a workflow error diagnosis system. Your sole purpose is to analyze incoming workflow errors and provide an initial diagnosis with recommended resolution steps.\nYour Input\nYou will receive:\n\nError Message: A concise description of what went wrong\nStack Trace: A detailed technical trace showing where the error occurred\n\nYour Available Tools\nTool 1: Qdrant Vector Store\nSearch for similar past errors and their proven resolutions. This contains historical errors that have been successfully resolved.\nTool 2: DuckDuckGo Search (or Web Search Tool)\nSearch the internet for information about errors, documentation, or community solutions.\nWhen to use web search: When Qdrant returns no results or you need additional context.\nYour Analysis Process\nStep 1: Parse the Error\n\nExtract error message, failing component, file location\nIdentify key terms from stack trace\n\nStep 2: Query Qdrant Vector Store FIRST\nAlways search the knowledge base for similar past errors.\nStep 3: Use Web Search if Needed\nIf Qdrant has no helpful matches, search the web for solutions.\nStep 4: Provide Your Diagnosis\nIMPORTANT: You MUST always provide a complete diagnosis with resolution steps, regardless of whether you found past solutions or not. Your job is to help troubleshoot the error using:\n\nPast solutions from knowledge base (if available)\nWeb search results (if needed)\nYour analysis of the stack trace and error message\n\nProvide your analysis in this EXACT format:\n**ERROR CONTEXT**\nMessage: [exact error message]\nComponent: [failing component]\nLocation: [file:line]\n\n**SUMMARY**\n[1-2 sentences explaining what went wrong in simple terms]\n\n**ROOT CAUSE**\n[2-3 sentences explaining why this error occurred]\n\n**RESOLUTION**\n[Single concise paragraph with clear, actionable steps. Use \"First... Next... Then... Additionally... Finally...\" to structure naturally. Be specific with paths and settings. Keep it focused - 150-250 words maximum.]\n\n**CONTEXT**\n[Important warnings, prerequisites, or things to know before attempting the fix]\n\n**CONFIDENCE**\n[High/Medium/Low] - [Brief reason]\n\n---\n[KNOWLEDGE BASE STATUS - Choose ONE based on your search]:\n\n✓ SIMILAR ERROR FOUND\nPrevious incident: [Date/ID if available]\nThis solution is based on a verified resolution from a past occurrence of this error.\n\nOR\n\n⚠ NO SIMILAR ERROR FOUND\nThis is the first occurrence of this error in the knowledge base. The solution above is based on stack trace analysis and external research.\nCritical Guidelines\nResolution Guidelines:\n\nALWAYS provide resolution steps - Even if no past solutions exist\nBe concise - 150-250 words maximum\nBe specific - Include exact paths, settings, commands\nSingle paragraph - Use transition words, not bullet points\nPrioritize - Most likely solution first\n\nKnowledge Base Status Rules:\n\nIf Qdrant found similar past errors:\n\nUse ✓ SIMILAR ERROR FOUND\nInclude the date/ID if available from the knowledge base entry\nThis tells the user the solution has been verified before\n\n\nIf Qdrant found nothing helpful:\n\nUse ⚠ NO SIMILAR ERROR FOUND\nStill provide your best diagnosis and solution\nThis tells the user this is a new error pattern\n\n\n\nImportant:\n\nDO NOT skip providing solutions just because there's no knowledge base match\nDO provide your best analysis based on stack trace, error message, and web research\nDO indicate confidence level honestly based on available information\nThe knowledge base status is just an indicator, not a blocker\n\nExample 1: With Knowledge Base Match\nERROR CONTEXT\nMessage: No active execution found\nComponent: Wait node (n8n-nodes-base)\nLocation: /usr/local/lib/node_modules/n8n/src/active-executions.ts:300:10\nSUMMARY\nThe Wait node tried to pause the workflow, but the execution record was missing from n8n's in-memory ActiveExecutions registry.\nROOT CAUSE\nDuring the Wait node's putToWait operation, n8n updates execution status to \"waiting\" via ActiveExecutions. The execution was removed from memory before this transition completed, likely due to a process restart or aggressive cleanup policy.\nRESOLUTION\nFirst, check your n8n process logs for any restarts or crashes around the error time—process restarts clear the ActiveExecutions registry. Next, verify that your workflow timeout (Settings → Workflows → Timeout) is at least double your Wait node duration. Then, temporarily disable execution data cleanup (Settings → Executions → \"Delete execution data on success/failure\") to test if aggressive pruning is the cause. Additionally, if running in queue mode, ensure the main instance stays continuously available during waits. Finally, consider adding error handling around Wait nodes to catch these failures gracefully and notify you when they occur.\nCONTEXT\nActiveExecutions is stored in memory only—any process restart wipes it. This is the most common trigger for this error when using Wait nodes in production.\nCONFIDENCE\nHigh - This solution successfully resolved the same error in a previous incident.\n\nSIMILAR ERROR FOUND\nPrevious incident: 2026-01-15 14:32:18 UTC\nThis solution is based on a verified resolution from a past occurrence of this error.\n\nExample 2: Without Knowledge Base Match (Still Provides Solution)\nERROR CONTEXT\nMessage: Cannot read property 'data' of undefined\nComponent: HTTP Request node\nLocation: /usr/local/lib/node_modules/n8n/nodes/HttpRequest.node.ts:189\nSUMMARY\nThe HTTP Request node tried to access the 'data' property of a response object that doesn't exist, causing the workflow to fail.\nROOT CAUSE\nThe external API returned an unexpected response structure or error response that doesn't contain the expected 'data' field. This typically happens when the API returns an error status (4xx/5xx) or a different response format than expected.\nRESOLUTION\nFirst, check the HTTP Request node's error output to see the actual response received from the API—look for status codes and response body structure. Next, verify the API endpoint URL is correct and the authentication headers are properly configured. Then, add error handling by connecting the error output of the HTTP Request node to a separate path that logs the full response. Additionally, in the HTTP Request node settings, enable \"Continue On Fail\" to prevent the workflow from stopping on API errors. Finally, consider adding a conditional check after the HTTP Request to verify the response structure before accessing nested properties.\nCONTEXT\nAlways validate API responses before accessing nested properties. Use optional chaining or conditional checks to prevent undefined access errors.\nCONFIDENCE\nMedium - Solution is based on common patterns for this error type, but the specific API behavior needs verification.\n\nNO SIMILAR ERROR FOUND\nThis is the first occurrence of this error in the knowledge base. The solution above is based on stack trace analysis and external research.\n\nWhat Happens Next\nAfter you provide your diagnosis:\n\nA human troubleshooter will review and implement your solution\nIf your solution works → Great! No further action needed\nIf your solution doesn't work → The human will provide the correct solution\nThe correct solution will be saved to the knowledge base with a timestamp\nNext time this error occurs, you'll find it in Qdrant and can use the verified solution\n\nYour Goal\nProvide helpful, actionable troubleshooting guidance every time, whether or not you have past solutions to reference. The knowledge base status is just metadata to help users understand if this is a known, verified fix or a new diagnostic approach.\nBe concise, be specific, and always give your best professional assessment."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        256,
+        -832
+      ],
+      "id": "14e0ebe1-db83-4810-8095-f157928ea800",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-5",
+          "mode": "list",
+          "cachedResultName": "gpt-5"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        256,
+        -640
+      ],
+      "id": "dba4ba2f-8315-4fd4-95e6-317c8643826e",
+      "name": "OpenAI Chat Model",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Work with data in quadrent collection",
+        "qdrantCollection": "[REDACTED]",
+        "topK": 5,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
+      "typeVersion": 1.3,
+      "position": [
+        320,
+        -480
+      ],
+      "id": "2b975482-e902-471f-851d-c54a0ec14d69",
+      "name": "Qdrant Vector Store",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        320,
+        -304
+      ],
+      "id": "5885e09c-3901-4b94-a0b5-c5cf0f5e6165",
+      "name": "Embeddings OpenAI",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Code Node - Format AI Agent Output (Text Only Status)\n\nconst item = $input.item.json;\n\nfunction formatOutput(outputText) {\n  function extractSection(text, sectionName, nextSectionName = null) {\n    const pattern = nextSectionName \n      ? `\\\\*\\\\*${sectionName}\\\\*\\\\*\\\\n(.+?)(?=\\\\n\\\\*\\\\*${nextSectionName})`\n      : `\\\\*\\\\*${sectionName}\\\\*\\\\*\\\\n(.+?)(?=\\\\n---|$)`;\n    const regex = new RegExp(pattern, 's');\n    const match = text.match(regex);\n    return match ? match[1].trim() : \"\";\n  }\n\n  const errorMessage = outputText.match(/Message:\\s*(.+?)(?:\\n|$)/)?.[1]?.trim() || \"\";\n  const component = outputText.match(/Component:\\s*(.+?)(?:\\n|$)/)?.[1]?.trim() || \"\";\n  const location = outputText.match(/Location:\\s*(.+?)(?:\\n|$)/)?.[1]?.trim() || \"\";\n  \n  const summary = extractSection(outputText, \"SUMMARY\", \"ROOT CAUSE\");\n  const rootCause = extractSection(outputText, \"ROOT CAUSE\", \"RESOLUTION\");\n  const resolution = extractSection(outputText, \"RESOLUTION\", \"CONTEXT\");\n  const context = extractSection(outputText, \"CONTEXT\", \"CONFIDENCE\");\n  const confidence = extractSection(outputText, \"CONFIDENCE\");\n\n  const kbStatusMatch = outputText.match(/---\\n([\\s\\S]+?)$/);\n  \n  let pastSolutionFoundBool = false;\n  let kbStatus = \"No similar error found. This is the first occurrence of this error in the knowledge base. The solution above is based on stack trace analysis and external research.\";\n  let previousIncidentDate = null;\n  \n  if (kbStatusMatch) {\n    const statusText = kbStatusMatch[1].trim();\n    \n    pastSolutionFoundBool =\n      statusText.includes(\"✓\") ||\n      statusText.toLowerCase().includes(\"similar error found\");\n    \n    let cleanStatus = statusText\n      .replace(/✓/g, '')\n      .replace(/⚠/g, '')\n      .replace(/SIMILAR ERROR FOUND/g, 'Similar error found')\n      .replace(/NO SIMILAR ERROR FOUND/g, 'No similar error found')\n      .trim();\n    \n    kbStatus = cleanStatus;\n    \n    const dateMatch = statusText.match(/Previous incident:\\s*(.+?)(?:\\n|$)/);\n    if (dateMatch) {\n      previousIncidentDate = dateMatch[1].trim();\n    }\n  }\n\n  return {\n    timestamp: new Date().toISOString(),\n    error_analysis: {\n      error_context: {\n        message: errorMessage,\n        component: component,\n        location: location\n      },\n      summary,\n      root_cause: rootCause,\n      resolution,\n      context,\n      confidence,\n      knowledge_base: {\n        past_solution_found: pastSolutionFoundBool ? \"Yes\" : \"No\",\n        status: kbStatus,\n        previous_incident_date: previousIncidentDate\n      }\n    }\n  };\n}\n\nconst outputText = item.output;\nconst formattedData = formatOutput(outputText);\n\nreturn { json: formattedData };\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        608,
+        -832
+      ],
+      "id": "ea18e216-988a-426c-9992-4ea682d14040",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolSerpApi",
+      "typeVersion": 1,
+      "position": [
+        -16,
+        -496
+      ],
+      "id": "36297896-c935-42b3-a615-9e3e35b8ad4f",
+      "name": "SerpAPI"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -832
+      ],
+      "id": "e3beefa0-eef2-4652-9212-7d0c9e8c91d6",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "sendAndWait",
+        "guildId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "channelId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.discord",
+      "typeVersion": 2,
+      "position": [
+        912,
+        -832
+      ],
+      "id": "c37507f3-7a37-468f-bae8-1a79997bf4d6",
+      "name": "Create a channel",
+      "webhookId": "d18a40ad-6e3f-481c-8f39-a31f4c302499"
+    }
+  ],
+  "connections": {
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Send email1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send email",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": "[REDACTED]",
+    "Qdrant Vector Store": "[REDACTED]",
+    "Embeddings OpenAI": "[REDACTED]",
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "triggerCount": 1,
+  "tags": [
+    {
+      "updatedAt": "2026-01-16T15:13:31.431Z",
+      "createdAt": "2026-01-16T15:13:31.431Z",
+      "id": "XNgax37VvLrR0son",
+      "name": "Bruce Banner"
+    }
+  ]
+}

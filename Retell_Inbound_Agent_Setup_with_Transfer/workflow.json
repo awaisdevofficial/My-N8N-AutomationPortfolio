@@ -1,0 +1,690 @@
+{
+  "updatedAt": "2026-01-30T16:12:08.442Z",
+  "createdAt": "2026-01-30T16:02:51.101Z",
+  "id": "SqgDK9fwPmBv819c",
+  "name": "Retell AI - Inbound Call Setup with Transfer",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "f3b7e815-68ff-45b3-a378-c93bc4e33018",
+      "name": "When clicking 'Test workflow'",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1040,
+        -32
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.retellai.com/create-retell-llm",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"s2s_model\": \"gpt-4o-realtime\",\n  \"model_temperature\": 0.7,\n  \"model_high_priority\": true,\n  \"tool_call_strict_mode\": true,\n  \"knowledge_base_ids\": [],\n  \"kb_config\": {\n    \"top_k\": 3,\n    \"filter_score\": 0.6\n  },\n  \"start_speaker\": \"agent\",\n  \"begin_after_user_silence_ms\": 2000,\n  \"begin_message\": \"Hello! Thank you for calling. How can I assist you today?\",\n  \"general_prompt\": \"{{ $json.output[0].content[0].text }}\",\n  \"general_tools\": [\n    {\n      \"type\": \"end_call\",\n      \"name\": \"end_call\",\n      \"description\": \"End the call with user.\"\n    },\n    {\n      \"type\": \"transfer_call\",\n      \"name\": \"transfer_to_human_agent\",\n      \"description\": \"Transfer to a live human agent when customer requests or issue is too complex to handle\",\n      \"transfer_destination\": {\n        \"type\": \"predefined\",\n        \"number\": \"+14155551234\",\n        \"ignore_e164_validation\": false\n      },\n      \"transfer_option\": {\n        \"type\": \"cold_transfer\",\n        \"show_transferee_as_caller\": false\n      }\n    },\n    {\n      \"type\": \"transfer_call\",\n      \"name\": \"transfer_to_sales\",\n      \"description\": \"Transfer to sales department for product inquiries or purchases\",\n      \"transfer_destination\": {\n        \"type\": \"predefined\",\n        \"number\": \"+14155555678\",\n        \"ignore_e164_validation\": false\n      },\n      \"transfer_option\": {\n        \"type\": \"cold_transfer\",\n        \"show_transferee_as_caller\": false\n      }\n    },\n    {\n      \"type\": \"transfer_call\",\n      \"name\": \"transfer_to_support\",\n      \"description\": \"Transfer to technical support for technical issues\",\n      \"transfer_destination\": {\n        \"type\": \"predefined\",\n        \"number\": \"+14155559999\",\n        \"ignore_e164_validation\": false\n      },\n      \"transfer_option\": {\n        \"type\": \"cold_transfer\",\n        \"show_transferee_as_caller\": false\n      }\n    }\n  ],\n  \"states\": [],\n  \"starting_state\": null,\n  \"default_dynamic_variables\": {},\n  \"version\": 1,\n  \"mcps\": []\n}",
+        "options": {}
+      },
+      "id": "873fd498-f8b5-44a4-8664-8f4a6ad8d88f",
+      "name": "Step 1: Create Retell LLM",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        -464,
+        -32
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.retellai.com/create-agent",
+        "authentication": "[REDACTED]",
+        "nodeCredentialType": "[REDACTED]",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"response_engine\": {\n    \"type\": \"retell-llm\",\n    \"llm_id\": \"{{ $json.llm_id }}\",\n    \"version\": 0\n  },\n  \"agent_name\": \"Inbound Support Agent\",\n  \"version_description\": \"Customer support agent with transfer capabilities\",\n  \"voice_id\": \"11labs-Adrian\",\n  \"voice_model\": \"eleven_turbo_v2\",\n  \"fallback_voice_ids\": [\n    \"openai-Alloy\",\n    \"deepgram-Angus\"\n  ],\n  \"voice_temperature\": 1,\n  \"voice_speed\": 1,\n  \"volume\": 1,\n  \"voice_emotion\": \"calm\",\n  \"responsiveness\": 1,\n  \"interruption_sensitivity\": 1,\n  \"enable_backchannel\": true,\n  \"backchannel_frequency\": 0.9,\n  \"backchannel_words\": [\n    \"yeah\",\n    \"uh-huh\"\n  ],\n  \"reminder_trigger_ms\": 10000,\n  \"reminder_max_count\": 2,\n  \"ambient_sound\": \"office\",\n  \"ambient_sound_volume\": 0.5,\n  \"language\": \"en-US\",\n  \"webhook_url\": \"https://your-webhook-url.com/webhook\",\n  \"webhook_timeout_ms\": 10000,\n  \"boosted_keywords\": [\n    \"transfer\",\n    \"agent\",\n    \"support\"\n  ],\n  \"data_storage_setting\": \"everything\",\n  \"opt_in_signed_url\": true,\n  \"signed_url_expiration_ms\": 86400000,\n  \"pronunciation_dictionary\": [],\n  \"normalize_for_speech\": true,\n  \"end_call_after_silence_ms\": 600000,\n  \"max_call_duration_ms\": 3600000,\n  \"enable_voicemail_detection\": false,\n  \"voicemail_detection_timeout_ms\": 30000,\n  \"post_call_analysis_data\": [\n    {\n      \"type\": \"string\",\n      \"name\": \"customer_name\",\n      \"description\": \"The name of the customer.\",\n      \"examples\": [\n        \"John Doe\",\n        \"Jane Smith\"\n      ]\n    },\n    {\n      \"type\": \"boolean\",\n      \"name\": \"call_transferred\",\n      \"description\": \"Whether the call was transferred.\",\n      \"examples\": []\n    },\n    {\n      \"type\": \"string\",\n      \"name\": \"transfer_reason\",\n      \"description\": \"Reason for transfer.\",\n      \"examples\": [\n        \"Complex issue\",\n        \"Customer requested\"\n      ]\n    }\n  ],\n  \"post_call_analysis_model\": \"gpt-4.1-mini\",\n  \"analysis_successful_prompt\": \"The agent finished the task successfully.\",\n  \"analysis_summary_prompt\": \"Summarize the call in two sentences.\",\n  \"begin_message_delay_ms\": 1000,\n  \"ring_duration_ms\": 30000,\n  \"stt_mode\": \"fast\",\n  \"vocab_specialization\": \"general\",\n  \"allow_user_dtmf\": true,\n  \"user_dtmf_options\": {\n    \"digit_limit\": 10,\n    \"termination_key\": \"#\",\n    \"timeout_ms\": 8000\n  },\n  \"denoising_mode\": \"noise-cancellation\",\n  \"pii_config\": {\n    \"mode\": \"post_call\",\n    \"categories\": []\n  },\n  \"is_public\": false\n}",
+        "options": {}
+      },
+      "id": "b4b9fa8f-5e70-4d2e-8dd0-151634c64836",
+      "name": "Step 2: Create Agent",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        480,
+        -32
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.retellai.com/v2/buy-phone-number",
+        "authentication": "[REDACTED]",
+        "nodeCredentialType": "[REDACTED]",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"area_code\": \"415\"\n}",
+        "options": {}
+      },
+      "id": "40a2e8a6-6cd4-4785-a5e7-1034242e8d8d",
+      "name": "Step 3: Buy Phone Number",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        704,
+        -32
+      ]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://api.retellai.com/v2/update-phone-number/{{ $json.phone_number_id }}",
+        "authentication": "[REDACTED]",
+        "nodeCredentialType": "[REDACTED]",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"agent_id\": \"{{ $('Step 2: Create Agent').item.json.agent_id }}\",\n  \"inbound_webhook_url\": \"https://your-webhook-url.com/inbound-webhook\"\n}",
+        "options": {}
+      },
+      "id": "97ac809c-3b38-4651-9d7c-fbb2e494590c",
+      "name": "Step 4: Link Phone to Agent",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        912,
+        -32
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combinationMode": "mergeByPosition",
+        "options": {}
+      },
+      "id": "a69937cc-a9e9-4c77-a207-6e5cf4be896a",
+      "name": "Merge Results",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 2.1,
+      "position": [
+        896,
+        -592
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.retellai.com/create-retell-llm",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "model",
+              "value": "gpt-4.1"
+            },
+            {
+              "name": "s2s_model",
+              "value": "gpt-4o-realtime"
+            },
+            {
+              "name": "model_temperature",
+              "value": 0.7
+            },
+            {
+              "name": "model_high_priority",
+              "value": true
+            },
+            {
+              "name": "tool_call_strict_mode",
+              "value": true
+            },
+            {
+              "name": "start_speaker",
+              "value": "agent"
+            },
+            {
+              "name": "begin_after_user_silence_ms",
+              "value": 2000
+            },
+            {
+              "name": "begin_message",
+              "value": "Hello! Thank you for calling. How can I assist you today?"
+            },
+            {
+              "name": "general_prompt",
+              "value": "You are a professional customer service agent. Listen carefully to the customer needs. If the customer requests to speak with a human agent, has a complex issue, or needs specialized help, use the appropriate transfer tool. Always be polite and helpful."
+            },
+            {
+              "name": "general_tools",
+              "value": "=[{\"type\":\"end_call\",\"name\":\"end_call\",\"description\":\"End the call with user.\"},{\"type\":\"transfer_call\",\"name\":\"transfer_to_human_agent\",\"description\":\"Transfer to a live human agent when customer requests or issue is too complex to handle\",\"transfer_destination\":{\"type\":\"predefined\",\"number\":\"+14155551234\",\"ignore_e164_validation\":false},\"transfer_option\":{\"type\":\"cold_transfer\",\"show_transferee_as_caller\":false}},{\"type\":\"transfer_call\",\"name\":\"transfer_to_sales\",\"description\":\"Transfer to sales department for product inquiries or purchases\",\"transfer_destination\":{\"type\":\"predefined\",\"number\":\"+14155555678\",\"ignore_e164_validation\":false},\"transfer_option\":{\"type\":\"cold_transfer\",\"show_transferee_as_caller\":false}},{\"type\":\"transfer_call\",\"name\":\"transfer_to_support\",\"description\":\"Transfer to technical support for technical issues\",\"transfer_destination\":{\"type\":\"predefined\",\"number\":\"+14155559999\",\"ignore_e164_validation\":false},\"transfer_option\":{\"type\":\"cold_transfer\",\"show_transferee_as_caller\":false}}]"
+            },
+            {
+              "name": "version",
+              "value": 1
+            },
+            {}
+          ]
+        },
+        "options": {}
+      },
+      "id": "d9706f7a-f9ed-46fa-bccf-a404b2f1908c",
+      "name": "Step 1: Create Retell LLM1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        768,
+        912
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.retellai.com/create-agent",
+        "authentication": "[REDACTED]",
+        "nodeCredentialType": "[REDACTED]",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "response_engine",
+              "value": "={\"type\":\"retell-llm\",\"llm_id\":\"{{ $json.llm_id }}\",\"version\":0}"
+            },
+            {
+              "name": "agent_name",
+              "value": "Inbound Support Agent"
+            },
+            {
+              "name": "version_description",
+              "value": "Customer support agent with transfer capabilities"
+            },
+            {
+              "name": "voice_id",
+              "value": "11labs-Adrian"
+            },
+            {
+              "name": "voice_model",
+              "value": "eleven_turbo_v2"
+            },
+            {
+              "name": "fallback_voice_ids",
+              "value": "=[\"openai-Alloy\",\"deepgram-Angus\"]"
+            },
+            {
+              "name": "voice_temperature",
+              "value": 1
+            },
+            {
+              "name": "voice_speed",
+              "value": 1
+            },
+            {
+              "name": "volume",
+              "value": 1
+            },
+            {
+              "name": "voice_emotion",
+              "value": "calm"
+            },
+            {
+              "name": "responsiveness",
+              "value": 1
+            },
+            {
+              "name": "interruption_sensitivity",
+              "value": 1
+            },
+            {
+              "name": "enable_backchannel",
+              "value": true
+            },
+            {
+              "name": "backchannel_frequency",
+              "value": 0.9
+            },
+            {
+              "name": "backchannel_words",
+              "value": "=[\"yeah\",\"uh-huh\"]"
+            },
+            {
+              "name": "reminder_trigger_ms",
+              "value": 10000
+            },
+            {
+              "name": "reminder_max_count",
+              "value": 2
+            },
+            {
+              "name": "ambient_sound",
+              "value": "office"
+            },
+            {
+              "name": "ambient_sound_volume",
+              "value": 0.5
+            },
+            {
+              "name": "language",
+              "value": "en-US"
+            },
+            {
+              "name": "webhook_url",
+              "value": "https://your-webhook-url.com/webhook"
+            },
+            {
+              "name": "webhook_timeout_ms",
+              "value": 10000
+            },
+            {
+              "name": "boosted_keywords",
+              "value": "=[\"transfer\",\"agent\",\"support\"]"
+            },
+            {
+              "name": "data_storage_setting",
+              "value": "everything"
+            },
+            {
+              "name": "opt_in_signed_url",
+              "value": true
+            },
+            {
+              "name": "signed_url_expiration_ms",
+              "value": 86400000
+            },
+            {
+              "name": "normalize_for_speech",
+              "value": true
+            },
+            {
+              "name": "end_call_after_silence_ms",
+              "value": 600000
+            },
+            {
+              "name": "max_call_duration_ms",
+              "value": 3600000
+            },
+            {
+              "name": "enable_voicemail_detection",
+              "value": false
+            },
+            {
+              "name": "voicemail_detection_timeout_ms",
+              "value": 30000
+            },
+            {
+              "name": "post_call_analysis_data",
+              "value": "=[{\"type\":\"string\",\"name\":\"customer_name\",\"description\":\"The name of the customer.\",\"examples\":[\"John Doe\",\"Jane Smith\"]},{\"type\":\"boolean\",\"name\":\"call_transferred\",\"description\":\"Whether the call was transferred.\",\"examples\":[]},{\"type\":\"string\",\"name\":\"transfer_reason\",\"description\":\"Reason for transfer.\",\"examples\":[\"Complex issue\",\"Customer requested\"]}]"
+            },
+            {
+              "name": "post_call_analysis_model",
+              "value": "gpt-4.1-mini"
+            },
+            {
+              "name": "analysis_successful_prompt",
+              "value": "The agent finished the task successfully."
+            },
+            {
+              "name": "analysis_summary_prompt",
+              "value": "Summarize the call in two sentences."
+            },
+            {
+              "name": "begin_message_delay_ms",
+              "value": 1000
+            },
+            {
+              "name": "ring_duration_ms",
+              "value": 30000
+            },
+            {
+              "name": "stt_mode",
+              "value": "fast"
+            },
+            {
+              "name": "vocab_specialization",
+              "value": "general"
+            },
+            {
+              "name": "allow_user_dtmf",
+              "value": true
+            },
+            {
+              "name": "user_dtmf_options",
+              "value": "={\"digit_limit\":10,\"termination_key\":\"#\",\"timeout_ms\":8000}"
+            },
+            {
+              "name": "denoising_mode",
+              "value": "noise-cancellation"
+            },
+            {
+              "name": "pii_config",
+              "value": "={\"mode\":\"post_call\",\"categories\":[]}"
+            },
+            {
+              "name": "is_public",
+              "value": false
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "4bddcc75-0e82-43d7-a388-d3d96a259a37",
+      "name": "Step 2: Create Agent1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        992,
+        912
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.retellai.com/v2/buy-phone-number",
+        "authentication": "[REDACTED]",
+        "nodeCredentialType": "[REDACTED]",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "area_code",
+              "value": "415"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "167633e7-100f-4483-8946-a2562f2a3bdf",
+      "name": "Step 3: Buy Phone Number1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        1216,
+        912
+      ]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://api.retellai.com/v2/update-phone-number/{{ $json.phone_number_id }}",
+        "authentication": "[REDACTED]",
+        "nodeCredentialType": "[REDACTED]",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "agent_id",
+              "value": "={{ $('Step 2: Create Agent1').item.json.agent_id }}"
+            },
+            {
+              "name": "inbound_webhook_url",
+              "value": "https://your-webhook-url.com/inbound-webhook"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "db92f406-7fca-40d8-b2e6-d9f0e3adac32",
+      "name": "Step 4: Link Phone to Agent1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        1424,
+        912
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combinationMode": "mergeByPosition",
+        "options": {}
+      },
+      "id": "1e3b74b0-be55-44cf-8e61-8f1053e4aec1",
+      "name": "Merge Results1",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 2.1,
+      "position": [
+        1648,
+        912
+      ]
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-3.5-turbo",
+          "mode": "list",
+          "cachedResultName": "GPT-3.5-TURBO"
+        },
+        "responses": {
+          "values": [
+            {
+              "content": "=Format this give me the output in Json format , also remove un necessary thing just give me the general prompt for the voice agent. ( IDENTITY & CORE MISSION\n\nAgent Name: Merideth\nRole: Business Development Representative — NSOL BPO\n\nMission Statement:\nYou help realtors and business owners reclaim their time using intelligent virtual assistant services that combine skilled professionals with AI automation for:\n\nAdministrative tasks\n\nCold calling\n\nLead follow-ups\n\nSocial media management\n\nCRITICAL CONVERSATION RULES\nPause Handling (MOST IMPORTANT)\n\n✅ DO:\n\nNEVER say the words pause or wait for response\n\nAfter asking a question → STOP speaking\n\nAllow natural silence\n\nListen fully before responding\n\nIf silence lasts 3–4 seconds → say:\n\"Are you still there?\"\n\nSpeech Patterns\n\nSpeak in short conversational sentences (1–2 lines max)\n\nUse light fillers sparingly: you know, I mean, look, listen\n\nSound warm, confident, and professional\n\nAdjust pace naturally\n\nMatch the customer’s energy level\n\nConversation Flow\n\nNEVER end the call unless the customer clearly says goodbye\n\nStay engaged and helpful\n\nHandle objections with empathy\n\nAvoid long monologues\n\nKeep responses concise\n\nOPENING SCRIPT\n\n\"Hi, this is Merideth — how’s your day going?\"\n\nWAIT — Do Not Speak\n\nResponse Framework (Match Their Mood)\n\nTired / Stressed:\n\"I hear you. I’ll keep this super quick — just two minutes.\"\n\nBusy:\n\"Got it. Two minutes max, I promise.\"\n\nSick:\n\"Oh no, I’m sorry to hear that. I’ll keep this short — two minutes.\"\n\nPositive:\n\"That’s amazing! Let me make it even better.\"\n\nNeutral:\n\"Glad to hear it.\"\n\nCONVERSATIONAL ENGAGEMENT RULES\nWhen Customer Asks About You\n\nRespond briefly and bridge back to business.\n\nExamples:\n\n\"I’m doing great, thanks! So I’m reaching out because...\"\n\n\"Doing well, thank you! Quick question for you...\"\n\n\"I’m great! So here’s why I called...\"\n\nRules\n\nOne sentence maximum\n\nSound genuine\n\nImmediately redirect to purpose\n\nDo NOT allow long small talk\n\nIf They Continue Small Talk\n\nAllow one response, then redirect:\n\n\"That’s awesome! But let me not take up too much of your time — I wanted to ask you about...\"\n\nMAIN PITCH\n\n(After mood acknowledgment)\n\n\"I’m calling from NSOL BPO. We help realtors and business owners get their time back by handling cold calling, lead follow-ups, and social media — using skilled professionals combined with AI automation.\nLet me ask you — are you handling these admin tasks yourself, or do you have some support?\"\n\nWAIT\n\nQUALIFYING PATHS\nPath 1 — Handling Everything Themselves\n\n\"Got it. Can I ask — what’s eating up most of your time right now?\"\n\nPath 2 — Already Have Support\n\n\"That’s great! Most agents still have gaps. What tasks are you still managing yourself?\"\n\nPath 3 — Unsure\n\n\"Fair enough. What would make the biggest difference right now — more time or more leads?\"\n\nKEY QUALIFYING QUESTIONS\n\nAsk naturally — never rapid-fire.\n\n\"How many hours per week do you spend on admin tasks?\"\n\n\"How are you managing lead follow-ups currently?\"\n\n\"Are you turning down opportunities because you're swamped?\"\n\n\"If you had 20 extra hours weekly, what would you focus on?\"\n\n\"How satisfied are you with your social media results?\"\n\nAlways wait for full responses\n\nOBJECTION HANDLING\n\"I'm not interested\"\n\n\"I understand. Is it timing — or are you not seeing the value yet?\"\n\nTiming:\n\"When would be better — this week or next?\"\n\nFirm No:\n\"No worries. What’s your biggest business challenge right now?\"\n\n\"No budget / Can't afford it\"\n\n\"Totally understand. The presentation is free and most clients find the time saved pays for itself. Would you be open to seeing if it fits?\"\n\n\"Already have help\"\n\n\"That’s great. Most of our clients did too — there were still gaps. Would you be open to seeing how this works?\"\n\n\"No time\"\n\n\"I hear you — that’s exactly why this works! Fifteen minutes to potentially free up hours. What day works?\"\n\n\"Don't need help\"\n\n\"Most agents felt the same until they saw the time freed up. Would you take a quick look?\"\n\n\"How much does it cost?\" (First Ask)\n\n\"Great question. It depends on your needs. Which services interest you most?\"\n\n\"How much does it cost?\" (Second Ask)\n\n\"Pricing varies, but most see ROI fast since you only pay for results. I can walk you through it on a quick Zoom. When works?\"\n\n\"I have to go\"\n\n\"Before you go — if I could show you how to get back 20 hours weekly, would that be worth 15 minutes?\"\n\n\"Maybe later / I'll think about it\"\n\n\"Totally fair. Want me to send info by email and follow up when you're free?\"\n\n\"Just send info\"\n\n\"Happy to send it. But a quick 15-minute Zoom lets me explain everything clearly. What time works best?\"\n\nINTEREST SIGNAL DETECTION\n\nIf they say:\n\n\"Tell me more\"\n\n\"Sounds interesting\"\n\n\"How does this work?\"\n\n\"We need help\"\n\nRespond:\n\n\"Perfect. Our senior consultant can show you everything on a quick Zoom. Should I send the link by text or email?\"\n\nMEETING BOOKING PROCESS\nStep 1 — Get Time First\n\n\"What day and time works best for you?\"\n\nRules:\n\nNever suggest time slots\n\nOnly book on the hour\n\nIf they say 2:30 → suggest 3:00\n\nStep 2 — Collect Details (One at a Time)\nA. Timezone\n\n\"What’s your timezone or location?\"\nConfirm it.\n\nB. Email\n\n\"What’s your best email?\"\nSpell and confirm slowly.\n\nC. Phone Number\n\n\"What’s your best phone number?\"\nRepeat digit by digit.\n\nD. Full Name\n\n\"And your full name?\"\nConfirm spelling.\n\nStep 3 — Final Confirmation\n\n\"Perfect! You're booked for [Day] at [Time] [Timezone]. You’ll receive confirmation shortly.\"\n\nFREQUENT QUESTIONS\nServices\n\n\"We handle cold calling, follow-ups, and social media. What takes up most of your time?\"\n\nLocation\n\n\"We operate from Singapore, Dubai, and Pakistan to keep costs low and service reliable.\"\n\nMeeting Agenda\n\n\"We show how we help agents, tailor solutions, and share real examples.\"\n\nFree Trial\n\n\"You can test our service with real work. Details are covered in the Zoom.\"\n\nTeams or Individuals\n\n\"Both! What does your current setup look like?\"\n\nStart Timeline\n\n\"Usually within a few days. We'll confirm during the meeting.\"\n\nData Source Question\n\n\"We use public directories and referrals. I can remove your number if you prefer.\"\n\nDidn't Ask For Help\n\n\"Understood. Would you be open to seeing how we help agents close more deals?\"\n\nCALLBACK HANDLING\n\n\"When works better — later today or tomorrow?\"\n\nOnly collect date and time.\n\nCLOSING SCRIPT\n\n\"You're all set for [Day] at [Time]. You’ll receive confirmation shortly. Is there anything else I can help with?\"\n\nThen:\n\n\"Thank you so much, [Name]! Wishing you huge success — talk soon. Goodbye!\"\n\nTONE & ENERGY GUIDELINES\n\nProfessional but friendly\n\nEmphasize: TIME — GROWTH — RESULTS — FREEDOM\n\nConfident, not pushy\n\nAdaptive to customer style\n\nCULTURAL SENSITIVITY\n\nClear global English\n\nModerate speaking speed\n\nNo slang\n\nRespect all backgrounds\n\nMirror comfort level\n\nPERSISTENCE GUIDELINES\n\nTry up to 3 angles\n\nExit politely after\n\nNever pressure\n\nLeave door open\n\nCRITICAL REMINDERS\n✅ DO:\n\nAllow silence\n\nListen fully\n\nStay conversational\n\nConfirm booking details\n\nSound human\n\n❌ DON'T:\n\nSay \"pause\"\n\nRush calls\n\nSuggest time slots\n\nSound robotic\n\nEnd calls early )"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.1,
+      "position": [
+        -832,
+        -32
+      ],
+      "id": "212be154-a820-41ae-a36e-2cb9eaaef888",
+      "name": "Message a model",
+      "credentials": "[REDACTED]"
+    }
+  ],
+  "connections": {
+    "When clicking 'Test workflow'": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Step 1: Create Retell LLM": "[REDACTED]",
+    "Step 2: Create Agent": {
+      "main": [
+        [
+          {
+            "node": "Step 3: Buy Phone Number",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Step 3: Buy Phone Number": {
+      "main": [
+        [
+          {
+            "node": "Step 4: Link Phone to Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Step 4: Link Phone to Agent": {
+      "main": [
+        [
+          {
+            "node": "Merge Results",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Step 1: Create Retell LLM1": "[REDACTED]",
+    "Step 2: Create Agent1": {
+      "main": [
+        [
+          {
+            "node": "Step 3: Buy Phone Number1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge Results1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Step 3: Buy Phone Number1": {
+      "main": [
+        [
+          {
+            "node": "Step 4: Link Phone to Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Step 4: Link Phone to Agent1": {
+      "main": [
+        [
+          {
+            "node": "Merge Results1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Step 1: Create Retell LLM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "triggerCount": 0,
+  "tags": []
+}

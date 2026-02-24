@@ -1,0 +1,934 @@
+{
+  "updatedAt": "2026-02-03T17:00:08.171Z",
+  "createdAt": "2025-10-25T08:43:04.803Z",
+  "id": "q3b13O9Giyn0Xy6m",
+  "name": "whatsapp Chatbot",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph.facebook.com/v21.0/834396543090999/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n    \"messaging_product\": \"whatsapp\",\n    \"recipient_type\": \"individual\",\n    \"to\": \"923011282080\",\n    \"type\": \"text\",\n    \"text\": {\n      \"preview_url\": false,\n      \"body\": \"Hello, How Are You Doing {{Name}} , We Just recived your form on our ads I am here if you need Any assistant i am happy to help you..\"\n    }\n  }",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -2560,
+        -1680
+      ],
+      "id": "a82f4f3d-bff7-4a25-8998-c806448eda9f",
+      "name": "HTTP Request",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "ae6445be-da98-4a72-9b11-48c859ae310e",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -3008,
+        -1264
+      ],
+      "id": "2b023c7b-0952-43dc-9884-ed3d608ae411",
+      "name": "Webhook",
+      "webhookId": "ae6445be-da98-4a72-9b11-48c859ae310e"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.text }}\n",
+        "options": {
+          "systemMessage": "=DuhaNashrah.ai Website Knowledge Base\nOverview\nWebsite URL: https://duhanashrah.ai/\nPurpose: [What is the main purpose of this website?]\nTarget Audience: [Who is this website for?]\nKey Value Proposition: [What makes this website unique or valuable?]\n\nAbout Section\nWho is Duha Nashrah?\n\nProfessional background\nExpertise areas\nCredentials/qualifications\nCareer highlights\n\nMission/Vision:\n[What is the mission or vision statement?]\n\nServices Offered\nService 1: [Name]\n\nDescription: [What does this service include?]\nTarget users: [Who benefits from this?]\nKey features: [What are the main features?]\nPricing: [If applicable]\n\nService 2: [Name]\n\nDescription:\nTarget users:\nKey features:\nPricing:\n\nService 3: [Name]\n\nDescription:\nTarget users:\nKey features:\nPricing:\n\n\nProducts/Offerings\nMain Products:\n\n[Product name and description]\n[Product name and description]\n[Product name and description]\n\nTechnology Used:\n\n[List any AI technologies, platforms, or tools mentioned]\n\n\nContent/Resources\nBlog/Articles:\n\n[Topics covered]\n[Frequency of updates]\n\nFree Resources:\n\n[Downloads, templates, guides, etc.]\n\nEducational Content:\n\n[Courses, tutorials, webinars, etc.]\n\n\nContact Information\nPrimary Contact Methods:\n\nEmail: [email address]\nPhone: [phone number if provided]\nSocial Media:\n\nLinkedIn: [link]\nTwitter: [link]\nInstagram: [link]\nYouTube: [link]\nOther: [link]\n\n\n\nLocation:\n\nPhysical address: [if provided]\nOperating hours: [if applicable]\n\n\nPortfolio/Case Studies\nFeatured Projects:\n\n[Project name - brief description and results]\n[Project name - brief description and results]\n[Project name - brief description and results]\n\nClient Testimonials:\n\n[Quote 1 with attribution]\n[Quote 2 with attribution]\n\n\nTechnical Specifications\nWebsite Features:\n\nChatbot functionality: [Yes/No - describe if present]\nBooking/scheduling system: [Yes/No]\nE-commerce capabilities: [Yes/No]\nMember portal: [Yes/No]\nOther interactive features: [list]\n\nAI Integration:\n\n[What AI features are present on the website?]\n[What AI services are offered?]\n\n\nPricing Structure\nService Packages:\n\nBasic: [price and features]\nStandard: [price and features]\nPremium: [price and features]\nCustom/Enterprise: [details]\n\nPayment Methods:\n[Accepted payment options]\n\nFAQ Section\nCommon Questions:\nQ: [Question 1]\nA: [Answer]\nQ: [Question 2]\nA: [Answer]\nQ: [Question 3]\nA: [Answer]\n\nBooking/Consultation Process\nHow to Get Started:\n\n[Step 1]\n[Step 2]\n[Step 3]\n\nTypical Timeline:\n\nInitial consultation: [timeframe]\nProject delivery: [timeframe]\nFollow-up: [timeframe]\n\n\nAreas of Expertise\nPrimary Domains:\n\n[Domain 1 with description]\n[Domain 2 with description]\n[Domain 3 with description]\n\nIndustries Served:\n\n[Industry 1]\n[Industry 2]\n[Industry 3]\n\n\nMedia & Recognition\nPress Mentions:\n\n[Publication name and article title]\n[Speaking engagements]\n[Awards or recognition]\n\nCertifications:\n\n[List relevant certifications]\n\n\nPolicies\nPrivacy Policy Highlights:\n\n[Key points about data handling]\n\nTerms of Service:\n\n[Important terms users should know]\n\nRefund/Cancellation Policy:\n\n[If applicable]\n\n\nChatbot Response Guidelines\nWhen a user asks about this website, the AI agent should:\n\nProvide accurate information based on the sections above\nDirect users to specific services that match their needs\nOffer to help book consultations or connect them appropriately\nMention relevant case studies or testimonials when appropriate\nAlways provide the website URL for users who want to learn more\n\nCommon User Queries to Expect:\n\n\"What services does Duha Nashrah offer?\"\n\"How can I contact Duha Nashrah?\"\n\"What is Duha Nashrah's background?\"\n\"How much do services cost?\"\n\"Can you help me with [specific need]?\"\n\"What industries does Duha Nashrah work with?\"\n\n\nUpdates Log\nLast Updated: [Date]\nLast Reviewed: [Date]\nNext Review Date: [Date]\nRecent Changes:\n\n[List any recent updates to services, pricing, or content]\n\n\nNotes for AI Agent\n\nAlways be professional and helpful\nIf information is not in this document, acknowledge the gap and direct user to contact the website directly\nKeep responses concise but informative\nOffer to help with next steps (booking, consultation, etc.)\nBe enthusiastic about the services while remaining factu"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.8,
+      "position": [
+        -1888,
+        -1264
+      ],
+      "id": "95a29a86-0648-4e8c-97e3-d726502bc327",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -1880,
+        -1040
+      ],
+      "id": "27df6cdc-6230-4342-8505-966da87e7735",
+      "name": "OpenAI Chat Model",
+      "notesInFlow": false,
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.entry[0].changes[0].value.messages[0].type }}",
+                    "rightValue": "audio",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "e0e1a5dd-b07c-4156-a8b2-839f9a9a7940"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "voice"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "94480a81-907d-41c3-b284-86406693cc7e",
+                    "leftValue": "={{ $json.body.entry[0].changes[0].value.messages[0].type }}",
+                    "rightValue": "text",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "text"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -2784,
+        -1264
+      ],
+      "id": "179718a0-f00f-4c3d-b73c-a08be5416d04",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "cddf28b8-b38b-4e26-979f-7c365b437b31",
+              "name": "text",
+              "value": "={{ $json.body.entry[0].changes[0].value.messages[0].text.body }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -2112,
+        -1168
+      ],
+      "id": "5dca554d-4479-4218-b17b-19bb1039caf4",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "resource": "media",
+        "operation": "mediaUrlGet",
+        "mediaGetId": "={{ $json.body.entry[0].changes[0].value.messages[0].audio.id }}"
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1,
+      "position": [
+        -2560,
+        -1360
+      ],
+      "id": "759f6703-ca79-44d9-9fd6-f65d467483b5",
+      "name": "WhatsApp Business Cloud1",
+      "webhookId": "a02fe2be-955e-493c-9dc8-9fa4f741c75f",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "operation": "transcribe",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -2112,
+        -1360
+      ],
+      "id": "ea70994b-e4f2-4743-b260-8183d8715c40",
+      "name": "OpenAI",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.url }}",
+        "authentication": "[REDACTED]",
+        "nodeCredentialType": "[REDACTED]",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -2336,
+        -1360
+      ],
+      "id": "1d17a965-24fc-4b77-ba6d-4ed6d2922220",
+      "name": "HTTP Request1",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "model": "tts-1-hd",
+        "input": "={{ $json.output }}",
+        "voice": "nova",
+        "options": {
+          "response_format": "opus",
+          "speed": 1
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -1312,
+        -1456
+      ],
+      "id": "5f24a07e-a0a2-4652-8dbe-7d571a454b57",
+      "name": "Generate audio",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Webhook').item.json.body.entry[0].changes[0].value.contacts[0].wa_id }}",
+        "contextWindowLength": 1000
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -1752,
+        -1040
+      ],
+      "id": "1d47dd02-f385-4f03-b732-b2affe00cb2f",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Webhook').item.json.body.entry[0].changes[0].value.messages[0].type }}",
+                    "rightValue": "audio",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "e0e1a5dd-b07c-4156-a8b2-839f9a9a7940"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "voice"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "94480a81-907d-41c3-b284-86406693cc7e",
+                    "leftValue": "={{ $('Webhook').item.json.body.entry[0].changes[0].value.messages[0].type }}",
+                    "rightValue": "text",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "text"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -1536,
+        -1360
+      ],
+      "id": "4adc8492-87f3-406d-ad00-4b207a26018a",
+      "name": "Switch2"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "164353730101820",
+        "recipientPhoneNumber": "={{ $('Webhook').item.json.body.entry[0].changes[0].value.contacts[0].wa_id }}",
+        "messageType": "audio",
+        "mediaPath": "useMedian8n",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1,
+      "position": [
+        -1088,
+        -1456
+      ],
+      "id": "903b487f-bc2b-4d31-8d8f-756d923d1c22",
+      "name": "Send message1",
+      "webhookId": "ab56ea30-467e-4981-b170-45baf37b2987",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "750036ad-9e73-4ae0-b3cd-004a7be9f9dd",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -3008,
+        -1680
+      ],
+      "id": "5fafdf28-93c9-47e3-a1a5-144e719a77bd",
+      "name": "Webhook1",
+      "webhookId": "750036ad-9e73-4ae0-b3cd-004a7be9f9dd"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "93a29040-4e55-4af3-a07b-615a4888dfb7",
+              "name": "Name ",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "44e18392-26b0-40c9-8846-8c0b89a144d0",
+              "name": "Number ",
+              "value": "",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -2784,
+        -1680
+      ],
+      "id": "d7c038c0-3e8c-4a1c-82d4-34061d063e23",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "164353730101820",
+        "recipientPhoneNumber": "={{ $('Webhook').item.json.body.entry[0].changes[0].value.contacts[0].wa_id }}",
+        "textBody": "={{ $json.output }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1,
+      "position": [
+        -1312,
+        -1264
+      ],
+      "id": "22a090d5-273e-4529-973c-6197262d88ed",
+      "name": "Send message",
+      "webhookId": "ab56ea30-467e-4981-b170-45baf37b2987",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.body.content }}",
+        "options": {
+          "systemMessage": "you are an assistant "
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.8,
+      "position": [
+        -2784,
+        -648
+      ],
+      "id": "ad1c53b8-579f-467e-9081-677c464573d7",
+      "name": "AI Agent1",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "7ec0e6d1-bccc-43c1-b517-d6f4fb98df9c",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -3008,
+        -648
+      ],
+      "id": "0b60387f-b115-492a-8558-be16e559e6f3",
+      "name": "Webhook2",
+      "webhookId": "7ec0e6d1-bccc-43c1-b517-d6f4fb98df9c",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ $json.output }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        -2432,
+        -648
+      ],
+      "id": "6b36a3d4-af14-40ff-95ad-3e38e6e3c774",
+      "name": "Respond to Webhook",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -2776,
+        -424
+      ],
+      "id": "3cd71766-29f9-4641-903c-0f4e827c7af5",
+      "name": "OpenAI Chat Model1",
+      "credentials": "[REDACTED]",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Webhook2').item.json.body.sessionId }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -2648,
+        -424
+      ],
+      "id": "aad779f1-98cd-448a-806e-06f924a4eaeb",
+      "name": "Simple Memory1",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "tableId": "whatsapp_conversation",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "Number",
+              "fieldValue": "={{ $('Webhook').item.json.body.entry[0].changes[0].value.messages[0].from }}"
+            },
+            {
+              "fieldId": "Name",
+              "fieldValue": "={{ $('Webhook').item.json.body.entry[0].changes[0].value.contacts[0].profile.name }}"
+            },
+            {
+              "fieldId": "Whatsapp conv",
+              "fieldValue": "={{$now}} {{ $('Webhook').item.json.body.entry[0].changes[0].value.contacts[0].profile.name }} : {{ $('Webhook').item.json.body.entry[0].changes[0].value.messages[0].text.body }}\n{{$now}} AI : {{ $('AI Agent').item.json.output }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -1088,
+        -976
+      ],
+      "id": "7ede2734-87ab-4f2f-a45c-e981cb64474e",
+      "name": "Create a row",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "whatsapp_conversation",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "Number",
+              "keyValue": "={{ $('Webhook').item.json.body.entry[0].changes[0].value.contacts[0].wa_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -1536,
+        -1072
+      ],
+      "id": "f0d300a8-a04e-405c-bd02-876dfe9feaa5",
+      "name": "Get a row",
+      "alwaysOutputData": true,
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "whatsapp_conversation",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "Number",
+              "condition": "eq",
+              "keyValue": "={{ $json.Number }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "Whatsapp conv",
+              "fieldValue": "= {{ $json['Whatsapp conv'] }}\n{{$now }} {{ $('Webhook').item.json.body.entry[0].changes[0].value.contacts[0].profile.name }} : {{ $('Webhook').item.json.body.entry[0].changes[0].value.messages[0].text.body }} \n{{$now}} AI : {{ $('AI Agent').item.json.output }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -1088,
+        -1168
+      ],
+      "id": "566fc168-a14c-4c2f-8b8e-f3dce1764425",
+      "name": "Update a row",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Webhook').item.json.body.entry[0].changes[0].value.messages[0].from }}",
+                    "rightValue": "={{ $json.Number }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "330ec9be-3bad-4e0b-9c6c-4940b3b33b89"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "b37a3bdf-b047-449b-b779-7d180e643be8",
+                    "leftValue": "=",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "empty",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -1312,
+        -1072
+      ],
+      "id": "6f264c98-91cd-4c46-bae7-b42c0558858b",
+      "name": "Switch1"
+    },
+    {
+      "parameters": {
+        "tableId": "whatsapp_conversation",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "Number",
+              "fieldValue": "={{ $json.body.contacts[0].input }}"
+            },
+            {
+              "fieldId": "Name",
+              "fieldValue": "={{ $('Edit Fields1').item.json['Name '] }}"
+            },
+            {
+              "fieldId": "Whatsapp conv",
+              "fieldValue": "={{$now}} AI : Hello, How Are You Doing {{ $('Edit Fields1').item.json['Name '] }} , We Just recived your form on our ads I am here if you need Any assistant i am happy to help you.."
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -2336,
+        -1680
+      ],
+      "id": "4424e77e-1ab1-4cac-8995-8ec04ce4c6c6",
+      "name": "Create a row1",
+      "credentials": "[REDACTED]"
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": "[REDACTED]",
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "WhatsApp Business Cloud1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WhatsApp Business Cloud1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI": "[REDACTED]",
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "OpenAI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Switch2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get a row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate audio": {
+      "main": [
+        [
+          {
+            "node": "Send message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch2": {
+      "main": [
+        [
+          {
+            "node": "Generate audio",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send message1": {
+      "main": [
+        []
+      ]
+    },
+    "Webhook2": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": "[REDACTED]",
+    "Simple Memory1": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a row": {
+      "main": [
+        [
+          {
+            "node": "Switch1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch1": {
+      "main": [
+        [
+          {
+            "node": "Update a row",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create a row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Create a row1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "triggerCount": 2,
+  "tags": [
+    {
+      "updatedAt": "2025-10-15T12:01:49.775Z",
+      "createdAt": "2025-10-15T12:01:49.775Z",
+      "id": "vqPjQ1pPoVp3pFKR",
+      "name": "Mark Edward"
+    }
+  ]
+}

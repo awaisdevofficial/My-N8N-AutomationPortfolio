@@ -1,0 +1,585 @@
+{
+  "updatedAt": "2026-01-29T03:26:32.694Z",
+  "createdAt": "2026-01-16T16:12:20.130Z",
+  "id": "QxEK9TxyxVqpDgMi",
+  "name": "Retell Testing",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "amount": 2,
+        "unit": "minutes"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -288,
+        -208
+      ],
+      "id": "814c92b7-3bf2-4df4-85fa-823cd29ccdad",
+      "name": "Wait",
+      "webhookId": "a4756877-b909-4ed6-8b1a-147e04c0f531"
+    },
+    {
+      "parameters": {
+        "batchSize": 3,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -928,
+        -208
+      ],
+      "id": "5f03db3c-7ff5-48fd-b1d7-382811e14fc3",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.vapi.ai/call/batch",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"assistantId\": \"your-assistant-id\",\n  \"customers\": [\n    {\n      \"number\": \"+1234567890\",\n      \"name\": \"John Doe\"\n    },\n    {\n      \"number\": \"+0987654321\",\n      \"name\": \"Jane Smith\"\n    }\n  ],\n  \"maxConcurrentCalls\": 5,\n  \"phoneNumberId\": \"your-phone-number-id\"\n}",
+        "options": {
+          "redirect": {
+            "redirect": {}
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1440,
+        -64
+      ],
+      "id": "232fb140-8e29-4e27-a7b9-56dae76953d7",
+      "name": "Vapi Batch Call",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.retellai.com/v2/create-phone-call",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"from_number\": \"+17655227839\",\n  \"to_number\": \"{{ $json.phone || $json.number}}\",\n  \"override_agent_id\": \"{{ $json.agent_id }}\",\n  \"retell_llm_dynamic_variables\": {\n    \"customer_name\": \"{{ $json.name }}\"\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -688,
+        -192
+      ],
+      "id": "07194db0-ccbf-4ee1-af99-ab69790b1d43",
+      "name": "Retell Call",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.retellai.com/v2/get-call/{{ $json.call_id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -16,
+        -208
+      ],
+      "id": "570b2ac3-f477-49ea-80a5-efa37e3edc1d",
+      "name": "Get Call"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "condition-1",
+              "leftValue": "={{ $json.call_status }}",
+              "rightValue": "ended",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "condition-2",
+              "leftValue": "={{ $json.call_status }}",
+              "rightValue": "=completed ",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "7fff9821-f1a1-485c-8731-d0da6cda5d63",
+              "leftValue": "={{ $json.call_status }}",
+              "rightValue": "=not_connected",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "id": "4f14f6d3-ff9b-4bac-96f6-dfe6c6502e3b",
+      "name": "Check Call Status",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        224,
+        -208
+      ],
+      "notes": "Checks if call is completed"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Initialize output array\nconst results = [];\n\n// Loop through input items (usually just one webhook)\nfor (const item of $input.all()) {\n  const body = item.json.body || {};\n  \n  // 1. GET THE MANDATORY AGENT ID\n  const agentId = body.agent_id || item.json.agent_id || null;\n  \n  // 2. CHECK IF THIS IS A CSV FILE OR SINGLE ENTRY\n  if (body.csv && typeof body.csv === 'string') {\n    \n    // --- CSV PATH: Parse the list ---\n    const rows = body.csv.split(/\\r?\\n/).filter(row => row.trim() !== '');\n    \n    // Extract headers and trim whitespace\n    const headers = rows.shift().split(',').map(h => h.trim());\n    \n    rows.forEach(row => {\n      const values = row.split(',');\n      const rowObject = {};\n      \n      headers.forEach((header, index) => {\n        const value = values[index] ? values[index].trim() : null;\n        \n        // MAP CSV HEADERS TO YOUR REQUIRED KEYS\n        if (header === 'Name') {\n          rowObject['name'] = value;\n        } else if (header === 'PhoneNumber' || header === 'phone') {\n          rowObject['number'] = value;\n        } else {\n          // Keep other columns just in case, or ignore them\n          rowObject[header.toLowerCase()] = value;\n        }\n      });\n      \n      // ATTACH THE AGENT ID TO THIS ROW\n      rowObject['agent_id'] = agentId;\n      results.push({ json: rowObject });\n    });\n    \n  } else {\n    \n    // --- SINGLE ENTRY PATH: Pass it through ---\n    // Check for name in multiple places including metadata\n    const name = body.name || \n                 body.Name || \n                 (body.metadata && body.metadata.caller_name) ||\n                 (body.metadata && body.metadata.name);\n    \n    // Check for number in multiple places\n    const number = body.number || \n                   body.Number || \n                   body.PhoneNumber || \n                   body.phone ||\n                   body.to_number ||\n                   (body.metadata && body.metadata.phone_number);\n    \n    results.push({\n      json: {\n        name: name,\n        number: number,\n        agent_id: agentId\n      }\n    });\n  }\n}\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1184,
+        -208
+      ],
+      "id": "ed16bc3b-3933-4e38-a4a8-d80432787525",
+      "name": "Format CSV"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.retellai.com/create-retell-llm",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "general_prompt",
+              "value": "={{ $json.body[\"general-prompt\"] }}"
+            },
+            {
+              "name": "begin_message",
+              "value": "={{ $json.body[\"begin-message\"] }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -1328,
+        208
+      ],
+      "id": "e616304b-6802-4695-8e55-02a95852ed7f",
+      "name": "retell_single_prompt_llm_creation"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.retellai.com/create-retell-llm",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"model\": \"gpt-4o\",\n  \"general_prompt\": \"You are a receptionist for Retell Dental. You are professional and concise. Always speak dates in spoken form (e.g., January fifth).\",\n  \"starting_state\": \"information_collection\",\n  \"begin_message\": \"Hi, thanks for calling Retell Dental. I can help you book a check-up. May I have your name?\",\n  \"states\": [\n    {\n      \"name\": \"information_collection\",\n      \"state_prompt\": \"Your goal is to collect the users name and reason for calling. Once you have this, transition to the scheduling state.\",\n      \"edges\": [\n        {\n          \"destination_state_name\": \"scheduling_state\",\n          \"description\": \"Transition here once the user provides their name and reason for the visit.\"\n        }\n      ]\n    },\n    {\n      \"name\": \"scheduling_state\",\n      \"state_prompt\": \"You are now scheduling the appointment. Ask for their preferred date and time. If they agree to a slot, transition to the confirmation state.\",\n      \"tools\": [\n        {\n          \"type\": \"check_availability_cal\",\n          \"name\": \"check_availability\",\n          \"description\": \"Check if a slot is open.\"\n        }\n      ],\n      \"edges\": [\n        {\n          \"destination_state_name\": \"confirmation_state\",\n          \"description\": \"Transition here once a specific time slot has been agreed upon.\"\n        }\n      ]\n    },\n    {\n      \"name\": \"confirmation_state\",\n      \"state_prompt\": \"Confirm the details: Name, Reason, and Time. Then say goodbye and end the call.\",\n      \"tools\": [\n        {\n          \"type\": \"end_call\",\n          \"name\": \"end_call_tool\",\n          \"description\": \"End the call after confirmation.\"\n        }\n      ]\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        464,
+        592
+      ],
+      "id": "ed4f065c-661e-4fe2-aa7f-1aca0782fd89",
+      "name": "retell_multi_prompt_llm_creation"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.retellai.com/create-agent",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"response_engine\": {\n    \"type\": \"retell-llm\",\n    \"llm_id\": \"{{ $json.llm_id }}\"\n  },\n  \"agent_name\": \"My Agent\",\n  \"voice_id\": \"11labs-Adrian\"\n} ",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -1072,
+        208
+      ],
+      "id": "b96ff14f-7218-4289-b237-2817e8234b99",
+      "name": "retell_single_prompt_agent_creation1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.retellai.com/create-agent",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"response_engine\": {\n    \"type\": \"retell-llm\",\n    \"llm_id\": \"YOUR_LLM_ID_FROM_STEP_1\"\n  },\n  \"agent_name\": \"My Agent\",\n  \"voice_id\": \"11labs-Adrian\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        688,
+        592
+      ],
+      "id": "3dbaae84-68c6-404d-b5c7-2dcd64391cc9",
+      "name": "retell_multi_prompt_agent_creation"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.retellai.com/create-phone-number",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "area_code",
+              "value": "415"
+            },
+            {
+              "name": "inbound_agent_id",
+              "value": "YOUR_AGENT_ID_FROM_PREVIOUS_STEP"
+            },
+            {
+              "name": "outbound_agent_id",
+              "value": "YOUR_AGENT_ID_FROM_PREVIOUS_STEP"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        960,
+        592
+      ],
+      "id": "00478ef2-4c70-4fed-a8dc-e9fe532fe587",
+      "name": "retell_number_binding_agent1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.retellai.com/create-phone-number",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "area_code",
+              "value": "415"
+            },
+            {
+              "name": "inbound_agent_id",
+              "value": "YOUR_AGENT_ID_FROM_PREVIOUS_STEP"
+            },
+            {
+              "name": "outbound_agent_id",
+              "value": "YOUR_AGENT_ID_FROM_PREVIOUS_STEP"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        976,
+        816
+      ],
+      "id": "52d46f4e-4a56-4df6-a009-c41e10bf3adc",
+      "name": "retell_number_binding_agent2"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.retellai.com/create-conversation-flow",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"name\": \"Medical Scheduling Flow\",\n  \"description\": \"Handles appointment booking and emergency triage\",\n  \"start_speaker\": \"agent\",\n  \"start_node_id\": \"node_greeting\",\n  \"nodes\": [\n    {\n      \"id\": \"node_greeting\",\n      \"type\": \"conversation\",\n      \"instruction\": {\n        \"type\": \"static_text\",\n        \"text\": \"Thank you for calling City Clinic. Are you calling to book an appointment?\"\n      },\n      \"edges\": [\n        {\n          \"destination_node_id\": \"node_booking\",\n          \"transition_condition\": {\n            \"type\": \"prompt\",\n            \"prompt\": \"User wants to book an appointment\"\n          }\n        },\n        {\n          \"destination_node_id\": \"node_end\",\n          \"transition_condition\": {\n            \"type\": \"prompt\",\n            \"prompt\": \"User says no or wants to hang up\"\n          }\n        }\n      ]\n    },\n    {\n      \"id\": \"node_booking\",\n      \"type\": \"conversation\",\n      \"instruction\": {\n        \"type\": \"prompt\",\n        \"text\": \"Ask for the patient preferred date and time.\"\n      },\n      \"edges\": []\n    },\n    {\n      \"id\": \"node_end\",\n      \"type\": \"end\",\n      \"instruction\": {\n        \"type\": \"static_text\",\n        \"text\": \"Goodbye, have a great day.\"\n      }\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        432,
+        816
+      ],
+      "id": "958ee5b5-b28e-4d7c-8c37-19ab774c8ef3",
+      "name": "conversation_flow_llm"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.retellai.com/create-agent",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"agent_name\": \"Flow-Based Receptionist\",\n  \"voice_id\": \"11labs-Adrian\",\n  \"language\": \"en-US\",\n  \"response_engine\": {\n    \"type\": \"conversation-flow\",\n    \"conversation_flow_id\": \"YOUR_FLOW_ID_FROM_STEP_1\"\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        688,
+        816
+      ],
+      "id": "b1073cd0-0634-4668-ad07-2f887973f21b",
+      "name": "retell_conversation_flow_agent_creation"
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "https://api.retellai.com/update-phone-number/+12137771234",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "inbound_agent_id",
+              "value": "null"
+            },
+            {
+              "name": "outbound_agent_id",
+              "value": "={{ $json.agent_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -800,
+        208
+      ],
+      "id": "b0d12983-8989-4b9f-bea6-c2643fd79b53",
+      "name": "HTTP Request"
+    }
+  ],
+  "connections": {
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Get Call",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Retell Call",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Retell Call": "[REDACTED]",
+    "Get Call": {
+      "main": [
+        [
+          {
+            "node": "Check Call Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Call Status": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format CSV": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "retell_single_prompt_llm_creation": "[REDACTED]",
+    "retell_multi_prompt_llm_creation": "[REDACTED]",
+    "retell_single_prompt_agent_creation1": "[REDACTED]",
+    "retell_multi_prompt_agent_creation": "[REDACTED]",
+    "conversation_flow_llm": {
+      "main": [
+        [
+          {
+            "node": "retell_conversation_flow_agent_creation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "retell_conversation_flow_agent_creation": "[REDACTED]",
+    "HTTP Request": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "triggerCount": 1,
+  "tags": [
+    {
+      "updatedAt": "2026-01-16T15:13:31.431Z",
+      "createdAt": "2026-01-16T15:13:31.431Z",
+      "id": "XNgax37VvLrR0son",
+      "name": "Bruce Banner"
+    }
+  ]
+}

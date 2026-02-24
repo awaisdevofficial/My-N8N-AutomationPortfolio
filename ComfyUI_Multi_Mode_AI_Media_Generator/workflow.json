@@ -1,0 +1,1556 @@
+{
+  "updatedAt": "2026-01-19T23:34:34.296Z",
+  "createdAt": "2026-01-05T06:16:33.683Z",
+  "id": "yy9Q26ayRNUNI3M9",
+  "name": "Beeba Custom Media Gen",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "mediagen",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -448,
+        128
+      ],
+      "id": "1750e85f-ec8e-4408-92f3-40c563f9345d",
+      "name": "Webhook",
+      "webhookId": "4b39071b-d3d6-4d7e-8805-4c44af6a2d71"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.generation_type + ' ' + $json.body.model }}",
+                    "rightValue": "Text to Image ZImage",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "29f70268-0983-449f-b8c7-8890f7c000b0"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "9de2ad93-cee9-4530-a59f-584681c39c2b",
+                    "leftValue": "={{ $json.body.generation_type + ' ' + $json.body.model }}",
+                    "rightValue": "Text to Image Flux.2",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "e327ec65-cbb9-4de9-83c9-26ca3c6220d3",
+                    "leftValue": "={{ $json.body.generation_type }}",
+                    "rightValue": "Text to Video",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "1529b483-d549-4d54-a6e6-1c5b40fa0d75",
+                    "leftValue": "={{ $json.body.generation_type }}",
+                    "rightValue": "Image to Image",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "4867927f-b2a5-4f42-be07-361284328bd4",
+                    "leftValue": "={{ $json.body.generation_type }}",
+                    "rightValue": "Image to Video",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -192,
+        80
+      ],
+      "id": "7433affb-953a-4a40-b2b0-cb633c09d2eb",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "respondWith": "binary",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "image/png"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        2560,
+        128
+      ],
+      "id": "24bbbc69-005b-4ec6-83f6-9da8db610e99",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract data from webhook\nconst body = $input.item.json.body;\nconst prompt = body.prompt || \"A beautiful sunset\";\nconst width = body.width || 1024;\nconst height = body.height || 1024;\n\n// Generate random seed\nconst seed = Math.floor(Math.random() * 1000000000000000);\n\n// Build ComfyUI API format workflow\nconst workflowPrompt = {\n  \"1\": {\n    \"inputs\": {\n      \"filename_prefix\": \"z-image\",\n      \"images\": [\"3\", 0]\n    },\n    \"class_type\": \"SaveImage\"\n  },\n  \"2\": {\n    \"inputs\": {\n      \"seed\": seed,\n      \"steps\": 10,\n      \"cfg\": 1,\n      \"sampler_name\": \"res_multistep\",\n      \"scheduler\": \"simple\",\n      \"denoise\": 1,\n      \"model\": [\"6\", 0],\n      \"positive\": [\"7\", 0],\n      \"negative\": [\"8\", 0],\n      \"latent_image\": [\"4\", 0]\n    },\n    \"class_type\": \"KSampler\"\n  },\n  \"3\": {\n    \"inputs\": {\n      \"samples\": [\"2\", 0],\n      \"vae\": [\"5\", 0]\n    },\n    \"class_type\": \"VAEDecode\"\n  },\n  \"4\": {\n    \"inputs\": {\n      \"width\": width,\n      \"height\": height,\n      \"batch_size\": 1\n    },\n    \"class_type\": \"EmptySD3LatentImage\"\n  },\n  \"5\": {\n    \"inputs\": {\n      \"vae_name\": \"ae.safetensors\"\n    },\n    \"class_type\": \"VAELoader\"\n  },\n  \"6\": {\n    \"inputs\": {\n      \"shift\": 3,\n      \"model\": [\"10\", 0]\n    },\n    \"class_type\": \"ModelSamplingAuraFlow\"\n  },\n  \"7\": {\n    \"inputs\": {\n      \"text\": prompt,\n      \"clip\": [\"9\", 0]\n    },\n    \"class_type\": \"CLIPTextEncode\"\n  },\n  \"8\": {\n    \"inputs\": {\n      \"text\": \"low resolution, blurry, pixelated, noisy, grainy, compression artifacts, washed out colors, dull lighting, flat lighting, overexposed, underexposed, poor contrast, low detail, bad depth of field, No Text on Image unless explicitly mentioned\",\n      \"clip\": [\"9\", 0]\n    },\n    \"class_type\": \"CLIPTextEncode\"\n  },\n  \"9\": {\n    \"inputs\": {\n      \"clip_name\": \"qwen_3_4b.safetensors\",\n      \"type\": \"lumina2\",\n      \"device\": \"default\"\n    },\n    \"class_type\": \"CLIPLoader\"\n  },\n  \"10\": {\n    \"inputs\": {\n      \"unet_name\": \"z_image_turbo_bf16.safetensors\",\n      \"weight_dtype\": \"default\"\n    },\n    \"class_type\": \"UNETLoader\"\n  }\n};\n\n// Return the workflow object (NOT a string!)\nreturn [{\n  json: {\n    comfyWorkflow: workflowPrompt,\n    seed: seed,\n    userPrompt: prompt\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        576,
+        -256
+      ],
+      "id": "a321e55f-c5ab-4c52-b62a-53ca44314f84",
+      "name": "Build ComfyUI Workflow - T2I R"
+    },
+    {
+      "parameters": {
+        "jsCode": "const response = $input.item.json;\nconst promptId = response.prompt_id;\n\n// Get seed and prompt from the first item in input\nconst previousData = $input.first().json;\n\nreturn [{\n  json: {\n    prompt_id: promptId,\n    seed: previousData.seed,\n    user_prompt: previousData.userPrompt\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        992,
+        -256
+      ],
+      "id": "c1ead396-fd68-4148-bc97-467cbc19c205",
+      "name": "Extract Prompt ID - T2I R"
+    },
+    {
+      "parameters": {
+        "amount": 4
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1216,
+        -256
+      ],
+      "id": "3b65e3bb-4a50-40d9-b45e-49c0a4723b7d",
+      "name": "Wait - T2I R",
+      "webhookId": "1f3934ea-bcf2-4e34-b8cc-1a742d517c37"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://30ea2vx8grm23d-8188.proxy.runpod.net/prompt",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{\n{\n  \"prompt\": $json.comfyWorkflow,\n  \"client_id\": \"n8n-automation\"\n}\n}}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        784,
+        -256
+      ],
+      "id": "834aa2f8-76c7-4f59-857e-8d383b5c5e73",
+      "name": "Queue ComfyUI - T2I R"
+    },
+    {
+      "parameters": {
+        "url": "=https://30ea2vx8grm23d-8188.proxy.runpod.net/history/{{ $json.prompt_id }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1408,
+        -256
+      ],
+      "id": "7b9986c1-bd7b-4d69-9804-878cbb1189ee",
+      "name": "Check History T2I R"
+    },
+    {
+      "parameters": {
+        "jsCode": "const history = $input.item.json;\n\n// Get the prompt_id from current data\nconst promptId = $input.item.json.prompt_id || Object.keys(history)[0];\n\n// Navigate to the outputs\nconst promptData = history[promptId];\n\nif (!promptData || !promptData.outputs) {\n  throw new Error(\"Image not ready yet or generation failed\");\n}\n\n// Find the SaveImage node output (node \"1\" in your workflow)\nconst outputs = promptData.outputs;\nconst saveImageOutput = outputs[\"1\"];\n\nif (!saveImageOutput || !saveImageOutput.images || saveImageOutput.images.length === 0) {\n  throw new Error(\"No images found in output\");\n}\n\n// Get the first image info\nconst imageInfo = saveImageOutput.images[0];\n\n// Get seed and prompt from previous nodes\nconst previousData = $input.first().json;\n\nreturn [{\n  json: {\n    filename: imageInfo.filename,\n    subfolder: imageInfo.subfolder || \"\",\n    type: imageInfo.type || \"output\",\n    seed: previousData.seed,\n    user_prompt: previousData.user_prompt\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1600,
+        -256
+      ],
+      "id": "cf86eecf-c728-4f0a-b44d-195346db4e48",
+      "name": "Extract Filename - T2I R"
+    },
+    {
+      "parameters": {
+        "url": "=https://30ea2vx8grm23d-8188.proxy.runpod.net/view?filename={{ $json.filename }}&subfolder={{ $json.subfolder }}&type={{ $json.type }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1824,
+        -256
+      ],
+      "id": "0435aafb-579a-4d77-96f6-5aedcd6dbd71",
+      "name": "Download Image - T2I R"
+    },
+    {
+      "parameters": {
+        "content": "## Text to Image Zimage (Realistic)\n\n",
+        "height": 192,
+        "width": 1456
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        512,
+        -304
+      ],
+      "typeVersion": 1,
+      "id": "3d08cd7d-11d7-429b-a086-aff8d6496af8",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Text to Image Flux.2 Dev (Illustrative)\n\n",
+        "height": 192,
+        "width": 1456,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        512,
+        -112
+      ],
+      "typeVersion": 1,
+      "id": "bd43b270-7a3a-421e-9e93-22c47bf602a6",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract data from webhook\nconst body = $input.item.json.body || {};\nconst prompt =\n  body.prompt ||\n  \"high fashion, vintage couture, street photography, luxury fashion shoot, neo brutalist architecture, pastel paints\";\n\nconst width = body.width || 1008;\nconst height = body.height || 1024;\n\n// Generate random seed\nconst seed = Math.floor(Math.random() * 1e15);\n\n// Build ComfyUI Flux2 workflow\nconst workflowPrompt = {\n  \"9\": {\n    \"inputs\": {\n      \"filename_prefix\": \"Flux2_dev\",\n      \"images\": [\"105\", 0]\n    },\n    \"class_type\": \"SaveImage\"\n  },\n\n  \"99\": {\n    \"inputs\": {\n      \"model\": [\"104\", 0],\n      \"conditioning\": [\"100\", 0]\n    },\n    \"class_type\": \"BasicGuider\"\n  },\n\n  \"100\": {\n    \"inputs\": {\n      \"guidance\": 4,\n      \"conditioning\": [\"110\", 0]\n    },\n    \"class_type\": \"FluxGuidance\"\n  },\n\n  \"101\": {\n    \"inputs\": {\n      \"sampler_name\": \"euler\"\n    },\n    \"class_type\": \"KSamplerSelect\"\n  },\n\n  \"102\": {\n    \"inputs\": {\n      \"vae_name\": \"flux2-vae.safetensors\"\n    },\n    \"class_type\": \"VAELoader\"\n  },\n\n  \"103\": {\n    \"inputs\": {\n      \"noise\": [\"109\", 0],\n      \"guider\": [\"99\", 0],\n      \"sampler\": [\"101\", 0],\n      \"sigmas\": [\"107\", 0],\n      \"latent_image\": [\"108\", 0]\n    },\n    \"class_type\": \"SamplerCustomAdvanced\"\n  },\n\n  \"104\": {\n    \"inputs\": {\n      \"unet_name\": \"flux2_dev_fp8mixed.safetensors\",\n      \"weight_dtype\": \"default\"\n    },\n    \"class_type\": \"UNETLoader\"\n  },\n\n  \"105\": {\n    \"inputs\": {\n      \"samples\": [\"103\", 0],\n      \"vae\": [\"102\", 0]\n    },\n    \"class_type\": \"VAEDecode\"\n  },\n\n  \"106\": {\n    \"inputs\": {\n      \"clip_name\": \"mistral_3_small_flux2_bf16.safetensors\",\n      \"type\": \"flux2\",\n      \"device\": \"default\"\n    },\n    \"class_type\": \"CLIPLoader\"\n  },\n\n  \"107\": {\n    \"inputs\": {\n      \"steps\": 10,\n      \"width\": width,\n      \"height\": height\n    },\n    \"class_type\": \"Flux2Scheduler\"\n  },\n\n  \"108\": {\n    \"inputs\": {\n      \"width\": width,\n      \"height\": height,\n      \"batch_size\": 1\n    },\n    \"class_type\": \"EmptyFlux2LatentImage\"\n  },\n\n  \"109\": {\n    \"inputs\": {\n      \"noise_seed\": seed\n    },\n    \"class_type\": \"RandomNoise\"\n  },\n\n  \"110\": {\n    \"inputs\": {\n      \"text\": prompt,\n      \"clip\": [\"106\", 0]\n    },\n    \"class_type\": \"CLIPTextEncode\"\n  }\n};\n\n// Return workflow\nreturn [\n  {\n    json: {\n      comfyWorkflow: workflowPrompt,\n      seed: seed,\n      userPrompt: prompt,\n      width,\n      height\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        576,
+        -64
+      ],
+      "id": "43e3a95f-4ecf-4a2d-9ec6-de0df7356b5c",
+      "name": "Build ComfyUI Workflow - T2I I"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://af0ilz0d1541n7-8188.proxy.runpod.net/prompt",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{\n{\n  \"prompt\": $json.comfyWorkflow,\n  \"client_id\": \"n8n-automation\"\n}\n}}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        784,
+        -64
+      ],
+      "id": "bf08bbd9-496f-4c35-a43b-8cffb45b6c38",
+      "name": "Queue ComfyUI - T2I I"
+    },
+    {
+      "parameters": {
+        "jsCode": "const response = $input.item.json;\nconst promptId = response.prompt_id;\n\n// Get seed and prompt from the first item in input\nconst previousData = $input.first().json;\n\nreturn [{\n  json: {\n    prompt_id: promptId,\n    seed: previousData.seed,\n    user_prompt: previousData.userPrompt\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        992,
+        -64
+      ],
+      "id": "f4540205-17ce-4266-983a-f75b9880cd20",
+      "name": "Extract Prompt ID - T2I I"
+    },
+    {
+      "parameters": {
+        "amount": 8
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1216,
+        -64
+      ],
+      "id": "b55e9211-2101-4bd8-bfa0-eddf20e25a4b",
+      "name": "Wait - T2I I",
+      "webhookId": "1f3934ea-bcf2-4e34-b8cc-1a742d517c37"
+    },
+    {
+      "parameters": {
+        "url": "=https://af0ilz0d1541n7-8188.proxy.runpod.net/history/{{ $json.prompt_id }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1408,
+        -64
+      ],
+      "id": "6ff77dd6-0846-4f70-bde1-b6a78215e554",
+      "name": "Check History T2I I"
+    },
+    {
+      "parameters": {
+        "jsCode": "const history = $input.item.json;\n\n// Resolve prompt_id safely\nconst promptId =\n  history.prompt_id ||\n  Object.keys(history)[0];\n\nconst promptData = history[promptId];\n\nif (!promptData || !promptData.outputs) {\n  throw new Error(\"Image not ready yet or generation failed\");\n}\n\n// Find ANY output node that contains images\nlet imageInfo = null;\n\nfor (const nodeId of Object.keys(promptData.outputs)) {\n  const nodeOutput = promptData.outputs[nodeId];\n\n  if (nodeOutput?.images && nodeOutput.images.length > 0) {\n    imageInfo = nodeOutput.images[0];\n    break;\n  }\n}\n\nif (!imageInfo) {\n  throw new Error(\"No images found in any output node\");\n}\n\n// Pull metadata from previous workflow state\nconst previousData = $input.first().json;\n\nreturn [\n  {\n    json: {\n      filename: imageInfo.filename,\n      subfolder: imageInfo.subfolder || \"\",\n      type: imageInfo.type || \"output\",\n      seed: previousData.seed ?? null,\n      user_prompt: previousData.user_prompt ?? null,\n      prompt_id: promptId\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1600,
+        -64
+      ],
+      "id": "11f97a89-c1be-48fd-8990-3631b2095a05",
+      "name": "Extract Filename - T2I I"
+    },
+    {
+      "parameters": {
+        "url": "=https://af0ilz0d1541n7-8188.proxy.runpod.net/view?filename={{ $json.filename }}&subfolder={{ $json.subfolder }}&type={{ $json.type }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1824,
+        -64
+      ],
+      "id": "d37c4f5a-395a-44c9-8e2c-9ccb502c9034",
+      "name": "Download Image - T2I I"
+    },
+    {
+      "parameters": {
+        "content": "## Image To Image Flux.2 Dev\n",
+        "height": 208,
+        "width": 2336,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        64,
+        272
+      ],
+      "id": "43088a13-8e13-4ff8-b6ed-33bce489c126",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## Text to Video Wan2.2 VFI ElevenLabs\n\n",
+        "height": 192,
+        "width": 1456,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        512,
+        80
+      ],
+      "typeVersion": 1,
+      "id": "2f1e4dbb-20b7-440c-8871-b098676078b5",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract data from webhook\nconst body = $input.item.json.body || {};\nconst prompt = body.prompt || \"Fast red lambo going down the road at fast speeds.\";\nconst ttsPrompt = body.tts_prompt || \"wow car go vroom vroom\";\nconst width = body.width || 1024;\nconst height = body.height || 1024;\n\n// Generate random seed\nconst seed = Math.floor(Math.random() * 1e15);\n\n// Build ComfyUI Wan2.2 Video workflow\nconst workflowPrompt = {\n  \"71\": {\n    \"inputs\": {\n      \"clip_name\": \"umt5_xxl_fp8_e4m3fn_scaled.safetensors\",\n      \"type\": \"wan\",\n      \"device\": \"default\"\n    },\n    \"class_type\": \"CLIPLoader\",\n    \"_meta\": {\n      \"title\": \"Load CLIP\"\n    }\n  },\n  \"73\": {\n    \"inputs\": {\n      \"vae_name\": \"wan_2.1_vae.safetensors\"\n    },\n    \"class_type\": \"VAELoader\",\n    \"_meta\": {\n      \"title\": \"Load VAE\"\n    }\n  },\n  \"74\": {\n    \"inputs\": {\n      \"width\": width,\n      \"height\": height,\n      \"length\": 81,\n      \"batch_size\": 1\n    },\n    \"class_type\": \"EmptyHunyuanLatentVideo\",\n    \"_meta\": {\n      \"title\": \"Empty HunyuanVideo 1.0 Latent\"\n    }\n  },\n  \"75\": {\n    \"inputs\": {\n      \"unet_name\": \"wan2.2_t2v_high_noise_14B_fp8_scaled.safetensors\",\n      \"weight_dtype\": \"default\"\n    },\n    \"class_type\": \"UNETLoader\",\n    \"_meta\": {\n      \"title\": \"Load Diffusion Model\"\n    }\n  },\n  \"76\": {\n    \"inputs\": {\n      \"unet_name\": \"wan2.2_t2v_low_noise_14B_fp8_scaled.safetensors\",\n      \"weight_dtype\": \"default\"\n    },\n    \"class_type\": \"UNETLoader\",\n    \"_meta\": {\n      \"title\": \"Load Diffusion Model\"\n    }\n  },\n  \"78\": {\n    \"inputs\": {\n      \"add_noise\": \"disable\",\n      \"noise_seed\": 0,\n      \"steps\": 4,\n      \"cfg\": 1,\n      \"sampler_name\": \"euler\",\n      \"scheduler\": \"simple\",\n      \"start_at_step\": 2,\n      \"end_at_step\": 4,\n      \"return_with_leftover_noise\": \"disable\",\n      \"model\": [\n        \"86\",\n        0\n      ],\n      \"positive\": [\n        \"89\",\n        0\n      ],\n      \"negative\": [\n        \"114\",\n        0\n      ],\n      \"latent_image\": [\n        \"81\",\n        0\n      ]\n    },\n    \"class_type\": \"KSamplerAdvanced\",\n    \"_meta\": {\n      \"title\": \"KSampler (Advanced)\"\n    }\n  },\n  \"80\": {\n    \"inputs\": {\n      \"filename_prefix\": \"video/ComfyUI\",\n      \"format\": \"auto\",\n      \"codec\": \"auto\",\n      \"video\": [\n        \"88\",\n        0\n      ]\n    },\n    \"class_type\": \"SaveVideo\",\n    \"_meta\": {\n      \"title\": \"Save Video\"\n    }\n  },\n  \"81\": {\n    \"inputs\": {\n      \"add_noise\": \"enable\",\n      \"noise_seed\": seed,\n      \"steps\": 4,\n      \"cfg\": 1,\n      \"sampler_name\": \"euler\",\n      \"scheduler\": \"simple\",\n      \"start_at_step\": 0,\n      \"end_at_step\": 2,\n      \"return_with_leftover_noise\": \"enable\",\n      \"model\": [\n        \"82\",\n        0\n      ],\n      \"positive\": [\n        \"89\",\n        0\n      ],\n      \"negative\": [\n        \"114\",\n        0\n      ],\n      \"latent_image\": [\n        \"74\",\n        0\n      ]\n    },\n    \"class_type\": \"KSamplerAdvanced\",\n    \"_meta\": {\n      \"title\": \"KSampler (Advanced)\"\n    }\n  },\n  \"82\": {\n    \"inputs\": {\n      \"shift\": 5,\n      \"model\": [\n        \"83\",\n        0\n      ]\n    },\n    \"class_type\": \"ModelSamplingSD3\",\n    \"_meta\": {\n      \"title\": \"ModelSamplingSD3\"\n    }\n  },\n  \"83\": {\n    \"inputs\": {\n      \"lora_name\": \"wan2.2_t2v_lightx2v_4steps_lora_v1.1_high_noise.safetensors\",\n      \"strength_model\": 1.0000000000000002,\n      \"model\": [\n        \"75\",\n        0\n      ]\n    },\n    \"class_type\": \"LoraLoaderModelOnly\",\n    \"_meta\": {\n      \"title\": \"LoraLoaderModelOnly\"\n    }\n  },\n  \"85\": {\n    \"inputs\": {\n      \"lora_name\": \"wan2.2_t2v_lightx2v_4steps_lora_v1.1_low_noise.safetensors\",\n      \"strength_model\": 1.0000000000000002,\n      \"model\": [\n        \"76\",\n        0\n      ]\n    },\n    \"class_type\": \"LoraLoaderModelOnly\",\n    \"_meta\": {\n      \"title\": \"LoraLoaderModelOnly\"\n    }\n  },\n  \"86\": {\n    \"inputs\": {\n      \"shift\": 5.000000000000001,\n      \"model\": [\n        \"85\",\n        0\n      ]\n    },\n    \"class_type\": \"ModelSamplingSD3\",\n    \"_meta\": {\n      \"title\": \"ModelSamplingSD3\"\n    }\n  },\n  \"87\": {\n    \"inputs\": {\n      \"samples\": [\n        \"78\",\n        0\n      ],\n      \"vae\": [\n        \"73\",\n        0\n      ]\n    },\n    \"class_type\": \"VAEDecode\",\n    \"_meta\": {\n      \"title\": \"VAE Decode\"\n    }\n  },\n  \"88\": {\n    \"inputs\": {\n      \"fps\": 32,\n      \"images\": [\n        \"115\",\n        0\n      ],\n      \"audio\": [\n        \"116\",\n        0\n      ]\n    },\n    \"class_type\": \"CreateVideo\",\n    \"_meta\": {\n      \"title\": \"Create Video\"\n    }\n  },\n  \"89\": {\n    \"inputs\": {\n      \"text\": prompt,\n      \"clip\": [\n        \"71\",\n        0\n      ]\n    },\n    \"class_type\": \"CLIPTextEncode\",\n    \"_meta\": {\n      \"title\": \"CLIP Text Encode (Positive Prompt)\"\n    }\n  },\n  \"114\": {\n    \"inputs\": {\n      \"conditioning\": [\n        \"89\",\n        0\n      ]\n    },\n    \"class_type\": \"ConditioningZeroOut\",\n    \"_meta\": {\n      \"title\": \"ConditioningZeroOut\"\n    }\n  },\n  \"115\": {\n    \"inputs\": {\n      \"ckpt_name\": \"rife47.pth\",\n      \"clear_cache_after_n_frames\": 16,\n      \"multiplier\": 2,\n      \"fast_mode\": true,\n      \"ensemble\": true,\n      \"scale_factor\": 1,\n      \"frames\": [\n        \"87\",\n        0\n      ]\n    },\n    \"class_type\": \"RIFE VFI\",\n    \"_meta\": {\n      \"title\": \"RIFE VFI (recommend rife47 and rife49)\"\n    }\n  },\n  \"116\": {\n    \"inputs\": {\n      \"text\": ttsPrompt,\n      \"api_key\": \"[REDACTED_SK]\",\n      \"voice_id\": \"yM93hbw8Qtvdma2wCnJG\",\n      \"model_id\": \"eleven_multilingual_v2\",\n      \"seed\": \"\",\n      \"apply_text_normalization\": \"auto\",\n      \"voice_settings_stability\": 0.5,\n      \"voice_settings_use_speaker_boost\": true,\n      \"voice_settings_similarity_boost\": 0.8,\n      \"voice_settings_style\": 0,\n      \"voice_settings_speed\": 1\n    },\n    \"class_type\": \"ElevenlabsTextToSpeech\",\n    \"_meta\": {\n      \"title\": \"ElevenlabsTextToSpeech\"\n    }\n  }\n};\n\n// Return workflow\nreturn [\n  {\n    json: {\n      comfyWorkflow: workflowPrompt,\n      seed: seed,\n      userPrompt: prompt,\n      ttsPrompt: ttsPrompt,\n      width: width,\n      height: height\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        576,
+        128
+      ],
+      "id": "3579241e-74ad-4d7d-89c3-aed248d4e989",
+      "name": "Build ComfyUI Workflow - T2V"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://6bgbevpx1ap5d4-8188.proxy.runpod.net/prompt",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{\n{\n  \"prompt\": $json.comfyWorkflow,\n  \"client_id\": \"n8n-automation\"\n}\n}}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        784,
+        128
+      ],
+      "id": "1bcbaf90-9dae-4e23-9aaa-dcf64926bb68",
+      "name": "Queue ComfyUI - T2V"
+    },
+    {
+      "parameters": {
+        "amount": 255
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1216,
+        128
+      ],
+      "id": "f38aac1d-637f-4ddb-9a2b-cbb0c9f0a839",
+      "name": "Wait - T2V",
+      "webhookId": "1f3934ea-bcf2-4e34-b8cc-1a742d517c37"
+    },
+    {
+      "parameters": {
+        "url": "=https://6bgbevpx1ap5d4-8188.proxy.runpod.net/history/{{ $json.prompt_id }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1408,
+        128
+      ],
+      "id": "3c0bcf12-ee57-430c-a15c-8090d401cdfc",
+      "name": "Check History T2V"
+    },
+    {
+      "parameters": {
+        "jsCode": "const history = $input.item.json;\n\n// Resolve prompt_id safely\nconst promptId =\n  history.prompt_id ||\n  Object.keys(history)[0];\n\nconst promptData = history[promptId];\n\nif (!promptData || !promptData.outputs) {\n  throw new Error(\"Video not ready yet or generation failed\");\n}\n\n// Find ANY output node that contains videos or gifs\nlet videoInfo = null;\n\nfor (const nodeId of Object.keys(promptData.outputs)) {\n  const nodeOutput = promptData.outputs[nodeId];\n\n  // Check for videos (from SaveVideo nodes)\n  if (nodeOutput?.videos && nodeOutput.videos.length > 0) {\n    videoInfo = nodeOutput.videos[0];\n    break;\n  }\n  \n  // Check for gifs (from SaveAnimatedWEBP or similar nodes)\n  if (nodeOutput?.gifs && nodeOutput.gifs.length > 0) {\n    videoInfo = nodeOutput.gifs[0];\n    break;\n  }\n  \n  // Some video nodes might save under 'images' key for animated formats\n  if (nodeOutput?.images && nodeOutput.images.length > 0) {\n    const firstImage = nodeOutput.images[0];\n    // Check if it's actually a video format\n    if (firstImage.filename && (\n      firstImage.filename.endsWith('.mp4') || \n      firstImage.filename.endsWith('.webm') ||\n      firstImage.filename.endsWith('.gif') ||\n      firstImage.filename.endsWith('.webp')\n    )) {\n      videoInfo = firstImage;\n      break;\n    }\n  }\n}\n\nif (!videoInfo) {\n  throw new Error(\"No video found in any output node\");\n}\n\n// Pull metadata from previous workflow state\nconst previousData = $input.first().json;\n\nreturn [\n  {\n    json: {\n      filename: videoInfo.filename,\n      subfolder: videoInfo.subfolder || \"\",\n      type: videoInfo.type || \"output\",\n      format: videoInfo.format || \"video/mp4\",\n      seed: previousData.seed ?? null,\n      user_prompt: previousData.userPrompt ?? null,\n      tts_prompt: previousData.ttsPrompt ?? null,\n      prompt_id: promptId\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1600,
+        128
+      ],
+      "id": "326bbbe1-54a8-409d-8898-360e530f510c",
+      "name": "Extract Filename - T2V"
+    },
+    {
+      "parameters": {
+        "url": "=https://6bgbevpx1ap5d4-8188.proxy.runpod.net/view?filename={{ $json.filename }}&subfolder={{ $json.subfolder }}&type={{ $json.type }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1824,
+        128
+      ],
+      "id": "af3559c1-8301-4044-87b4-4113eaf04b20",
+      "name": "Download Video - T2V"
+    },
+    {
+      "parameters": {
+        "jsCode": "const response = $input.item.json;\nconst promptId = response.prompt_id;\n\n// Get seed and prompt from the first item in input\nconst previousData = $input.first().json;\n\nreturn [{\n  json: {\n    prompt_id: promptId,\n    seed: previousData.seed,\n    user_prompt: previousData.userPrompt\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1008,
+        128
+      ],
+      "id": "58e57b1b-f5b3-48b2-bde0-9dc7a8ff89c9",
+      "name": "Extract Prompt ID - T2V"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0aeefeac-eaaa-4e5d-abfa-be9dd208c2cf",
+              "name": "cleanBase64",
+              "value": "={{ $json.body.reference_image.replace(/^data:image\\/\\w+;base64,/, '') }}",
+              "type": "string"
+            },
+            {
+              "id": "prompt-field",
+              "name": "prompt",
+              "value": "={{ $json.body.prompt }}",
+              "type": "string"
+            },
+            {
+              "id": "width-field",
+              "name": "width",
+              "value": "={{ $json.body.width }}",
+              "type": "number"
+            },
+            {
+              "id": "height-field",
+              "name": "height",
+              "value": "={{ $json.body.height }}",
+              "type": "number"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        112,
+        320
+      ],
+      "id": "cddd78bb-f20e-40df-9c85-70664fc40c0d",
+      "name": "Strip Base64 Prefix T2V"
+    },
+    {
+      "parameters": {
+        "operation": "toBinary",
+        "sourceProperty": "cleanBase64",
+        "options": {
+          "fileName": "image.png",
+          "mimeType": "image/png"
+        }
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        352,
+        320
+      ],
+      "id": "06e7a0d3-7a49-49fe-8af8-3f6298005b3c",
+      "name": "Convert to File T2V"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://af0ilz0d1541n7-8188.proxy.runpod.net/upload/image",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "image",
+              "inputDataFieldName": "data"
+            },
+            {
+              "name": "type",
+              "value": "input"
+            },
+            {
+              "name": "overwrite",
+              "value": "true"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        592,
+        320
+      ],
+      "id": "398b9b2f-928f-4392-980e-fc2aa50752e4",
+      "name": "Upload Image to ComfyUI T2V"
+    },
+    {
+      "parameters": {
+        "jsCode": "const uploadResponse = $input.item.json;\nconst uploadedFilename = uploadResponse.name;\n\n// Get parameters from the \"Strip Base64 Prefix\" node\nconst prompt = $('Strip Base64 Prefix T2V').first().json.prompt || \"A beautiful image\";\nconst width = $('Strip Base64 Prefix T2V').first().json.width || 720;\nconst height = $('Strip Base64 Prefix T2V').first().json.height || 1280;\n\nconsole.log(\"Parameters:\", { prompt, width, height, uploadedFilename });\n\n// Generate random seed\nconst seed = Math.floor(Math.random() * 1000000000000000);\n\n// Build Flux2 workflow\nconst flux2Workflow = {\n  \"72\": {\n    \"inputs\": {\n      \"vae_name\": \"flux2-vae.safetensors\"\n    },\n    \"class_type\": \"VAELoader\"\n  },\n  \"73\": {\n    \"inputs\": {\n      \"clip_name\": \"mistral_3_small_flux2_bf16.safetensors\",\n      \"type\": \"flux2\",\n      \"device\": \"default\"\n    },\n    \"class_type\": \"CLIPLoader\"\n  },\n  \"74\": {\n    \"inputs\": {\n      \"unet_name\": \"flux2_dev_fp8mixed.safetensors\",\n      \"weight_dtype\": \"default\"\n    },\n    \"class_type\": \"UNETLoader\"\n  },\n  \"75\": {\n    \"inputs\": {\n      \"text\": prompt,\n      \"clip\": [\"73\", 0]\n    },\n    \"class_type\": \"CLIPTextEncode\"\n  },\n  \"76\": {\n    \"inputs\": {\n      \"image\": uploadedFilename\n    },\n    \"class_type\": \"LoadImage\"\n  },\n  \"77\": {\n    \"inputs\": {\n      \"upscale_method\": \"lanczos\",\n      \"megapixels\": 1,\n      \"resolution_steps\": 1,\n      \"image\": [\"76\", 0]\n    },\n    \"class_type\": \"ImageScaleToTotalPixels\"\n  },\n  \"78\": {\n    \"inputs\": {\n      \"conditioning\": [\"80\", 0],\n      \"latent\": [\"79\", 0]\n    },\n    \"class_type\": \"ReferenceLatent\"\n  },\n  \"79\": {\n    \"inputs\": {\n      \"pixels\": [\"77\", 0],\n      \"vae\": [\"72\", 0]\n    },\n    \"class_type\": \"VAEEncode\"\n  },\n  \"80\": {\n    \"inputs\": {\n      \"guidance\": 4,\n      \"conditioning\": [\"75\", 0]\n    },\n    \"class_type\": \"FluxGuidance\"\n  },\n  \"81\": {\n    \"inputs\": {\n      \"width\": [\"91\", 0],\n      \"height\": [\"92\", 0],\n      \"batch_size\": 1\n    },\n    \"class_type\": \"EmptyFlux2LatentImage\"\n  },\n  \"82\": {\n    \"inputs\": {\n      \"noise_seed\": seed\n    },\n    \"class_type\": \"RandomNoise\"\n  },\n  \"83\": {\n    \"inputs\": {\n      \"model\": [\"74\", 0],\n      \"conditioning\": [\"78\", 0]\n    },\n    \"class_type\": \"BasicGuider\"\n  },\n  \"84\": {\n    \"inputs\": {\n      \"steps\": 10,\n      \"width\": [\"91\", 0],\n      \"height\": [\"92\", 0]\n    },\n    \"class_type\": \"Flux2Scheduler\"\n  },\n  \"85\": {\n    \"inputs\": {\n      \"sampler_name\": \"euler\"\n    },\n    \"class_type\": \"KSamplerSelect\"\n  },\n  \"86\": {\n    \"inputs\": {\n      \"noise\": [\"82\", 0],\n      \"guider\": [\"83\", 0],\n      \"sampler\": [\"85\", 0],\n      \"sigmas\": [\"84\", 0],\n      \"latent_image\": [\"81\", 0]\n    },\n    \"class_type\": \"SamplerCustomAdvanced\"\n  },\n  \"87\": {\n    \"inputs\": {\n      \"filename_prefix\": \"Flux2\",\n      \"images\": [\"88\", 0]\n    },\n    \"class_type\": \"SaveImage\"\n  },\n  \"88\": {\n    \"inputs\": {\n      \"samples\": [\"86\", 0],\n      \"vae\": [\"72\", 0]\n    },\n    \"class_type\": \"VAEDecode\"\n  },\n  \"91\": {\n    \"inputs\": {\n      \"value\": width\n    },\n    \"class_type\": \"INTConstant\"\n  },\n  \"92\": {\n    \"inputs\": {\n      \"value\": height\n    },\n    \"class_type\": \"INTConstant\"\n  }\n};\n\nreturn [{\n  json: {\n    comfyWorkflow: flux2Workflow,\n    seed: seed,\n    userPrompt: prompt\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        832,
+        320
+      ],
+      "id": "85819792-3ee9-4894-95e5-18d9ae135e74",
+      "name": "Build Flux2 Workflow T2V"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://af0ilz0d1541n7-8188.proxy.runpod.net/prompt",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{\n{\n  \"prompt\": $json.comfyWorkflow,\n  \"client_id\": \"n8n-img2img\"\n}\n}}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1072,
+        320
+      ],
+      "id": "23b24f45-5b34-401f-8f90-a488bbfdf31f",
+      "name": "Queue to ComfyUI T2V"
+    },
+    {
+      "parameters": {
+        "jsCode": "const response = $input.item.json;\nconst promptId = response.prompt_id;\n\nif (!promptId) {\n  throw new Error(\"No prompt_id received from ComfyUI\");\n}\n\nreturn [{\n  json: {\n    prompt_id: promptId\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1312,
+        320
+      ],
+      "id": "2c6d1d92-b40b-4226-8484-292ac24fee72",
+      "name": "Extract Prompt ID T2V"
+    },
+    {
+      "parameters": {
+        "amount": 15
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1552,
+        320
+      ],
+      "id": "88a85fcd-c333-4143-944a-315578bf049f",
+      "name": "Wait T2V",
+      "webhookId": "wait-webhook-id"
+    },
+    {
+      "parameters": {
+        "url": "https://af0ilz0d1541n7-8188.proxy.runpod.net/history",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1792,
+        320
+      ],
+      "id": "a0e619c8-5dea-4503-b93c-47f70d15a3e2",
+      "name": "Get History T2V"
+    },
+    {
+      "parameters": {
+        "jsCode": "const history = $input.item.json;\n\n// Resolve prompt_id safely\nconst promptId =\n  history.prompt_id ||\n  Object.keys(history)[0];\n\nconst promptData = history[promptId];\n\nif (!promptData || !promptData.outputs) {\n  throw new Error(\"Image not ready yet or generation failed\");\n}\n\n// Find ANY output node that contains images\nlet imageInfo = null;\n\nfor (const nodeId of Object.keys(promptData.outputs)) {\n  const nodeOutput = promptData.outputs[nodeId];\n\n  if (nodeOutput?.images && nodeOutput.images.length > 0) {\n    imageInfo = nodeOutput.images[0];\n    break;\n  }\n}\n\nif (!imageInfo) {\n  throw new Error(\"No images found in any output node\");\n}\n\n// Pull metadata from previous workflow state\nconst previousData = $input.first().json;\n\nreturn [\n  {\n    json: {\n      filename: imageInfo.filename,\n      subfolder: imageInfo.subfolder || \"\",\n      type: imageInfo.type || \"output\",\n      seed: previousData.seed ?? null,\n      user_prompt: previousData.user_prompt ?? null,\n      prompt_id: promptId\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2032,
+        320
+      ],
+      "id": "5a1f0a47-0194-456a-8c2c-fcab329343a2",
+      "name": "Extract Filename T2V"
+    },
+    {
+      "parameters": {
+        "url": "=https://af0ilz0d1541n7-8188.proxy.runpod.net/view?filename={{ $json.filename }}&subfolder={{ $json.subfolder }}&type={{ $json.type }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        2256,
+        320
+      ],
+      "id": "06f4ce0e-33f2-4470-bc8d-80961f9e8c5a",
+      "name": "Download Image T2V"
+    },
+    {
+      "parameters": {
+        "jsCode": "const uploadResponse = $input.item.json;\nconst uploadedFilename = uploadResponse.name;\n\n// Get parameters from Strip Base64 Prefix node\nconst stripNode = $('Strip Base64 Prefix I2V1').first().json;\nconst prompt = stripNode.prompt || \"Make the image come to life\";\nconst ttsPrompt = stripNode.tts_prompt || \"Amazing animation\";\nconst width = stripNode.width || 1024;\nconst height = stripNode.height || 1024;\n\n// Generate random seed\nconst seed = Math.floor(Math.random() * 1e15);\n\n// Build Wan2.2 I2V workflow\nconst workflowPrompt = {\n  \"84\": {\n    \"inputs\": {\n      \"clip_name\": \"umt5_xxl_fp8_e4m3fn_scaled.safetensors\",\n      \"type\": \"wan\",\n      \"device\": \"default\"\n    },\n    \"class_type\": \"CLIPLoader\",\n    \"_meta\": {\"title\": \"Load CLIP\"}\n  },\n  \"85\": {\n    \"inputs\": {\n      \"add_noise\": \"disable\",\n      \"noise_seed\": 0,\n      \"steps\": 4,\n      \"cfg\": 1,\n      \"sampler_name\": \"euler\",\n      \"scheduler\": \"simple\",\n      \"start_at_step\": 2,\n      \"end_at_step\": 4,\n      \"return_with_leftover_noise\": \"disable\",\n      \"model\": [\"103\", 0],\n      \"positive\": [\"98\", 0],\n      \"negative\": [\"98\", 1],\n      \"latent_image\": [\"86\", 0]\n    },\n    \"class_type\": \"KSamplerAdvanced\",\n    \"_meta\": {\"title\": \"KSampler (Advanced)\"}\n  },\n  \"86\": {\n    \"inputs\": {\n      \"add_noise\": \"enable\",\n      \"noise_seed\": seed,\n      \"steps\": 4,\n      \"cfg\": 1,\n      \"sampler_name\": \"euler\",\n      \"scheduler\": \"simple\",\n      \"start_at_step\": 0,\n      \"end_at_step\": 2,\n      \"return_with_leftover_noise\": \"enable\",\n      \"model\": [\"104\", 0],\n      \"positive\": [\"98\", 0],\n      \"negative\": [\"98\", 1],\n      \"latent_image\": [\"98\", 2]\n    },\n    \"class_type\": \"KSamplerAdvanced\",\n    \"_meta\": {\"title\": \"KSampler (Advanced)\"}\n  },\n  \"87\": {\n    \"inputs\": {\n      \"samples\": [\"85\", 0],\n      \"vae\": [\"90\", 0]\n    },\n    \"class_type\": \"VAEDecode\",\n    \"_meta\": {\"title\": \"VAE Decode\"}\n  },\n  \"90\": {\n    \"inputs\": {\n      \"vae_name\": \"wan_2.1_vae.safetensors\"\n    },\n    \"class_type\": \"VAELoader\",\n    \"_meta\": {\"title\": \"Load VAE\"}\n  },\n  \"93\": {\n    \"inputs\": {\n      \"text\": prompt,\n      \"clip\": [\"84\", 0]\n    },\n    \"class_type\": \"CLIPTextEncode\",\n    \"_meta\": {\"title\": \"CLIP Text Encode (Positive Prompt)\"}\n  },\n  \"94\": {\n    \"inputs\": {\n      \"fps\": 32,\n      \"images\": [\"117\", 0],\n      \"audio\": [\"118\", 0]\n    },\n    \"class_type\": \"CreateVideo\",\n    \"_meta\": {\"title\": \"Create Video\"}\n  },\n  \"95\": {\n    \"inputs\": {\n      \"unet_name\": \"wan2.2_i2v_high_noise_14B_fp8_scaled.safetensors\",\n      \"weight_dtype\": \"default\"\n    },\n    \"class_type\": \"UNETLoader\",\n    \"_meta\": {\"title\": \"Load Diffusion Model\"}\n  },\n  \"96\": {\n    \"inputs\": {\n      \"unet_name\": \"wan2.2_i2v_low_noise_14B_fp8_scaled.safetensors\",\n      \"weight_dtype\": \"default\"\n    },\n    \"class_type\": \"UNETLoader\",\n    \"_meta\": {\"title\": \"Load Diffusion Model\"}\n  },\n  \"97\": {\n    \"inputs\": {\n      \"image\": uploadedFilename\n    },\n    \"class_type\": \"LoadImage\",\n    \"_meta\": {\"title\": \"Load Image\"}\n  },\n  \"98\": {\n    \"inputs\": {\n      \"width\": width,\n      \"height\": height,\n      \"length\": 81,\n      \"batch_size\": 1,\n      \"positive\": [\"93\", 0],\n      \"negative\": [\"119\", 0],\n      \"vae\": [\"90\", 0],\n      \"start_image\": [\"97\", 0]\n    },\n    \"class_type\": \"WanImageToVideo\",\n    \"_meta\": {\"title\": \"WanImageToVideo\"}\n  },\n  \"101\": {\n    \"inputs\": {\n      \"lora_name\": \"wan2.2_i2v_lightx2v_4steps_lora_v1_high_noise.safetensors\",\n      \"strength_model\": 1.0000000000000002,\n      \"model\": [\"95\", 0]\n    },\n    \"class_type\": \"LoraLoaderModelOnly\",\n    \"_meta\": {\"title\": \"LoraLoaderModelOnly\"}\n  },\n  \"102\": {\n    \"inputs\": {\n      \"lora_name\": \"wan2.2_i2v_lightx2v_4steps_lora_v1_low_noise.safetensors\",\n      \"strength_model\": 1.0000000000000002,\n      \"model\": [\"96\", 0]\n    },\n    \"class_type\": \"LoraLoaderModelOnly\",\n    \"_meta\": {\"title\": \"LoraLoaderModelOnly\"}\n  },\n  \"103\": {\n    \"inputs\": {\n      \"shift\": 5.000000000000001,\n      \"model\": [\"102\", 0]\n    },\n    \"class_type\": \"ModelSamplingSD3\",\n    \"_meta\": {\"title\": \"ModelSamplingSD3\"}\n  },\n  \"104\": {\n    \"inputs\": {\n      \"shift\": 5.000000000000001,\n      \"model\": [\"101\", 0]\n    },\n    \"class_type\": \"ModelSamplingSD3\",\n    \"_meta\": {\"title\": \"ModelSamplingSD3\"}\n  },\n  \"108\": {\n    \"inputs\": {\n      \"filename_prefix\": \"video/ComfyUI\",\n      \"format\": \"auto\",\n      \"codec\": \"auto\",\n      \"video\": [\"94\", 0]\n    },\n    \"class_type\": \"SaveVideo\",\n    \"_meta\": {\"title\": \"Save Video\"}\n  },\n  \"117\": {\n    \"inputs\": {\n      \"ckpt_name\": \"rife47.pth\",\n      \"clear_cache_after_n_frames\": 16,\n      \"multiplier\": 2,\n      \"fast_mode\": true,\n      \"ensemble\": true,\n      \"scale_factor\": 1,\n      \"frames\": [\"87\", 0]\n    },\n    \"class_type\": \"RIFE VFI\",\n    \"_meta\": {\"title\": \"RIFE VFI (recommend rife47 and rife49)\"}\n  },\n  \"118\": {\n    \"inputs\": {\n      \"text\": ttsPrompt,\n      \"api_key\": \"[REDACTED_SK]\",\n      \"voice_id\": \"yM93hbw8Qtvdma2wCnJG\",\n      \"model_id\": \"eleven_multilingual_v2\",\n      \"seed\": \"\",\n      \"apply_text_normalization\": \"auto\",\n      \"voice_settings_stability\": 0.5,\n      \"voice_settings_use_speaker_boost\": true,\n      \"voice_settings_similarity_boost\": 0.8,\n      \"voice_settings_style\": 0,\n      \"voice_settings_speed\": 1\n    },\n    \"class_type\": \"ElevenlabsTextToSpeech\",\n    \"_meta\": {\"title\": \"ElevenlabsTextToSpeech\"}\n  },\n  \"119\": {\n    \"inputs\": {\n      \"conditioning\": [\"93\", 0]\n    },\n    \"class_type\": \"ConditioningZeroOut\",\n    \"_meta\": {\"title\": \"ConditioningZeroOut\"}\n  }\n};\n\nreturn [{\n  json: {\n    comfyWorkflow: workflowPrompt,\n    seed: seed,\n    userPrompt: prompt,\n    ttsPrompt: ttsPrompt\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        832,
+        528
+      ],
+      "id": "3968594f-f9cd-4e3a-9824-17878a39c62c",
+      "name": "Build ComfyUI Workflow - I2V"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://kqzuygzujdyfd3-8188.proxy.runpod.net/prompt",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{\n{\n  \"prompt\": $json.comfyWorkflow,\n  \"client_id\": \"n8n-automation\"\n}\n}}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1072,
+        528
+      ],
+      "id": "b300544b-8987-430c-8cef-fbf20658c053",
+      "name": "Queue ComfyUI - I2V"
+    },
+    {
+      "parameters": {
+        "jsCode": "const response = $input.item.json;\nconst promptId = response.prompt_id;\n\n// Get seed and prompt from the first item in input\nconst previousData = $input.first().json;\n\nreturn [{\n  json: {\n    prompt_id: promptId,\n    seed: previousData.seed,\n    user_prompt: previousData.userPrompt\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1312,
+        528
+      ],
+      "id": "78162015-6f54-4bdc-972f-eb7518d2e31a",
+      "name": "Extract Prompt ID - I2V"
+    },
+    {
+      "parameters": {
+        "amount": 230
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1552,
+        528
+      ],
+      "id": "c23c93a0-5f4d-4faa-a8f5-065901813204",
+      "name": "Wait - I2V",
+      "webhookId": "1f3934ea-bcf2-4e34-b8cc-1a742d517c37"
+    },
+    {
+      "parameters": {
+        "url": "=https://kqzuygzujdyfd3-8188.proxy.runpod.net/history/{{ $json.prompt_id }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1792,
+        528
+      ],
+      "id": "8e001cac-e7b0-45e8-a5a8-1259228e7999",
+      "name": "Check History I2V"
+    },
+    {
+      "parameters": {
+        "jsCode": "const history = $input.item.json;\n\n// Resolve prompt_id safely\nconst promptId =\n  history.prompt_id ||\n  Object.keys(history)[0];\n\nconst promptData = history[promptId];\n\nif (!promptData || !promptData.outputs) {\n  throw new Error(\"Video not ready yet or generation failed\");\n}\n\n// Find ANY output node that contains videos or gifs\nlet videoInfo = null;\n\nfor (const nodeId of Object.keys(promptData.outputs)) {\n  const nodeOutput = promptData.outputs[nodeId];\n\n  // Check for videos (from SaveVideo nodes)\n  if (nodeOutput?.videos && nodeOutput.videos.length > 0) {\n    videoInfo = nodeOutput.videos[0];\n    break;\n  }\n  \n  // Check for gifs (from SaveAnimatedWEBP or similar nodes)\n  if (nodeOutput?.gifs && nodeOutput.gifs.length > 0) {\n    videoInfo = nodeOutput.gifs[0];\n    break;\n  }\n  \n  // Some video nodes might save under 'images' key for animated formats\n  if (nodeOutput?.images && nodeOutput.images.length > 0) {\n    const firstImage = nodeOutput.images[0];\n    // Check if it's actually a video format\n    if (firstImage.filename && (\n      firstImage.filename.endsWith('.mp4') || \n      firstImage.filename.endsWith('.webm') ||\n      firstImage.filename.endsWith('.gif') ||\n      firstImage.filename.endsWith('.webp')\n    )) {\n      videoInfo = firstImage;\n      break;\n    }\n  }\n}\n\nif (!videoInfo) {\n  throw new Error(\"No video found in any output node\");\n}\n\n// Pull metadata from previous workflow state\nconst previousData = $input.first().json;\n\nreturn [\n  {\n    json: {\n      filename: videoInfo.filename,\n      subfolder: videoInfo.subfolder || \"\",\n      type: videoInfo.type || \"output\",\n      format: videoInfo.format || \"video/mp4\",\n      seed: previousData.seed ?? null,\n      user_prompt: previousData.user_prompt ?? null,\n      prompt_id: promptId\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2032,
+        528
+      ],
+      "id": "6c24c91d-31b0-4771-bb3c-1b92c06c99c9",
+      "name": "Extract Filename - I2V"
+    },
+    {
+      "parameters": {
+        "url": "=https://kqzuygzujdyfd3-8188.proxy.runpod.net/view?filename={{ $json.filename }}&subfolder={{ $json.subfolder }}&type={{ $json.type }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        2256,
+        528
+      ],
+      "id": "9e2a0b83-d236-47e5-96ba-d2c8d1726205",
+      "name": "Download Video - I2V"
+    },
+    {
+      "parameters": {
+        "content": "## Image to Video Wan2.2 VFI ElevenLabs\n\n",
+        "height": 208,
+        "width": 2336,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        64,
+        480
+      ],
+      "id": "cc22eb90-817e-4bc0-b029-b8a3ebb89f22",
+      "name": "Sticky Note - I2V"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "base64-field",
+              "name": "cleanBase64",
+              "value": "={{ $json.body.reference_image.replace(/^data:image\\/\\w+;base64,/, '') }}",
+              "type": "string"
+            },
+            {
+              "id": "prompt-field",
+              "name": "prompt",
+              "value": "={{ $json.body.prompt }}",
+              "type": "string"
+            },
+            {
+              "id": "tts-prompt-field",
+              "name": "tts_prompt",
+              "value": "={{ $json.body.tts_prompt }}",
+              "type": "string"
+            },
+            {
+              "id": "width-field",
+              "name": "width",
+              "value": "={{ $json.body.width }}",
+              "type": "number"
+            },
+            {
+              "id": "height-field",
+              "name": "height",
+              "value": "={{ $json.body.height }}",
+              "type": "number"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        112,
+        528
+      ],
+      "id": "53f2cf59-6485-4d1e-aa5d-cbe61d39887d",
+      "name": "Strip Base64 Prefix I2V1"
+    },
+    {
+      "parameters": {
+        "operation": "toBinary",
+        "sourceProperty": "cleanBase64",
+        "options": {
+          "fileName": "reference_image.png",
+          "mimeType": "image/png"
+        }
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        352,
+        528
+      ],
+      "id": "6b50f404-6c23-478e-b3ce-43db91f314b0",
+      "name": "Convert to File I2V1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://kqzuygzujdyfd3-8188.proxy.runpod.net/upload/image",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "image",
+              "inputDataFieldName": "data"
+            },
+            {
+              "name": "type",
+              "value": "input"
+            },
+            {
+              "name": "overwrite",
+              "value": "true"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        592,
+        528
+      ],
+      "id": "da2ca595-b5c6-44f4-bf9d-9512fe6abda8",
+      "name": "Upload Image to ComfyUI I2V1"
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Build ComfyUI Workflow - T2I R",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build ComfyUI Workflow - T2I I",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Build ComfyUI Workflow - T2V",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Strip Base64 Prefix T2V",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Strip Base64 Prefix I2V1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build ComfyUI Workflow - T2I R": {
+      "main": [
+        [
+          {
+            "node": "Queue ComfyUI - T2I R",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Prompt ID - T2I R": {
+      "main": [
+        [
+          {
+            "node": "Wait - T2I R",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait - T2I R": {
+      "main": [
+        [
+          {
+            "node": "Check History T2I R",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Queue ComfyUI - T2I R": {
+      "main": [
+        [
+          {
+            "node": "Extract Prompt ID - T2I R",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check History T2I R": {
+      "main": [
+        [
+          {
+            "node": "Extract Filename - T2I R",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Filename - T2I R": {
+      "main": [
+        [
+          {
+            "node": "Download Image - T2I R",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Image - T2I R": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build ComfyUI Workflow - T2I I": {
+      "main": [
+        [
+          {
+            "node": "Queue ComfyUI - T2I I",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Queue ComfyUI - T2I I": {
+      "main": [
+        [
+          {
+            "node": "Extract Prompt ID - T2I I",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Prompt ID - T2I I": {
+      "main": [
+        [
+          {
+            "node": "Wait - T2I I",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait - T2I I": {
+      "main": [
+        [
+          {
+            "node": "Check History T2I I",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check History T2I I": {
+      "main": [
+        [
+          {
+            "node": "Extract Filename - T2I I",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Filename - T2I I": {
+      "main": [
+        [
+          {
+            "node": "Download Image - T2I I",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Image - T2I I": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build ComfyUI Workflow - T2V": {
+      "main": [
+        [
+          {
+            "node": "Queue ComfyUI - T2V",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Queue ComfyUI - T2V": {
+      "main": [
+        [
+          {
+            "node": "Extract Prompt ID - T2V",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait - T2V": {
+      "main": [
+        [
+          {
+            "node": "Check History T2V",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check History T2V": {
+      "main": [
+        [
+          {
+            "node": "Extract Filename - T2V",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Filename - T2V": {
+      "main": [
+        [
+          {
+            "node": "Download Video - T2V",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Video - T2V": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Prompt ID - T2V": {
+      "main": [
+        [
+          {
+            "node": "Wait - T2V",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Strip Base64 Prefix T2V": {
+      "main": [
+        [
+          {
+            "node": "Convert to File T2V",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File T2V": {
+      "main": [
+        [
+          {
+            "node": "Upload Image to ComfyUI T2V",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload Image to ComfyUI T2V": {
+      "main": [
+        [
+          {
+            "node": "Build Flux2 Workflow T2V",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Flux2 Workflow T2V": {
+      "main": [
+        [
+          {
+            "node": "Queue to ComfyUI T2V",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Queue to ComfyUI T2V": {
+      "main": [
+        [
+          {
+            "node": "Extract Prompt ID T2V",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Prompt ID T2V": {
+      "main": [
+        [
+          {
+            "node": "Wait T2V",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait T2V": {
+      "main": [
+        [
+          {
+            "node": "Get History T2V",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get History T2V": {
+      "main": [
+        [
+          {
+            "node": "Extract Filename T2V",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Filename T2V": {
+      "main": [
+        [
+          {
+            "node": "Download Image T2V",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Image T2V": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build ComfyUI Workflow - I2V": {
+      "main": [
+        [
+          {
+            "node": "Queue ComfyUI - I2V",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Queue ComfyUI - I2V": {
+      "main": [
+        [
+          {
+            "node": "Extract Prompt ID - I2V",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Prompt ID - I2V": {
+      "main": [
+        [
+          {
+            "node": "Wait - I2V",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait - I2V": {
+      "main": [
+        [
+          {
+            "node": "Check History I2V",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check History I2V": {
+      "main": [
+        [
+          {
+            "node": "Extract Filename - I2V",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Filename - I2V": {
+      "main": [
+        [
+          {
+            "node": "Download Video - I2V",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Strip Base64 Prefix I2V1": {
+      "main": [
+        [
+          {
+            "node": "Convert to File I2V1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File I2V1": {
+      "main": [
+        [
+          {
+            "node": "Upload Image to ComfyUI I2V1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload Image to ComfyUI I2V1": {
+      "main": [
+        [
+          {
+            "node": "Build ComfyUI Workflow - I2V",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Video - I2V": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "triggerCount": 1,
+  "tags": [
+    {
+      "updatedAt": "2025-10-30T06:21:58.001Z",
+      "createdAt": "2025-10-30T06:21:58.001Z",
+      "id": "GZOxbWHBQtlQUyk0",
+      "name": "Alex Bond"
+    }
+  ]
+}

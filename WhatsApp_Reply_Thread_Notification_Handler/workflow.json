@@ -1,0 +1,467 @@
+{
+  "updatedAt": "2026-02-03T23:52:48.848Z",
+  "createdAt": "2025-11-24T16:43:26.972Z",
+  "id": "GJ017uIt02A9iuQ7",
+  "name": "Response Notification",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "e4d7f61c-46c0-4c6c-962e-4fb30af0dd5a",
+      "name": "Execute Workflow Trigger",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1888,
+        1120
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $json.query;\n\nreturn [{\n  json: {\n    threadId: data.id,\n    originalMessageId: data.original_message_id,\n    originalSenderPhone: data.sender_phone,\n    replyFromPhone: data.recipient_phone.replace('+', ''),\n    replyContent: data.current_message,\n    replyMessageId: data.current_message_id,\n    agentId: data.agent_id,\n    userId: data.user_id,\n    originalConversationId: data.original_conversation_id,\n    currentConversationId: data.original_conversation_id, // Using original since current isn't in the data\n    originalMessage: data.original_message\n  }\n}];"
+      },
+      "id": "8d023fbf-c201-4ccc-b49e-151fa5d95387",
+      "name": "Process Reply",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1584,
+        1120
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE message_threads\nSET \n  reply_received = TRUE,\n  reply_message_id = $1,\n  reply_content = $2,\n  reply_received_at = NOW(),\n  status = 'replied'\nWHERE id = $3;",
+        "options": {
+          "queryReplacement": "={{ [\n  $json.replyMessageId,\n  $json.replyContent,\n  $json.threadId\n] }}"
+        }
+      },
+      "id": "7792db69-5a48-4c59-8915-1343472fec9f",
+      "name": "Mark Thread as Replied",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        -1360,
+        1024
+      ],
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $('Process Reply').item.json;\n\nconst notificationMessage = `📬 *Reply Received*\n\nFrom: ${data.replyFromPhone}\nReply: \"${data.replyContent}\"\n\nOriginal message: **\"${data.originalMessage || 'N/A'}\"**\nReceived at: ${new Date().toLocaleString()}`;\n\nreturn [{\n  json: {\n    numbers: data.originalSenderPhone,  // ✅ Changed from originalSenderPhone\n    message: notificationMessage,\n    messageType: 'TEXT',\n    agentId: data.agentId\n  }\n}];"
+      },
+      "id": "bdcd6abe-8f86-42b5-80ae-9e36cf2750d4",
+      "name": "Format Reply Notification to User",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1136,
+        928
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $('Process Reply').item.json;\n\nconst confirmationMessage = `✅ *Reply Acknowledged*\n\nYour message has been delivered to the sender.\nThank you for your response!`;\n\nreturn [{\n  json: {\n    numbers: data.replyFromPhone,\n    message: confirmationMessage,\n    messageType: 'TEXT',\n    agentId: data.agentId\n  }\n}];"
+      },
+      "id": "fe8f9c2e-fc08-4963-80d8-5514dbfb5d45",
+      "name": "Format Reply Confirmation to User1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1136,
+        1120
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://pa.duhanashrah.ai/api/webhooks/send-message",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ {\"agentId\": $json.agentId, \"to\": $json.numbers, \"message\": $json.message} }}",
+        "options": {}
+      },
+      "id": "1fb988c9-bc0f-46fb-8639-0fc2c45a1480",
+      "name": "Send Notification to User",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -880,
+        928
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://pa.duhanashrah.ai/api/webhooks/send-message",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ {\"agentId\": $json.agentId, \"to\": $json.numbers, \"message\": $json.message} }}",
+        "options": {}
+      },
+      "id": "a0a2c857-b3bf-4fdb-83b1-6de0616662be",
+      "name": "Send Confirmation to User1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        112,
+        1408
+      ],
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO message_log (\n  message_id,\n  conversation_id,\n  sender_phone,\n  message_text,\n  received_at,\n  agent_id,\n  user_id,\n  processed,\n  metadata\n)\nVALUES ($1, $2, $3, $4, $5, $6, $7, TRUE, $8::jsonb)\nON CONFLICT (message_id)\nDO UPDATE SET\n  metadata = EXCLUDED.metadata,\n  processed = TRUE;",
+        "options": {
+          "queryReplacement": "={{ [\n  $('Process Reply').item.json.replyMessageId,\n  $('Process Reply').item.json.currentConversationId,\n  $('Process Reply').item.json.replyFromPhone,\n  $('Process Reply').item.json.replyContent,\n  new Date().toISOString(),\n  $('Process Reply').item.json.agentId,\n  $('Process Reply').item.json.userId,\n  JSON.stringify({\n    is_reply: true,\n    thread_id: $('Process Reply').item.json.threadId,\n    original_message_id: $('Process Reply').item.json.originalMessageId\n  })\n] }}"
+        }
+      },
+      "id": "44b1cec6-6c15-4991-b899-de4f0c479794",
+      "name": "Log Reply to Message Log",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        -1344,
+        1248
+      ],
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get data from the Format Reply Notification node which has the contact info\nconst formatData = $('Format Reply Notification to User').first().json;\nconst processData = $('Process Reply').first().json;\n\nreturn [{\n  json: {\n    success: true,\n    message: `✅ Reply notification sent successfully to original sender`,\n    details: {\n      threadId: processData.threadId,\n      originalSender: processData.originalSenderPhone,\n      replyFrom: processData.replyFromPhone,\n      replyContent: processData.replyContent,\n      status: 'notification_sent',\n      timestamp: new Date().toISOString()\n    }\n  }\n}];"
+      },
+      "id": "12f3db6f-b5a2-4269-b51c-106cd0e321fe",
+      "name": "Return Notification Success",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -624,
+        928
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $('Process Reply').item.json;\n\nreturn [{\n  json: {\n    success: true,\n    message: `✅ Confirmation sent successfully to replier`,\n    details: {\n      threadId: data.threadId,\n      replier: data.replyFromPhone,\n      replyContent: data.replyContent,\n      status: 'confirmation_sent',\n      timestamp: new Date().toISOString()\n    }\n  }\n}];"
+      },
+      "id": "43111385-55ac-4cd2-a313-c21bbf488824",
+      "name": "Return Confirmation Success",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        384,
+        1392
+      ],
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $json.query;\n\nreturn [{\n  json: {\n    threadId: data.id,\n    originalMessageId: data.original_message_id,\n    originalSenderPhone: data.sender_phone,\n    replyFromPhone: data.recipient_phone.replace('+', ''),\n    replyContent: data.current_message,\n    replyMessageId: data.current_message_id,\n    agentId: data.agent_id,\n    userId: data.user_id,\n    originalConversationId: data.original_conversation_id,\n    currentConversationId: data.original_conversation_id,\n    originalMessage: data.original_message\n  }\n}];"
+      },
+      "id": "edf3eee2-8ee4-490d-96bd-6220f6e17020",
+      "name": "Process Reply1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1360,
+        1936
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE message_threads\nSET \n  reply_received = TRUE,\n  reply_message_id = $1,\n  reply_content = $2,\n  reply_received_at = NOW(),\n  status = 'replied'\nWHERE id = $3;",
+        "options": {
+          "queryReplacement": "={{ [\n  $json.replyMessageId,\n  $json.replyContent,\n  $json.threadId\n] }}"
+        }
+      },
+      "id": "ac7adefe-7eca-4ce8-b23c-a5c77e1e8829",
+      "name": "Mark Thread as Replied1",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        -1136,
+        1840
+      ],
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $('Process Reply1').item.json;\n\nconst notificationMessage = `📬 *Reply Received*\n\nFrom: ${data.replyFromPhone}\nReply: \"${data.replyContent}\"\n\nOriginal message: \"${data.originalMessage || 'N/A'}\"\nReceived at: ${new Date().toLocaleString()}`;\n\nreturn [{\n  json: {\n    numbers: data.originalSenderPhone,\n    message: notificationMessage,\n    messageType: 'TEXT',\n    agentId: data.agentId\n  }\n}];"
+      },
+      "id": "d5a4e4d6-933b-4286-b429-5c8128022674",
+      "name": "Format Reply Notification to User1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -912,
+        1744
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $('Process Reply1').item.json;\n\nconst confirmationMessage = `✅ *Reply Acknowledged*\n\nYour message has been delivered to the sender.\nThank you for your response!`;\n\nreturn [{\n  json: {\n    numbers: data.replyFromPhone,\n    message: confirmationMessage,\n    messageType: 'TEXT',\n    agentId: data.agentId\n  }\n}];"
+      },
+      "id": "90965623-b582-4c74-acaa-1507cf7b5462",
+      "name": "Format Reply Confirmation to User",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -912,
+        1936
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://pa.duhanashrah.ai/api/webhooks/send-message",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ {\"agentId\": $json.agentId, \"to\": $json.numbers, \"message\": $json.message} }}",
+        "options": {}
+      },
+      "id": "03335dda-39dc-48bf-80a6-b4ac899d7957",
+      "name": "Send Notification to User1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -688,
+        1744
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://pa.duhanashrah.ai/api/webhooks/send-message",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ {\"agentId\": $json.agentId, \"to\": $json.numbers, \"message\": $json.message} }}",
+        "options": {}
+      },
+      "id": "ab0d0a7d-a2a0-4be9-b36a-007c6b46cf08",
+      "name": "Send Confirmation to User",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -688,
+        1936
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO message_log (\n  message_id,\n  conversation_id,\n  sender_phone,\n  message_text,\n  received_at,\n  agent_id,\n  user_id,\n  processed,\n  metadata\n)\nVALUES ($1, $2, $3, $4, $5, $6, $7, TRUE, $8::jsonb)\nON CONFLICT (message_id)\nDO UPDATE SET\n  metadata = EXCLUDED.metadata,\n  processed = TRUE;",
+        "options": {
+          "queryReplacement": "={{ [\n  $('Process Reply1').item.json.replyMessageId,\n  $('Process Reply1').item.json.currentConversationId,\n  $('Process Reply1').item.json.replyFromPhone,\n  $('Process Reply1').item.json.replyContent,\n  new Date().toISOString(),\n  $('Process Reply1').item.json.agentId,\n  $('Process Reply1').item.json.userId,\n  JSON.stringify({\n    is_reply: true,\n    thread_id: $('Process Reply1').item.json.threadId,\n    original_message_id: $('Process Reply1').item.json.originalMessageId\n  })\n] }}"
+        }
+      },
+      "id": "469f81b4-2e1b-46ec-954e-3a944fd2f3cc",
+      "name": "Log Reply to Message Log1",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        -1120,
+        2064
+      ],
+      "credentials": "[REDACTED]"
+    }
+  ],
+  "connections": {
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Process Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Reply": {
+      "main": [
+        [
+          {
+            "node": "Mark Thread as Replied",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Log Reply to Message Log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark Thread as Replied": {
+      "main": [
+        [
+          {
+            "node": "Format Reply Notification to User",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Format Reply Confirmation to User1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Reply Notification to User": {
+      "main": [
+        [
+          {
+            "node": "Send Notification to User",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Reply Confirmation to User1": {
+      "main": [
+        []
+      ]
+    },
+    "Send Notification to User": {
+      "main": [
+        [
+          {
+            "node": "Return Notification Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Confirmation to User1": {
+      "main": [
+        [
+          {
+            "node": "Return Confirmation Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Reply1": {
+      "main": [
+        [
+          {
+            "node": "Mark Thread as Replied1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Log Reply to Message Log1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark Thread as Replied1": {
+      "main": [
+        [
+          {
+            "node": "Format Reply Notification to User1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Format Reply Confirmation to User",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Reply Notification to User1": {
+      "main": [
+        [
+          {
+            "node": "Send Notification to User1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Reply Confirmation to User": {
+      "main": [
+        [
+          {
+            "node": "Send Confirmation to User",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Notification to User1": {
+      "main": [
+        []
+      ]
+    },
+    "Send Confirmation to User": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": null,
+  "triggerCount": 1,
+  "tags": [
+    {
+      "updatedAt": "2025-10-24T04:04:28.048Z",
+      "createdAt": "2025-10-24T04:04:28.048Z",
+      "id": "SgbCkdz8ViP8OAzg",
+      "name": "SamCliff"
+    }
+  ]
+}

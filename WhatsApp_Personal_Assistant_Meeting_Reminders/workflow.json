@@ -1,0 +1,1940 @@
+{
+  "updatedAt": "2025-12-10T04:46:04.650Z",
+  "createdAt": "2025-11-12T11:01:06.773Z",
+  "id": "45EAcPCy6dUpK2B6",
+  "name": "whatsapp assistant(PA)",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "height": 1296,
+        "width": 6816
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -3280,
+        -1072
+      ],
+      "typeVersion": 1,
+      "id": "dac96cc8-881f-494d-befa-b42a92bd6772",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes"
+            },
+            {}
+          ]
+        }
+      },
+      "id": "6eecdb96-7c36-423f-81f9-ecbef0d8c64b",
+      "name": "Every 5 Minutes",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -3248,
+        720
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT \n  id,\n  title,\n  date_time,\n  purpose,\n  location,\n  contact_name,\n  contact_phone,\n  scheduler_phone,\n  status\nFROM meetings\nWHERE status = 'scheduled'\n  AND reminder_sent = FALSE\n  AND date_time::timestamp BETWEEN (NOW() AT TIME ZONE 'Asia/Karachi') + INTERVAL '25 minutes' AND (NOW() AT TIME ZONE 'Asia/Karachi') + INTERVAL '35 minutes'\nORDER BY date_time::timestamp ASC;",
+        "options": {}
+      },
+      "id": "822d1617-a61c-4fd5-b715-a997c65afca5",
+      "name": "Find Upcoming Meetings",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        -3024,
+        720
+      ],
+      "alwaysOutputData": true,
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "has-meetings",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "any",
+                "operation": "exists",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "0fe3493b-576f-4acd-9d76-f6e024188e84",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "scheduled",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "0f3949b0-102b-4204-984e-5d9bdbb2012d",
+      "name": "Any Meetings to Remind?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -2800,
+        720
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// No meetings found - just exit gracefully\nreturn [{\n  json: {\n    success: true,\n    message: 'No meetings require reminders at this time',\n    timestamp: new Date().toISOString()\n  }\n}];"
+      },
+      "id": "d507af1f-ff34-4693-abbe-092e6a1e5985",
+      "name": "No Meetings - Exit",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2576,
+        624
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const meeting = $input.first().json;\n\n// Format date/time for display\nconst meetingDateTime = new Date(meeting.date_time);\nconst dateStr = meetingDateTime.toLocaleDateString('en-US', {\n  weekday: 'long',\n  year: 'numeric',\n  month: 'long',\n  day: 'numeric'\n});\nconst timeStr = meetingDateTime.toLocaleTimeString('en-US', {\n  hour: '2-digit',\n  minute: '2-digit',\n  hour12: true\n});\n\n// Clean phone numbers (remove + if present)\nconst cleanPhone = (phone) => {\n  if (!phone) return null;\n  return phone.replace(/\\+/g, '');\n};\n\nconst schedulerPhone = cleanPhone(meeting.scheduler_phone);\nconst contactPhone = cleanPhone(meeting.contact_phone);\n\n// Message for the scheduler\nconst schedulerMessage = `⏰ **Meeting Reminder**\\n\\nYour meeting is starting in 30 minutes!\\n\\n📅 **${meeting.title}**\\n👤 With: ${meeting.contact_name}\\n🕐 Time: ${dateStr} at ${timeStr}\\n📍 Location: ${meeting.location}\\n📋 Purpose: ${meeting.purpose}\\n\\nPlease prepare accordingly.`;\n\n// Message for the contact/end-user\nconst contactMessage = `⏰ **Meeting Reminder**\\n\\nYour meeting is starting in 30 minutes!\\n\\n📅 **${meeting.title}**\\n🕐 Time: ${dateStr} at ${timeStr}\\n📍 Location: ${meeting.location}\\n📋 Purpose: ${meeting.purpose}\\n\\nLooking forward to meeting with you!`;\n\nreturn [{\n  json: {\n    meetingId: meeting.id,\n    schedulerPhone: schedulerPhone,\n    schedulerMessage: schedulerMessage,\n    contactPhone: contactPhone,\n    contactMessage: contactMessage,\n    contactName: meeting.contact_name,\n    meetingTitle: meeting.title,\n    meetingTime: `${dateStr} at ${timeStr}`\n  }\n}];"
+      },
+      "id": "6fbc71d9-03c6-4287-bae8-45b149fb2dcd",
+      "name": "Format Reminder Messages",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2576,
+        816
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "has-scheduler-phone",
+              "leftValue": "={{ $json.schedulerPhone }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "71671b99-0d8e-4510-833d-f8b672463956",
+      "name": "Has Scheduler Phone?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -2352,
+        816
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://wc2.nsolbpo.com/api/send-message",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "message",
+              "value": "={{ $json.schedulerMessage }}"
+            },
+            {
+              "name": "messageType",
+              "value": "TEXT"
+            },
+            {
+              "name": "numbers",
+              "value": "={{ $json.schedulerPhone }}"
+            },
+            {
+              "name": "x-api-key",
+              "value": "gvdgKFDom0glTeHwjdJYow73Uq6YNa8GytuqiHmK"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "d6b425e8-c882-49ce-9dac-548f53389cce",
+      "name": "Send Reminder to Scheduler",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -2128,
+        720
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Scheduler phone not available, just pass through\nreturn [$input.first()];"
+      },
+      "id": "62b1be69-9e53-4f2a-b043-52d4d88941b4",
+      "name": "Skip Scheduler Notification",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2128,
+        912
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://wc2.nsolbpo.com/api/send-message",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "message",
+              "value": "={{ $('Format Reminder Messages').first().json.contactMessage }}"
+            },
+            {
+              "name": "numbers",
+              "value": "={{ $('Format Reminder Messages').first().json.contactPhone }}"
+            },
+            {
+              "name": "x-api-key",
+              "value": "gvdgKFDom0glTeHwjdJYow73Uq6YNa8GytuqiHmK"
+            },
+            {
+              "name": "messageType",
+              "value": "TEXT"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "62144157-bf58-4327-ab99-2228c3b6e965",
+      "name": "Send Reminder to Contact",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1904,
+        816
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE meetings\nSET reminder_sent = TRUE,\n    updated_at = NOW()\nWHERE id = $1\nRETURNING id, reminder_sent, updated_at;",
+        "options": {
+          "queryReplacement": "={{ [$('Format Reminder Messages').first().json.meetingId] }}"
+        }
+      },
+      "id": "d02123a9-faf1-4c31-8c33-00021204a674",
+      "name": "Mark Reminder as Sent",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        -1680,
+        816
+      ],
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $('Format Reminder Messages').first().json;\n\nreturn [{\n  json: {\n    success: true,\n    message: `✅ Reminder sent for meeting: ${data.meetingTitle}`,\n    details: {\n      meetingId: data.meetingId,\n      contactName: data.contactName,\n      meetingTime: data.meetingTime,\n      schedulerNotified: !!data.schedulerPhone,\n      contactNotified: true,\n      timestamp: new Date().toISOString()\n    }\n  }\n}];"
+      },
+      "id": "261aece0-2e68-49f9-9288-7d72dc4159cc",
+      "name": "Return Success",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1456,
+        816
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "41980128-7bde-42bc-acd0-43b02495a18c",
+      "name": "Execute Workflow Trigger",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [
+        -3248,
+        1328
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "check-error",
+              "leftValue": "={{ $json.success }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "ca159127-35d0-4179-84d7-8117569003b6",
+      "name": "Is Valid?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -2800,
+        1328
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.intent }}",
+              "value2": "search"
+            }
+          ]
+        }
+      },
+      "id": "f375e8a0-cbcf-440d-bbf6-dd19a33e4a9f",
+      "name": "Check Intent",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        -2576,
+        1232
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO contacts (\n  agent_id,\n  name,\n  phone_number,\n  email,\n  company,\n  created_at,\n  updated_at\n)\nVALUES (\n  $1,\n  $2,\n  $3,\n  $4,\n  $5,\n  NOW(),\n  NOW()\n)\nRETURNING id, name, phone_number, email, company, created_at;",
+        "options": {
+          "queryReplacement": "={{ $json.agent_id }}\n={{ $json.contact_name }}\n={{ $json.contact_phone }}\n={{ $json.email }}\n={{ $json.company }}"
+        }
+      },
+      "id": "638d63fe-8c21-4e1f-a77b-510fccd9aa74",
+      "name": "Insert Contact",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        -2352,
+        1328
+      ],
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Format search results\nconst results = $input.all().flatMap(item => item.json);\n\n// Get search term from previous node\nconst validateItems = $items(\"Validate Input1\");\nconst searchTerm = (validateItems?.[0]?.json?.contact_name || 'Unknown').trim();\n\n// Handle no results\nif (!results || results.length === 0) {\n  return [{\n    json: {\n      success: false,\n      message: `❌ No contacts found matching \"${searchTerm}\".`,\n      contacts: [],\n      count: 0,\n      intent: 'search'\n    }\n  }];\n}\n\n// Format contacts\nconst formattedContacts = results.map(contact => ({\n  id: contact.id,\n  name: contact.name || 'Unknown',\n  phone_number: contact.phone_number || 'No phone',\n  email: contact.email || '',\n  company: contact.company || '',\n  created_at: contact.created_at || null\n}));\n\n// Build message\nlet message = `✅ Found ${formattedContacts.length} contact${formattedContacts.length > 1 ? 's' : ''} matching \"${searchTerm}\":\\n\\n`;\n\nformattedContacts.forEach((contact, index) => {\n  message += `${index + 1}. **${contact.name}**\\n`;\n  message += `   📱 ${contact.phone_number}\\n`;\n  if (contact.email) message += `   ✉️ ${contact.email}\\n`;\n  if (contact.company) message += `   🏢 ${contact.company}\\n`;\n  message += `\\n`;\n});\n\nreturn [{\n  json: {\n    success: true,\n    message,\n    contacts: formattedContacts,\n    count: formattedContacts.length,\n    intent: 'search',\n    searchTerm\n  }\n}];"
+      },
+      "id": "e33c7c87-2545-4941-a519-2a17b311655e",
+      "name": "Format Search Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2128,
+        1136
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Format insert response\nconst contact = $input.first().json;\n\nreturn [{\n  json: {\n    success: true,\n    message: `✅ Contact \"${contact.name}\" added successfully!`,\n    intent: 'insert',\n    contact: {\n      id: contact.id,\n      name: contact.name,\n      phone_number: contact.phone_number,\n      email: contact.email || '',\n      company: contact.company || '',\n      created_at: contact.created_at\n    }\n  }\n}];"
+      },
+      "id": "71d3ebef-1b72-4d2f-b03b-cb502c0beb25",
+      "name": "Format Insert Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2128,
+        1328
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract and validate input from AI agent\nconst rawInput = $input.first().json;\n\n// Handle both wrapped (query) and flat formats\nlet input;\nif (rawInput.query && typeof rawInput.query === 'object') {\n  // Input is wrapped in \"query\" object\n  input = rawInput.query;\n} else {\n  // Input is flat\n  input = rawInput;\n}\n\n// Get intent (search or insert)\nconst intent = input.intent || 'search';\n\n// Extract fields\nconst contactName = (input.contact_name || '').trim();\nconst agentId = (input.agent_id || '').trim();\nconst contactPhone = (input.contact_phone || '').trim();\nconst email = (input.email || '').trim();\nconst company = (input.company || '').trim();\n\n// Validate required fields\nif (!contactName || contactName.length < 2) {\n  return [{\n    json: {\n      error: true,\n      success: false,\n      message: \"❌ Please provide a valid contact name (2+ characters).\"\n    }\n  }];\n}\n\nif (!agentId || agentId.length < 5) {\n  return [{\n    json: {\n      error: true,\n      success: false,\n      message: \"❌ Invalid or missing agent_id.\"\n    }\n  }];\n}\n\n// For INSERT, validate phone\nif (intent === 'insert') {\n  if (!contactPhone || contactPhone.length < 10) {\n    return [{\n      json: {\n        error: true,\n        success: false,\n        message: \"❌ Please provide a valid phone number (10+ digits).\"\n      }\n    }];\n  }\n}\n\n// Clean phone number (remove spaces, +, etc.)\nfunction cleanPhone(phone) {\n  if (!phone) return '';\n  let cleaned = phone.replace(/[\\s\\-()]/g, ''); // Remove spaces, dashes, parentheses\n  cleaned = cleaned.replace(/^\\+/, ''); // Remove +\n  if (cleaned.startsWith('0')) cleaned = '92' + cleaned.substring(1); // Handle 0 prefix for Pakistan\n  return cleaned.replace(/\\D/g, ''); // Keep only digits\n}\n\nconst cleanedPhone = cleanPhone(contactPhone);\n\n// Sanitize name\nconst sanitizedName = contactName\n  .replace(/[\\x00-\\x08\\x0B\\x0C\\x0E-\\x1F\\x7F]/g, '') // Remove control chars\n  .substring(0, 100);\n\n// Return validated data\nreturn [{\n  json: {\n    success: true,\n    error: false,\n    intent: intent,\n    contact_name: sanitizedName,\n    agent_id: agentId,\n    contact_phone: cleanedPhone,\n    email: email.substring(0, 100),\n    company: company.substring(0, 100),\n    searchPattern: `%${sanitizedName.toLowerCase()}%`\n  }\n}];"
+      },
+      "id": "81aae672-e2cb-4c4a-a474-23c46d60f8b3",
+      "name": "Validate Input1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3024,
+        1328
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT \n  id,\n  name,\n  phone_number,\n  email,\n  company,\n  created_at\nFROM contacts\nWHERE \n  agent_id = $1\n  AND LOWER(name) LIKE $2\nORDER BY \n  CASE \n    WHEN LOWER(name) = LOWER($3) THEN 1\n    WHEN LOWER(name) LIKE LOWER($3) || '%' THEN 2\n    ELSE 3\n  END,\n  name ASC\nLIMIT 10;",
+        "options": {
+          "queryReplacement": "={{ $json.agent_id }}\n{{ $json.searchPattern }}\n{{ $json.contact_name }}"
+        }
+      },
+      "id": "cb3f02a8-85fd-42cd-8c6c-7d4f9d19cda5",
+      "name": "Search Database1",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        -2352,
+        1136
+      ],
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Return error response from validation\nconst errorData = $input.first().json;\n\nreturn [{\n  json: {\n    success: false,\n    message: errorData.message,\n    contacts: [],\n    count: 0,\n    intent: 'error'\n  }\n}];"
+      },
+      "id": "b04147b6-1c3e-48fe-82aa-b0f5a3b485a6",
+      "name": "Format Error Response1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2576,
+        1424
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "noData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        -736,
+        -704
+      ],
+      "id": "b3e4dac3-4184-4dff-899b-118936eff84c",
+      "name": "Respond Skipped"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO message_log (\n  message_id,\n  conversation_id,\n  sender_phone,\n  message_text,\n  received_at,\n  agent_id,\n  user_id,\n  processed\n)\nVALUES ($1, $2, $3, $4, $5, $6, $7, false)\nON CONFLICT (message_id)\nDO UPDATE SET\n  agent_id = EXCLUDED.agent_id,\n  user_id  = EXCLUDED.user_id,\n  message_text = EXCLUDED.message_text,\n  received_at = EXCLUDED.received_at;\n",
+        "options": {
+          "queryReplacement": "={{ [\n  $json.messageId,\n  $json.conversationId,\n  $json.senderPhone,\n  $json.message,\n  $json.timestamp,\n  $json.agentId,\n  $json.userId\n] }}"
+        }
+      },
+      "id": "97d0aa21-7c69-4fbd-9b3c-877dc7b7dcc8",
+      "name": "Log Message to DB",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        -736,
+        -512
+      ],
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT \n  id, title, date_time, purpose, location,\n  contact_name, contact_phone, status, created_at, user_id\nFROM public.meetings\nWHERE contact_phone = $1\n  AND status = 'pending_confirmation'\nORDER BY created_at DESC\nLIMIT 1;",
+        "options": {
+          "queryReplacement": "={{ $('Is Authorized Agent?1').item.json.body.from }}"
+        }
+      },
+      "id": "23cfd737-c60a-41c8-b801-b1897d5527b1",
+      "name": "Check for Pending Meeting",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        -512,
+        -512
+      ],
+      "alwaysOutputData": true,
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "has-pending",
+              "leftValue": "={{ $json.hasPendingMeeting }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "8af3d502-591d-4c5a-bc4f-0e1d3dc7fc03",
+      "name": "Has Pending Meeting?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -64,
+        -512
+      ]
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "=jxagZ78YKcHxcuRW"
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "id": "e155da74-c89f-436e-aa80-a16ba6c63634",
+      "name": "Handle Meeting Response",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.1,
+      "position": [
+        720,
+        -720
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "noData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        992,
+        -720
+      ],
+      "id": "5fcffd24-3ae7-4006-b80c-d85a22d94973",
+      "name": "Respond Meeting Handled"
+    },
+    {
+      "parameters": {
+        "jsCode": "const messageData = $('Parse & Validate Message2').item.json;\nconst agentData = $input.item.json; // Assuming the input data is available from a previous node\n\nreturn [{\n  json: {\n    // Original message fields\n    messageId: messageData.messageId,\n    chatInput: messageData.message,\n    senderPhone: messageData.senderPhone,\n    senderName: messageData.senderName,\n    conversationId: messageData.conversationId,\n    agentPhone: messageData.agentPhone,\n    agentId: messageData.agentId,\n    userId: messageData.userId,\n    timestamp: messageData.timestamp,\n    messageType: messageData.messageType,\n    direction: messageData.direction,\n    rawFrom: messageData.rawFrom,\n    isFromAgent: messageData.isFromAgent,\n    \n    // Additional agent/user fields\n    user_id: agentData.user_id,\n    agent_name: agentData.agent_name,\n    agent_type: agentData.agent_type,\n    description: agentData.description,\n    whatsapp_phone_number: agentData.whatsapp_phone_number,\n    initial_prompt: agentData.initial_prompt,\n    agent_owner_name: agentData.agent_owner_name,\n    agent_phone_number: agentData.agent_phone_number,\n    persona: agentData.persona,\n    response_languages: agentData.response_languages,\n    timezone: agentData.timezone\n  }\n}];"
+      },
+      "id": "d8f535c3-b01a-436d-9c14-52509a50aa71",
+      "name": "Prepare AI Context",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        496,
+        -320
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the meeting data from the previous node\nconst meetingData = $input.first().json;\n\n// Get the original message data\nconst messageData = $('Log Message to DB').first().json;\n\n// Get the agentId\nconst agentId = $('Is Valid Message?1').first().json.agentId;\n\n// Check if we have a pending meeting (contact_phone exists means query returned a result)\nconst hasPendingMeeting = meetingData && meetingData.contact_phone;\n\n// Return combined data with a flag indicating if there's a pending meeting\nreturn [{\n  json: {\n    hasPendingMeeting: !!hasPendingMeeting,\n    meeting: hasPendingMeeting ? meetingData : null,\n    message: messageData,\n    agentId: agentId\n  }\n}];"
+      },
+      "id": "acc567b9-5963-48fb-9b79-6bfb4db781c7",
+      "name": "Process Meeting Result",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -288,
+        -512
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// --- Extract Inputs ---\nconst input = $input.first().json;\nconst message = $('Is Valid Message?1').first().json.message || null;\nconst agentId = input.agentId || null; // ✅ Extract agentId\n\n// --- Validate Meeting Data ---\nif (!input || !input.meeting) {\n  return [{\n    json: {\n      error: true,\n      success: false,\n      message: '❌ No meeting data found in input.'\n    }\n  }];\n}\n\nconst meeting = input.meeting;\nconst hasPendingMeeting = !!input.hasPendingMeeting;\nconst meetingId = meeting.id || null;\nconst userId = meeting.user_id || null; // ✅ Extract user_id\nconst title = (meeting.title || '').trim();\nconst dateTime = (meeting.date_time || '').trim();\nconst purpose = (meeting.purpose || '').trim();\nconst location = (meeting.location || 'Virtual').trim();\nconst contactName = (meeting.contact_name || '').trim();\nconst contactPhone = (meeting.contact_phone || '').trim();\nconst meetingStatus = (meeting.status || '').trim();\n\nconst errors = [];\nif (!meetingId) errors.push('Meeting ID is required.');\nif (!userId) errors.push('User ID is required.'); // ✅ Validate user_id\nif (!agentId) errors.push('Agent ID is required.'); // ✅ Validate agentId\nif (!contactName) errors.push('Contact name is required.');\nif (!contactPhone || contactPhone.length < 10 || isNaN(Number(contactPhone))) {\n  errors.push('Valid contact phone number required (numeric, min 10 digits).');\n}\nif (!title) errors.push('Meeting title is required.');\nif (!dateTime) errors.push('Meeting date and time required.');\nif (!purpose) errors.push('Meeting purpose is required.');\n\nif (errors.length > 0) {\n  return [{\n    json: {\n      error: true,\n      success: false,\n      message: `❌ Validation failed:\\n${errors.join('\\n')}`\n    }\n  }];\n}\n\n// --- Construct Output for Subworkflow ---\nreturn [{\n  json: {\n    hasPendingMeeting,\n    meetingId,\n    userId, // ✅ Include user_id in output\n    agentId, // ✅ Include agentId in output\n    contactName,\n    contactPhone: `+${contactPhone.replace(/\\+/g, '')}`,\n    title,\n    dateTime,\n    purpose,\n    location,\n    meetingStatus,\n    createdAt: meeting.created_at || null,\n    message,\n    messageSuccess: input.message?.success || false,\n    timestamp: new Date().toISOString(),\n    success: true\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        368,
+        -720
+      ],
+      "id": "3c119c78-f3cf-4c77-ab3d-428250d98581",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "jsCode": "const aiOutput = $input.first().json;\nconst messageData = $('Prepare AI Context').item.json;\n\n// Extract the text output from AI agent\nlet responseText = '';\n\nif (typeof aiOutput.output === 'string') {\n  responseText = aiOutput.output;\n} else if (aiOutput.text) {\n  responseText = aiOutput.text;\n} else if (aiOutput.content) {\n  responseText = aiOutput.content;\n} else {\n  responseText = 'I apologize, I could not process your request. Please try again.';\n}\n\nreturn [{\n  json: {\n    message: responseText.trim(),\n    numbers: messageData.senderPhone,\n    messageType: 'TEXT'\n  }\n}];"
+      },
+      "id": "9b0c3031-eebf-4475-bea0-ae13e24a1ffb",
+      "name": "Format AI Response1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1984,
+        -320
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE message_log\nSET processed = true,\n    ai_response = $2,\n    processed_at = NOW()\nWHERE message_id = $1;",
+        "options": {
+          "queryReplacement": "={{ [\n  $('Parse & Validate Message2').item.json.messageId,\n  $('Format AI Response1').item.json.message\n] }}"
+        }
+      },
+      "id": "f42f6f79-e5bf-4eda-9da3-1e21236cde65",
+      "name": "Update Message Log1",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        2464,
+        -320
+      ],
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "respondWith": "noData",
+        "options": {
+          "responseCode": 403
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        -1184,
+        -800
+      ],
+      "id": "cd3305f2-cf34-4d1b-893c-d1230fa6356c",
+      "name": "Respond Unauthorized1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $input.first().json.body || {};\n\n// Map the actual field names from your input structure\nconst messageId = body.id || body.messageId;\nconst senderPhone = body.from;\nconst agentPhone = body.agent || body.to;\nconst message = body.content || body.textContent || body.transcribedText;\nconst timestamp = body.timestamp;\nconst agentId = body.agentId;\nconst userId = body.user_id; // NEW: Parse user_id from webhook payload\nconst conversationId = body.from;\nconst direction = body.direction || body.metadata?.direction;\nconst rawFrom = body.rawFrom || body.from;\nconst messageType = body.messageType || body.type;\n\n// Validate required fields\nif (!senderPhone || !message || !messageId) {\n  return [{\n    json: {\n      error: true,\n      skipProcessing: true,\n      errorType: 'MISSING_FIELDS',\n      message: 'Missing required fields: senderPhone, message, or messageId'\n    }\n  }];\n}\n\n// Validate userId (optional: uncomment if you want to make it required)\n// if (!userId) {\n//   return [{\n//     json: {\n//       error: true,\n//       skipProcessing: true,\n//       errorType: 'MISSING_USER_ID',\n//       message: 'Missing required field: user_id'\n//     }\n//   }];\n// }\n\n// Skip if message ID starts with 'BAE' (agent message pattern)\nif (messageId && messageId.startsWith('BAE')) {\n  return [{\n    json: {\n      error: true,\n      skipProcessing: true,\n      errorType: 'FROM_AGENT',\n      message: 'Skipping agent message (ID pattern: BAE prefix)'\n    }\n  }];\n}\n\n// Skip if direction is 'outgoing' (sent by agent)\nif (direction === 'outgoing') {\n  return [{\n    json: {\n      error: true,\n      skipProcessing: true,\n      errorType: 'FROM_AGENT',\n      message: 'Skipping outgoing message from agent'\n    }\n  }];\n}\n\n// Skip if sender phone matches agent phone\nif (senderPhone === agentPhone) {\n  return [{\n    json: {\n      error: true,\n      skipProcessing: true,\n      errorType: 'FROM_AGENT',\n      message: 'Skipping agent message (phone match)'\n    }\n  }];\n}\n\n// Skip very long messages (likely from agent)\nif (message && message.length > 200) {\n  return [{\n    json: {\n      error: true,\n      skipProcessing: true,\n      errorType: 'FROM_AGENT',\n      message: 'Skipping agent message (long message > 200 chars)'\n    }\n  }];\n}\n\n// Sanitize function to remove control characters and limit length\nconst sanitize = (str) => {\n  if (typeof str !== 'string') return str;\n  return str.replace(/[\\x00-\\x08\\x0B\\x0C\\x0E-\\x1F\\x7F]/g, '').substring(0, 5000);\n};\n\n// Extract sender name from rawFrom if available\nconst extractName = (rawFrom) => {\n  if (!rawFrom) return 'User';\n  const phoneMatch = rawFrom.match(/^(\\d+)@/);\n  return phoneMatch ? phoneMatch[1] : 'User';\n};\n\n// Return validated and sanitized message data\nreturn [{\n  json: {\n    messageId: sanitize(messageId),\n    conversationId: sanitize(conversationId),\n    senderPhone: sanitize(senderPhone),\n    senderName: sanitize(extractName(rawFrom)),\n    message: sanitize(message).trim(),\n    timestamp: timestamp || new Date().toISOString(),\n    agentId: sanitize(agentId),\n    userId: sanitize(userId), // NEW: Include user_id in output\n    agentPhone: sanitize(agentPhone),\n    direction: direction,\n    rawFrom: sanitize(rawFrom),\n    messageType: messageType || 'text',\n    isFromAgent: false\n  }\n}];"
+      },
+      "id": "7e385cae-dcf8-47d2-9016-3722964e3b91",
+      "name": "Parse & Validate Message2",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1184,
+        -608
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "valid-check",
+              "leftValue": "={{ $json.skipProcessing }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "fe82643d-3327-42b0-b252-917ec577ddeb",
+      "name": "Is Valid Message?1",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -960,
+        -608
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "3e8fb885-eefc-4d7a-9bcd-92f4d8a85a20",
+              "leftValue": "={{ $json.body.from }}",
+              "rightValue": "923336906200",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "1fadf37b-f50a-4b87-888c-938c6ecc21cb",
+              "leftValue": "={{ $json.body.from }}",
+              "rightValue": "923359503935",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "96d9c6ef-aa00-4c5f-b556-fa01cc91919f",
+              "leftValue": "={{ $json.body.from }}",
+              "rightValue": "923445000084",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "7553c6d8-5164-4e2f-8886-98d419729326",
+              "leftValue": "={{ $json.body.from }}",
+              "rightValue": "923375000084",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "5416a3c9-d8f9-419a-a12d-5e098051a6de",
+              "leftValue": "={{ $json.body.from }}",
+              "rightValue": "923105787363",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "4d24059a-3b85-4dfa-a0fc-6ec70c752398",
+              "leftValue": "={{ $json.body.from }}",
+              "rightValue": "923339092831",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "14e91c40-dd65-4ce7-b067-24e50220ad1b",
+              "leftValue": "={{ $json.body.from }}",
+              "rightValue": "923011282080",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "92563034-9b74-4386-8c42-e244f4f9cbbf",
+              "leftValue": "{{ $json.body.from }}",
+              "rightValue": "923255028225",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "9bf9376d-ff25-4013-9a9f-2def7c62f81c",
+              "leftValue": "={{ $json.body.from }}",
+              "rightValue": "923255028225",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "1ff8d916-baaf-40ad-88a3-5ad6f1267045",
+              "leftValue": "={{ $json.body.from }}",
+              "rightValue": "923455250099",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1424,
+        -704
+      ],
+      "id": "2feab1f7-d09a-4e41-a01a-1dda60d4a383",
+      "name": "Is Authorized Agent?1",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "wrapper",
+              "name": "body",
+              "value": "={{ $json.body }}",
+              "type": "object"
+            },
+            {
+              "id": "417b62c0-49d9-4aff-b585-7853441825d3",
+              "name": "",
+              "value": "",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "75c8d264-2b03-40ef-a792-959fcb642460",
+      "name": "Format Text1",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1632,
+        -800
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.messageType }}",
+                    "rightValue": "TEXT",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "7067138a-5917-421a-a72b-62029f65e3d8"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "TEXT"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "17c26772-43c0-4825-b198-45867f57f0ac",
+                    "leftValue": "={{ $json.body.messageType }}",
+                    "rightValue": "AUDIO",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "AUDIO"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -2304,
+        -704
+      ],
+      "id": "7618287e-de08-4ab4-ad3d-67ce89aa967a",
+      "name": "Switch2"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.body.mediaUrl }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "id": "c875b935-d953-4a22-8523-d1b5cde227ca",
+      "name": "Download Audio2",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -2080,
+        -608
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "operation": "transcribe",
+        "options": {}
+      },
+      "id": "87a7f62a-e03f-480b-920f-56e52b1ce6fc",
+      "name": "OpenAI Whisper2",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.3,
+      "position": [
+        -1856,
+        -608
+      ],
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "wrapper",
+              "name": "body",
+              "value": "={{ {\n  id: $('Switch2').item.json.body.messageId,\n  messageId: $('Switch2').item.json.body.messageId,\n  from: $('Switch2').item.json.body.from,\n  to: $('Switch2').item.json.body.to,\n  content: $json.text,\n  transcribedText: $json.text,\n  timestamp: $('Switch2').item.json.body.timestamp,\n  agentId: $('Switch2').item.json.body.agentId,\n  messageType: 'AUDIO',\n  type: 'audio',\n  direction: $('Switch2').item.json.body.metadata?.direction,\n  rawFrom: $('Switch2').item.json.body.from,\n  metadata: $('Switch2').item.json.body.metadata\n} }}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "c3970a92-0b0b-4d8c-96ba-77366179f54e",
+      "name": "Format Transcription2",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1632,
+        -608
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.metadata.direction }}",
+                    "rightValue": "incoming",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "3fa04016-ffdb-43a6-bc42-95f8dd89e1a0"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "26978f43-53cd-4d94-bda6-5a5f44bb3e5b",
+                    "leftValue": "={{ $json.body.metadata.direction }}",
+                    "rightValue": "outgoing",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -2528,
+        -608
+      ],
+      "id": "7eba9d96-d9ac-44c2-8ca0-3d0eb51e669c",
+      "name": "Switch"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        -2304,
+        -512
+      ],
+      "id": "100ee558-cec0-4a83-bd93-160a1d926cdc",
+      "name": "No Operation, do nothing"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://pa.duhanashrah.ai/api/webhooks/send-message",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ {\"agentId\": $('Prepare AI Context').item.json.agentId, \"to\": $json.numbers, \"message\": $json.content || $json.message} }}",
+        "options": {}
+      },
+      "id": "4c11063a-1142-4379-a1fe-fa8b757d9962",
+      "name": "Send Response via WhatsApp",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2208,
+        -320
+      ]
+    },
+    {
+      "parameters": {
+        "name": "manage_contact",
+        "description": "=```\nSearch or add contacts. \nSEARCH: intent='search', contact_name, agent_id\nINSERT: intent='insert', contact_name, contact_phone (no +), email, company, agent_id\n```",
+        "workflowId": "={{ $workflow.id }}",
+        "specifyInputSchema": true,
+        "jsonSchemaExample": "{\n  \"intent\": \"search\",\n  \"contact_name\": \"John Doe\",\n  \"contact_phone\": \"923001234567\",\n  \"email\": \"john@example.com\",\n  \"company\": \"Acme Corp\",\n  \"agent_id\": \"{{ $json.agentId }}\"\n}"
+      },
+      "id": "e32e9e66-5dc6-49c6-b15a-7bcb1c35ccec",
+      "name": "Tool: Manage Contact (Code)",
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 1.1,
+      "position": [
+        848,
+        -96
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=- Sender Phone: {{ $json.senderPhone }}\n- Owner Phone: {{ $json.agent_phone_number }}\n- User ID: {{ $json.userId }}\n- Agent ID: {{ $json.agentId }}\n- Current Time: {{ $now.format('dddd, MMMM D, YYYY [at] h:mm A') }}\n- Current Date: {{ $now.format('YYYY-MM-DD') }}\n- Current Time (24h): {{ $now.format('HH:mm:ss') }}\n\n**USER MESSAGE:**\n{{ $json.chatInput }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=# Professional WhatsApp Business Assistant\n\nYou are an intelligent WhatsApp Business Assistant that automates business communications with precision and efficiency.\n\n---\n\n## 🎨 OUTPUT FORMATTING RULES\n\nNEVER use multiple asterisks. Use ONLY single asterisks for bold text.\n\nUse ONLY these formatting methods:\n✅ Emojis for visual hierarchy (👋, 📅, ✅, 📄, 🕐, 📍)\n✅ Line breaks for spacing\n✅ UPPERCASE for emphasis (e.g., \"CONTACT:\", \"MESSAGE:\")\n✅ Line separators: ━━━━━━━━━━━━━━━━━━━━━\n✅ Bullet points: • or numbered emojis (1️⃣, 2️⃣, 3️⃣)\n✅ Single asterisks for bold: *word* (one asterisk on each side)\n\nNEVER use:\n❌ Double asterisks (**word**)\n❌ Triple asterisks (***word***)\n❌ HTML tags or inline CSS\n❌ Markdown headers (#, ##)\n❌ Code blocks (```)\n\nCRITICAL: Use bold (*word*) for: contact names, confirmation words (yes/no), status messages (successfully, cancelled), and key terms.\n\n---\n\n## 🚨 MESSAGE ROUTING RULES\n\n### STEP 1: Identify Message Source (MANDATORY FIRST)\n\nCompare senderPhone with agent_phone_number:\n\nIF senderPhone != agent_phone_number:\n   → This is a CONTACT (not the owner)\n   → GO TO: Non-Owner Flow\n\nIF senderPhone == agent_phone_number:\n   → This is the OWNER\n   → GO TO: Owner Flow\n\n---\n\n### STEP 2: Non-Owner Flow (Contacts Only)\n\nWhen message is from a contact:\n\n1. Call check_threads tool immediately\n\n2A. IF check_threads returns DATA:\n   → Call respond_notification tool with full parameters\n   → Reply: \"✅ Your message has been delivered successfully. They will get back to you soon.\"\n   → STOP\n\n2B. IF check_threads returns NULL:\n   → Call respond_notification tool with basic parameters\n   → Reply: \"✅ Your message has been delivered successfully. They will get back to you soon.\"\n   → STOP\n\nCRITICAL: Contacts get ONLY delivery confirmation. NO menus, NO features.\n\n---\n\n### STEP 3: Owner Flow (Agent Owner Only)\n\nWhen message is from the agent owner:\n\n1. Call check_threads tool (for consistency)\n\n2. Process message:\n   - \"hi\", \"hello\", \"menu\", \"m\" → Show main menu\n   - Number (1-6) → Execute workflow\n   - Conversational → Process with context\n\n---\n\n## 🏠 MAIN MENU (Owner Only)\n\n*👋 Welcome to Your Personal Assistant*\n\nI can help you manage your business communications efficiently.\n\nPlease select an option:\n\n*1️⃣ Send Message*\nSend WhatsApp messages to your contacts\n\n*2️⃣ Schedule Meeting*\nCreate and organize meetings with contacts\n\n*3️⃣ Meetings / Scheduled Meetings*\nView your scheduled meetings by contact, date, or see today's/tomorrow's schedule\n\n*4️⃣ Search Documents*\nFind and retrieve business documents\n\n*5️⃣ Add Contact*\nAdd new contacts to your directory\n\n*6️⃣ Update in ERP/CRM*\nSync data with enterprise systems\n\n*Reply with 1-6 or type directly.*\n\n---\n\n## 📅 MEETINGS SUB-MENU (Owner Only)\n\n*📅 Meeting Options*\n\nPlease select an option to view your scheduled meetings:\n\n*1️⃣ Today's Meetings*\nView meetings scheduled for today\n\n*2️⃣ Tomorrow's Meetings*\nView meetings scheduled for tomorrow\n\n*3️⃣ By Date (DD/MM/YY)*\nView meetings by a specific date\n\n*4️⃣ By Contact Name*\nView meetings by a specific contact\n\n*Reply with 1-4 or type directly.*\n\n---\n\n## 🔧 WORKFLOW 1: SEND MESSAGE\n\nRequired: contact_name + message_text\n\n### Step 1: Collect Information\n\nAsk for missing information:\n- \"Send message to Danish\" → Ask: \"What message would you like to send to *Danish*?\"\n- \"Tell them meeting confirmed\" → Ask: \"Who would you like to send this message to?\"\n\nONLY proceed when you have BOTH.\n\n### Step 2: Search Contact\n\nTOOL CALL: manage_contact\nParameters:\n{\n  \"intent\": \"search\",\n  \"contact_name\": \"[name]\",\n  \"agent_id\": \"[from context]\"\n}\n\nWAIT for phone number result.\n\n### Step 3: Refine Message\n\nMake message natural and professional.\nExample: \"meeting tomorrow\" → \"Hi! Just confirming our meeting for tomorrow. Looking forward to it!\"\n\n### Step 4: Show Preview\n\n*📄 REVIEW BEFORE SENDING*\n\n*CONTACT:* [Name]\n*PHONE:* [Phone]\n\n*MESSAGE:*\n[Refined message]\n\n━━━━━━━━━━━━━━━━━━━━━\nReply *yes* to send or *no* to cancel.\n\n### Step 5: Wait for Confirmation (NEW MESSAGE)\n\nThis step processes owner's NEXT message.\n\nIF message = \"yes\":\n   → IMMEDIATELY call send_whatsapp_message tool (see Step 6)\n\nIF message != \"yes\":\n   → Reply: \"*Message cancelled.* What would you like to do next?\"\n   → STOP\n\n### Step 6: Execute Tool (WHEN USER SAYS YES)\n\n🚨 CRITICAL: Call tool BEFORE responding with text\n\nTOOL CALL: send_whatsapp_message\nParameters:\n{\n  \"phone_number\": \"[phone WITH +, e.g., +923001234567]\",\n  \"message\": \"[exact refined message from Step 3]\",\n  \"contact_name\": \"[contact name]\",\n  \"conversation_id\": \"[from context]\",\n  \"agent_id\": \"[from context]\"\n}\n\nWAIT for tool to complete.\n\n### Step 7: Confirm Success\n\n✅ Message sent *successfully* to *[Contact Name]*!\n\nThe message has been delivered.\n\nWhat would you like to do next?\n\n---\n\n## 🔧 WORKFLOW 2: SCHEDULE MEETING\n\nRequired: contact_name, title, date_time, location, purpose\n\n### Step 1: Collect All Information\n\nAsk for missing information one at a time.\n\nConvert dates to YYYY-MM-DD HH:mm:ss:\n- \"today at 3pm\" → [current date] 15:00:00\n- \"tomorrow 10am\" → [tomorrow date] 10:00:00\n\nONLY proceed when you have ALL 5 fields.\n\n### Step 2: Search Contact\n\nTOOL CALL: manage_contact\nParameters:\n{\n  \"intent\": \"search\",\n  \"contact_name\": \"[name]\",\n  \"agent_id\": \"[from context]\"\n}\n\nWAIT for phone number result.\n\n### Step 3: Show Preview\n\n*📅 MEETING DETAILS REVIEW*\n\n*CONTACT:* [Name]\n*PHONE:* [Phone]\n*TITLE:* [Title]\n*DATE & TIME:* [Date & Time]\n*LOCATION:* [Location]\n*PURPOSE:* [Purpose]\n\n━━━━━━━━━━━━━━━━━━━━━\nReply *yes* to schedule or *no* to cancel.\n\n### Step 4: Wait for Confirmation (NEW MESSAGE)\n\nThis step processes owner's NEXT message.\n\nIF message = \"yes\":\n   → IMMEDIATELY call schedule_meeting3 tool (see Step 5)\n\nIF message != \"yes\":\n   → Reply: \"*Meeting cancelled.* What would you like to do next?\"\n   → STOP\n\n### Step 5: Execute Tool (WHEN USER SAYS YES)\n\n🚨 CRITICAL: Call tool BEFORE responding with text\n\nTOOL CALL: schedule_meeting3\nParameters:\n{\n  \"sender_phone\": \"[owner phone WITHOUT +, e.g., 923001234567]\",\n  \"contact_phone\": \"[contact phone WITHOUT +]\",\n  \"contact_name\": \"[contact name]\",\n  \"title\": \"[title]\",\n  \"date_time\": \"[YYYY-MM-DD HH:mm:ss]\",\n  \"purpose\": \"[purpose]\",\n  \"location\": \"[location]\",\n  \"agent_id\": \"[from context]\",\n  \"user_id\": \"[from context]\"\n}\n\nWAIT for tool to complete.\n\n### Step 6: Confirm Success\n\n✅ Meeting scheduled *successfully* with *[Contact Name]*!\n\n*📅 MEETING SUMMARY:*\n*DATE & TIME:* [Date & Time]\n*LOCATION:* [Location]\n\nThe invitation has been sent via WhatsApp.\n\nWhat would you like to do next?\n\n---\n\n## 🔧 WORKFLOW 3: VIEW MEETINGS\n\n### Step 1: Show Sub-Menu\n\nDisplay meetings sub-menu (shown above).\n\n### Step 2: Process Selection\n\n**Option 1: Today's Meetings**\n1. Call Get many rows in Supabase\n2. Get current date: YYYY-MM-DD\n3. Filter where date_time starts with current date\n4. Compare times, mark past meetings with \"(PAST)\"\n5. Sort by time, display\n\n**Option 2: Tomorrow's Meetings**\n1. Call Get many rows in Supabase\n2. Calculate tomorrow: YYYY-MM-DD\n3. Filter where date_time starts with tomorrow\n4. Sort by time, display\n\n**Option 3: By Date**\n1. Ask: \"Please enter the date (DD/MM/YY):\"\n2. Wait for response\n3. Convert DD/MM/YY → YYYY-MM-DD\n4. Call Get many rows in Supabase\n5. Filter by date, mark past if needed\n6. Sort by time, display\n\n**Option 4: By Contact Name**\n1. Ask: \"Please enter the contact name:\"\n2. Wait for response\n3. Call Get many rows in Supabase\n4. Filter by contact_name (case-insensitive)\n5. Mark past meetings\n6. Sort by date/time, display\n\n### Step 3: Display Results\n\nIf found:\n\n*📅 Your Scheduled Meetings*\n\n*[Meeting Title]* (PAST)\n\n*👤 CONTACT:* [Name]\n*🕐 DATE & TIME:* [Date & Time]\n*📍 LOCATION:* [Location]\n*📝 PURPOSE:* [Purpose]\n\n━━━━━━━━━━━━━━━━━━━━━\n\nWhat would you like to do next?\n\nIf not found:\n\n*📅 No meetings found for this selection.*\n\nWhat would you like to do next?\n\n---\n\n## 🔧 WORKFLOW 4: SEARCH DOCUMENTS\n\n### Step 1: Get Query\n- If owner provided query → Use it\n- If not → Ask: \"What would you like to search for?\"\n\n### Step 2: Execute Search\nPinecone Vector Store3 automatically searches (auto-filtered by agent_id).\n\n### Step 3: Display Results\n\nIf found:\n\n*📄 Search Results*\n\n*Found [X] document(s):*\n\n1. [Document Name/Content]\nTYPE: [Type]\nRELEVANCE: [Score]\n\nWhat would you like to do next?\n\nIf not found:\n\n*📄 No documents found matching your search.*\n\nWhat would you like to do next?\n\n---\n\n## 🔧 WORKFLOW 5: ADD CONTACT\n\n### Step 1: Request Information\n\nI'll add a new contact. Please provide:\n\n• Full name\n• Phone number (with country code, e.g., 923001234567)\n• Email (optional)\n• Company (optional)\n\n### Step 2: Collect Data\nWait for owner to provide information.\n\n### Step 3: Show Preview\n\n*👤 REVIEW CONTACT DETAILS*\n\n*NAME:* [Name]\n*PHONE:* [Phone]\n*EMAIL:* [Email or \"Not provided\"]\n*COMPANY:* [Company or \"Not provided\"]\n\n━━━━━━━━━━━━━━━━━━━━━\nReply *yes* to add or *no* to cancel.\n\n### Step 4: Wait for Confirmation (NEW MESSAGE)\n\nIF message = \"yes\":\n   → Call manage_contact tool (intent=\"insert\")\n   → Wait for completion\n   → Show success\n\nIF message != \"yes\":\n   → Reply: \"*Contact not added.* What would you like to do next?\"\n   → STOP\n\n### Step 5: Show Success\n\n✅ Contact *[Name]* added successfully!\n\n*CONTACT DETAILS:*\n*NAME:* [Name]\n*PHONE:* [Phone]\n*EMAIL:* [Email or \"Not provided\"]\n*COMPANY:* [Company or \"Not provided\"]\n\nWhat would you like to do next?\n\n---\n\n## 🔧 WORKFLOW 6: UPDATE ERP/CRM\n\n🔄 ERP/CRM Update Feature\n\nThis feature is currently being configured. It will allow you to sync data with your enterprise systems.\n\nPlease check back soon!\n\nWhat would you like to do next?\n\n---\n\n## 📊 EXACT TOOL NAMES & USAGE\n\n### 1. check_threads\n**When:** FIRST for ALL messages\n**Returns:** Thread data or null\n\n### 2. respond_notification\n**When:** For ALL non-owner messages\n**Required:** id, original_message_id, sender_phone, recipient_phone, original_conversation_id, original_message, current_message, current_message_id, agent_id, user_id\n\n### 3. Conversation history\n**When:** Need conversation context\n**Returns:** Previous messages\n\n### 4. manage_contact\n**Search:** intent=\"search\", contact_name, agent_id\n**Insert:** intent=\"insert\", contact_name, contact_phone (NO +), email, company, agent_id\n**Phone:** WITHOUT + prefix\n\n### 5. send_whatsapp_message\n**When:** Owner says YES to send message\n**Phone:** WITH + prefix (e.g., +923001234567)\n**Required:** phone_number, message, contact_name, conversation_id, agent_id\n🚨 CALL THIS TOOL when owner confirms \"yes\" - do NOT just respond with text\n\n### 6. schedule_meeting3\n**When:** Owner says YES to schedule meeting\n**Phone:** WITHOUT + prefix (e.g., 923001234567)\n**Required:** sender_phone, contact_phone, contact_name, title, date_time (YYYY-MM-DD HH:mm:ss), purpose, location, agent_id, user_id\n🚨 CALL THIS TOOL when owner confirms \"yes\" - do NOT just respond with text\n\n### 7. Get many rows in Supabase\n**When:** View meetings\n**Returns:** Meetings (auto-filtered by user_id)\n**Date format:** \"YYYY-MM-DD HH:mm:ss\" as text\n\n### 8. Pinecone Vector Store3\n**When:** Search documents\n**Returns:** Document chunks (auto-filtered by agent_id)\n\n### 9. store_context\n**When:** Save data for later\n**Required:** key, value, conversation_id, agent_id\n\n---\n\n## 📞 PHONE NUMBER FORMATS\n\n**WITH + prefix:**\n- send_whatsapp_message → +923001234567\n\n**WITHOUT + prefix:**\n- manage_contact → 923001234567\n- schedule_meeting3 → 923001234567\n\n---\n\n## 🔴 CRITICAL EXECUTION RULES\n\n### MESSAGE ROUTING:\n1. Check: senderPhone == agent_phone_number?\n2. Call check_threads (MANDATORY)\n3. If non-owner → respond_notification → confirmation → STOP\n4. If owner → process normally\n\n### TOOL EXECUTION:\nWhen owner says \"yes\" to a preview:\n1. CALL THE TOOL IMMEDIATELY (send_whatsapp_message or schedule_meeting3)\n2. DO NOT respond with text first\n3. WAIT for tool completion\n4. THEN show success message\n\n### FORMATTING:\n- Use *word* for bold (single asterisks only)\n- Bold: contact names, yes/no, status words (successfully, cancelled)\n- No double asterisks (**)\n- No triple asterisks (***)\n\n---\n\n## ✅ EXECUTION CHECKLIST\n\nBefore responding:\n\n**Message Source:**\n- [ ] Verified: owner or non-owner?\n\n**Thread Check:**\n- [ ] Called check_threads first\n\n**For Non-Owner:**\n- [ ] Called respond_notification\n- [ ] Sent confirmation\n- [ ] STOPPED\n\n**For Owner:**\n- [ ] Processed command correctly\n- [ ] Used correct workflow\n\n**Tool Calls:**\n- [ ] Used EXACT tool names\n- [ ] Used correct phone formats\n- [ ] Called tool BEFORE showing success (for send/schedule)\n\n**Formatting:**\n- [ ] Used *word* for bold\n- [ ] No double/triple asterisks\n\n---\n\n## 🎯 REMEMBER\n\n1. check_threads FIRST - every message\n2. Non-owner → respond_notification → confirmation → STOP\n3. Owner → full assistant access\n4. **Owner says \"yes\" → CALL TOOL → then success**\n5. Bold with *word* (single asterisks only)\n6. Tool names: send_whatsapp_message, schedule_meeting3 (exact names)\n7. Phone formats: + for send, no + for schedule"
+        }
+      },
+      "id": "99d96201-56f5-423d-8d7e-bca51313190e",
+      "name": "AI Agent3",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        1184,
+        -336
+      ]
+    },
+    {
+      "parameters": {
+        "name": "send_whatsapp_message",
+        "description": "Send WhatsApp message after user confirms 'yes'.\nRequired: phone_number (WITH +), message, contact_name, conversation_id, agent_id\n",
+        "workflowId": "CUYMy2NlL4SvKCRn",
+        "specifyInputSchema": true,
+        "jsonSchemaExample": "{\n  \"phone_number\": \"+923001234567\",\n  \"message\": \"Your message text\",\n  \"contact_name\": \"Contact Name\",\n  \"conversation_id\": \"{{ $json.conversationId }}\",\n  \"agent_id\": \"{{ $json.agentId }}\"\n}"
+      },
+      "id": "d7d451a1-365c-4e9b-aebd-75c5dcf38850",
+      "name": "Tool: Send Message3",
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 1.1,
+      "position": [
+        976,
+        -96
+      ]
+    },
+    {
+      "parameters": {
+        "name": "store_context",
+        "description": "Store data in conversation context for later use. Required: key (string), value (any data), conversation_id (string), agent_id (string)",
+        "workflowId": "jE3pZ994JO2Ho8lo",
+        "specifyInputSchema": true,
+        "jsonSchemaExample": "{\n  \"key\": \"selected_contact\",\n  \"value\": \"{\\\"name\\\":\\\"Danish\\\",\\\"phone\\\":\\\"+923001234567\\\"}\",\n  \"conversation_id\": \"{{ $json.conversationId }}\",\n  \"agent_id\": \"{{ $json.agentId }}\"\n}"
+      },
+      "id": "6ece31a7-31ed-4b47-b0fe-8cf511965279",
+      "name": "Tool: Store Context3",
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 1.1,
+      "position": [
+        1072,
+        -32
+      ]
+    },
+    {
+      "parameters": {
+        "options": {
+          "maxTokens": "[REDACTED]",
+          "temperature": 0.3
+        }
+      },
+      "id": "4b2a5f1b-12b3-4a49-b429-57a40a7b42ac",
+      "name": "OpenAI GPT-4o-mini3",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        592,
+        -96
+      ],
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "name": "schedule_meeting",
+        "description": "Schedule meeting after user confirms 'yes'.\nRequired (flat JSON, no + in phones): sender_phone, contact_phone, contact_name, title, date_time (YYYY-MM-DD HH:mm:ss), purpose, location, agent_id, user_id\n",
+        "workflowId": "in5Y2ibUaI31k1EY",
+        "specifyInputSchema": true,
+        "jsonSchemaExample": "{\n  \"sender_phone\": \"923001234567\",\n  \"contact_phone\": \"923020007386\",\n  \"contact_name\": \"Danish Haider\",\n  \"title\": \"Project Discussion\",\n  \"date_time\": \"2025-11-20 14:00:00\",\n  \"purpose\": \"Discuss project timeline and deliverables\",\n  \"location\": \"Virtual\",\n  \"agent_id\": \"{{ $json.agentId }}\",\n  \"user_id\": \"{{ $json.userId }}\"\n}"
+      },
+      "id": "cc32e1d5-82e3-4377-966b-61a7d442f18e",
+      "name": "schedule meeting3",
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 1.1,
+      "position": [
+        1232,
+        -96
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Retrieve relevant documents from the agent's knowledge base using semantic search. Automatically filtered by agent_id namespace.",
+        "pineconeIndex": "[REDACTED]",
+        "options": {
+          "pineconeNamespace": "[REDACTED]"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        1360,
+        -96
+      ],
+      "id": "c3627946-b5b0-4d0f-847d-11f3a59ead1f",
+      "name": "Pinecone Vector Store3",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1440,
+        112
+      ],
+      "id": "678f051c-993a-4333-894e-ca38c9d0eafa",
+      "name": "Embeddings OpenAI3",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.conversationId }}",
+        "contextWindowLength": 3
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        720,
+        -96
+      ],
+      "id": "2a1cb565-1d53-4e26-8f54-5a6335eac696",
+      "name": "Simple Memory3"
+    },
+    {
+      "parameters": {
+        "description": "Validates and processes contact data before database operations. Use this to ensure contact information is properly formatted and validated.",
+        "specifyInputSchema": true
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolCode",
+      "typeVersion": 1.3,
+      "position": [
+        1648,
+        -96
+      ],
+      "id": "dddfe219-b24d-4051-8453-c257a0a5c654",
+      "name": "Code Tool: Contact Validator"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Get all meetings from database. Auto-filtered by user_id. Returns meetings with date_time in 'YYYY-MM-DD HH:mm:ss' format.\n`",
+        "operation": "getAll",
+        "tableId": "meetings",
+        "returnAll": true,
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "user_id",
+              "condition": "eq",
+              "keyValue": "={{ $json.userId }}"
+            },
+            {
+              "keyName": "status",
+              "condition": "eq",
+              "keyValue": "scheduled"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabaseTool",
+      "typeVersion": 1,
+      "position": [
+        1776,
+        -96
+      ],
+      "id": "169345e5-fc90-4353-a34f-c2ba3c60a71a",
+      "name": "Get many rows in Supabase",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "a18ff948-9380-4abe-a8d8-0912dae2d8ab",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "131d9d40-4677-411f-b2ac-4ddecf241a26",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -2864,
+        -608
+      ],
+      "webhookId": "a18ff948-9380-4abe-a8d8-0912dae2d8ab",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "respondWith": "noData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        2720,
+        -336
+      ],
+      "id": "456d6f8d-88dc-40ac-abd0-3b8d6fee9ca7",
+      "name": "Respond Success2"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Execute a SQL query in Postgres",
+        "operation": "executeQuery",
+        "query": "SELECT *\nFROM (\n    SELECT *\n    FROM message_log\n    WHERE agent_id = '{{ $('Prepare AI Context').item.json.agentId }}'\n    ORDER BY created_at DESC\n    LIMIT 10\n) sub\nORDER BY created_at ASC;\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.6,
+      "position": [
+        992,
+        176
+      ],
+      "id": "00c36e1f-0b85-4470-8496-d1566f581f71",
+      "name": "Conversation history",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Check if sender has an active reply thread. Returns thread data or null. Call this FIRST for every message.\n",
+        "operation": "executeQuery",
+        "query": "SELECT \n  id,\n  original_message_id,\n  sender_phone,\n  recipient_phone,\n  agent_id,\n  user_id,\n  conversation_id AS original_conversation_id,\n  message_content AS original_message\nFROM message_threads\nWHERE recipient_phone = $1\n  AND status = 'awaiting_reply'\n  AND expires_at > NOW()\nORDER BY created_at DESC\nLIMIT 1;",
+        "options": {
+          "queryReplacement": "={{ $('Prepare AI Context').item.json.senderPhone }}"
+        }
+      },
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.6,
+      "position": [
+        1200,
+        144
+      ],
+      "id": "efd5fbd4-79db-49b7-9207-b4f715c1f5f8",
+      "name": "check threads",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "name": "respond_notification",
+        "description": "Handle replies to sent messages and forward new messages from contacts to the agent owner. \n\nWHEN TO USE:\n- When check_threads returns data (reply to existing thread)\n- When check_threads returns null from non-owner contact (new message to forward)\n\nREQUIRED FIELDS (flat JSON):\n- sender_phone: Agent owner's phone (from context agentPhone)\n- recipient_phone: Contact's phone (from current senderPhone)\n- current_message: The message content\n- current_message_id: Current message ID\n- agent_id: From context\n- user_id: From context\n\nFor existing threads (when check_threads returns data), also include:\n- id: Thread ID\n- original_message_id: From check_threads\n- original_conversation_id: From check_threads\n- original_message: From check_threads",
+        "workflowId": "GJ017uIt02A9iuQ7",
+        "specifyInputSchema": true,
+        "jsonSchemaExample": "{\n  \"id\": \"thread-uuid-from-check-threads\",\n  \"original_message_id\": \"original-msg-id\",\n  \"sender_phone\": \"923001234567\",\n  \"recipient_phone\": \"923009876543\",\n  \"original_conversation_id\": \"original-conv-id\",\n  \"original_message\": \"Original message text\",\n  \"current_message\": \"Reply message text\",\n  \"current_message_id\": \"current-msg-id\",\n  \"agent_id\": \"{{ $json.agentId }}\",\n  \"user_id\": \"{{ $json.userId }}\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 1.1,
+      "position": [
+        1328,
+        128
+      ],
+      "id": "b982653c-893b-4cfb-8502-928f9c745af5",
+      "name": "respond_notification"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "agents",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "keyValue": "={{ $json.agentId }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        144,
+        -416
+      ],
+      "id": "49effde7-0917-4157-ab85-024a1f243eab",
+      "name": "Get a row",
+      "credentials": "[REDACTED]"
+    }
+  ],
+  "connections": {
+    "Every 5 Minutes": {
+      "main": [
+        [
+          {
+            "node": "Find Upcoming Meetings",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Upcoming Meetings": {
+      "main": [
+        [
+          {
+            "node": "Any Meetings to Remind?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Any Meetings to Remind?": {
+      "main": [
+        [
+          {
+            "node": "Format Reminder Messages",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Meetings - Exit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Reminder Messages": {
+      "main": [
+        [
+          {
+            "node": "Has Scheduler Phone?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Scheduler Phone?": {
+      "main": [
+        [
+          {
+            "node": "Send Reminder to Scheduler",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Skip Scheduler Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Reminder to Scheduler": {
+      "main": [
+        [
+          {
+            "node": "Send Reminder to Contact",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Skip Scheduler Notification": {
+      "main": [
+        [
+          {
+            "node": "Send Reminder to Contact",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Reminder to Contact": {
+      "main": [
+        [
+          {
+            "node": "Mark Reminder as Sent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark Reminder as Sent": {
+      "main": [
+        [
+          {
+            "node": "Return Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Validate Input1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Valid?": {
+      "main": [
+        [
+          {
+            "node": "Check Intent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Format Error Response1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Intent": {
+      "main": [
+        [
+          {
+            "node": "Search Database1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Insert Contact",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert Contact": {
+      "main": [
+        [
+          {
+            "node": "Format Insert Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Input1": {
+      "main": [
+        [
+          {
+            "node": "Is Valid?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search Database1": {
+      "main": [
+        [
+          {
+            "node": "Format Search Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Message to DB": {
+      "main": [
+        [
+          {
+            "node": "Check for Pending Meeting",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check for Pending Meeting": {
+      "main": [
+        [
+          {
+            "node": "Process Meeting Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Pending Meeting?": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get a row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Handle Meeting Response": {
+      "main": [
+        [
+          {
+            "node": "Respond Meeting Handled",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare AI Context": {
+      "main": [
+        [
+          {
+            "node": "AI Agent3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Meeting Result": {
+      "main": [
+        [
+          {
+            "node": "Has Pending Meeting?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Handle Meeting Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format AI Response1": {
+      "main": [
+        [
+          {
+            "node": "Send Response via WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Message Log1": {
+      "main": [
+        [
+          {
+            "node": "Respond Success2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse & Validate Message2": {
+      "main": [
+        [
+          {
+            "node": "Is Valid Message?1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Valid Message?1": {
+      "main": [
+        [
+          {
+            "node": "Log Message to DB",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Skipped",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Authorized Agent?1": "[REDACTED]",
+    "Format Text1": {
+      "main": [
+        [
+          {
+            "node": "Is Authorized Agent?1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch2": {
+      "main": [
+        [
+          {
+            "node": "Format Text1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Download Audio2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Audio2": {
+      "main": [
+        [
+          {
+            "node": "OpenAI Whisper2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Whisper2": "[REDACTED]",
+    "Format Transcription2": {
+      "main": [
+        [
+          {
+            "node": "Is Authorized Agent?1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Switch2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Response via WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "Update Message Log1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tool: Manage Contact (Code)": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent3",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent3": {
+      "main": [
+        [
+          {
+            "node": "Format AI Response1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tool: Send Message3": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent3",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tool: Store Context3": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent3",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI GPT-4o-mini3": "[REDACTED]",
+    "schedule meeting3": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent3",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pinecone Vector Store3": "[REDACTED]",
+    "Embeddings OpenAI3": "[REDACTED]",
+    "Simple Memory3": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent3",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code Tool: Contact Validator": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent3",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many rows in Supabase": "[REDACTED]",
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Conversation history": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent3",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "check threads": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent3",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "respond_notification": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent3",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a row": {
+      "main": [
+        [
+          {
+            "node": "Prepare AI Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "triggerCount": 2,
+  "tags": [
+    {
+      "updatedAt": "2025-10-28T07:41:35.810Z",
+      "createdAt": "2025-10-28T07:41:35.810Z",
+      "id": "Bjds4VMsUOfAftkN",
+      "name": "Abdul Wasay"
+    },
+    {
+      "updatedAt": "2025-10-24T04:04:28.048Z",
+      "createdAt": "2025-10-24T04:04:28.048Z",
+      "id": "SgbCkdz8ViP8OAzg",
+      "name": "SamCliff"
+    }
+  ]
+}

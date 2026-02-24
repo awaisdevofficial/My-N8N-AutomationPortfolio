@@ -1,0 +1,87 @@
+{
+  "updatedAt": "2026-01-19T17:12:37.763Z",
+  "createdAt": "2025-10-30T06:21:59.420Z",
+  "id": "w8suhODD9u5W9j6T",
+  "name": "AI Zoom Bot",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=u are an helpful assistant",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        208,
+        0
+      ],
+      "id": "63639ff5-2a95-44b9-aefb-c457b182c7de",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        272,
+        0
+      ],
+      "id": "cb217e06-7816-42c4-8541-6082c94d8b18",
+      "name": "OpenAI Chat Model",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ],
+      "id": "96a3878e-7ef8-46dc-93e0-f8c26dd096e3",
+      "name": "When chat message received",
+      "webhookId": "153793fe-b9ff-495c-9d7d-c18244469dbc"
+    }
+  ],
+  "connections": {
+    "OpenAI Chat Model": "[REDACTED]",
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "triggerCount": 0,
+  "tags": [
+    {
+      "updatedAt": "2025-10-30T06:21:58.001Z",
+      "createdAt": "2025-10-30T06:21:58.001Z",
+      "id": "GZOxbWHBQtlQUyk0",
+      "name": "Alex Bond"
+    }
+  ]
+}

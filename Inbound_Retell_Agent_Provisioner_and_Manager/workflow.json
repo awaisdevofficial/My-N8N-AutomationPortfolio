@@ -1,0 +1,2783 @@
+{
+  "updatedAt": "2026-02-19T17:47:39.492Z",
+  "createdAt": "2026-02-05T22:28:53.070Z",
+  "id": "f1XPpj85a3IxAVsx",
+  "name": "Inbound Retell caller",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "Apikey",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -6624,
+        2720
+      ],
+      "id": "4129ac08-118b-477a-859e-ba7b6da4fd7f",
+      "name": "Webhook1",
+      "webhookId": "51d417e6-5b8b-4d40-8565-3f2dd28d458d",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "bots",
+        "returnAll": true,
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "user_id",
+              "condition": "eq",
+              "keyValue": "={{ $json.body.old_record.user_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -6176,
+        2720
+      ],
+      "id": "4f4383b4-e80b-4e5a-96fc-e30f55a69931",
+      "name": "Get many rows",
+      "credentials": "[REDACTED]",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "tableId": "bots",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "user_id",
+              "fieldValue": "={{ $('Webhook1').item.json.body.record.user_id }}"
+            },
+            {
+              "fieldId": "name",
+              "fieldValue": "={{ $json.agent_name }}"
+            },
+            {
+              "fieldId": "is_active",
+              "fieldValue": "true"
+            },
+            {
+              "fieldId": "retell_llm_id",
+              "fieldValue": "={{ $json.response_engine.llm_id }}"
+            },
+            {
+              "fieldId": "voice_id",
+              "fieldValue": "={{ $json.voice_id }}"
+            },
+            {
+              "fieldId": "model",
+              "fieldValue": "={{ $('create LLM1').item.json.s2s_model }}"
+            },
+            {
+              "fieldId": "general_prompt",
+              "fieldValue": "={{ $('create LLM1').item.json.general_prompt }}"
+            },
+            {
+              "fieldId": "begin_message",
+              "fieldValue": "={{ $('create LLM1').item.json.begin_message }}"
+            },
+            {
+              "fieldId": "max_call_duration_ms",
+              "fieldValue": "={{ $json.max_call_duration_ms }}"
+            },
+            {
+              "fieldId": "retell_agent_id",
+              "fieldValue": "={{ $json.agent_id }}"
+            },
+            {
+              "fieldId": "Speaking_plan",
+              "fieldValue": "={{ $('Get many rows').item.json.Speaking_plan }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -5504,
+        2624
+      ],
+      "id": "9415104c-7507-4b6b-9183-9fd983d2e128",
+      "name": "Create a row1",
+      "credentials": "[REDACTED]",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.retellai.com/create-agent",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $('Webhook1').item.json.body.old_record.account }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"response_engine\": {\n    \"type\": \"retell-llm\",\n    \"llm_id\": \"{{ $json.llm_id }}\"\n  },\n  \"voice_id\": \"openai-Marissa\",\n  \"agent_name\": \"{{ $('Get many rows').item.json.name }}\",\n  \"voice_temperature\": 1,\n  \"voice_speed\": 1,\n  \"volume\": 1,\n  \"responsiveness\": 1,\n  \"interruption_sensitivity\": 1,\n  \"enable_backchannel\": true,\n  \"backchannel_frequency\": 0.9,\n  \"backchannel_words\": [\n    \"yeah\",\n    \"uh-huh\"\n  ],\n  \"language\": \"en-US\",\n  \"normalize_for_speech\": true,\n  \"end_call_after_silence_ms\": 60000,\n  \"max_call_duration_ms\": 600000,\n  \"enable_voicemail_detection\": true,\n  \"voicemail_message\": \"Hi, please give us a callback.\",\n  \"analysis_summary_prompt\": \"Summarize the outcome of the conversation in five sentences.\",\n  \"begin_message_delay_ms\": 1000\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -5728,
+        2720
+      ],
+      "id": "9924671b-cb71-41ff-8d65-bbf2c6e9ad53",
+      "name": "agent1",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.retellai.com/create-retell-llm",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $('Webhook1').item.json.body.old_record.account }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"s2s_model\": \"gpt-4o-realtime\",\n  \"model_temperature\": 1,\n  \"start_speaker\": \"{{ $json.Speaking_plan }}\",\n  \"begin_message\": \"{{ $json.begin_message }}\",\n  \"general_prompt\": \"{{ $json.general_prompt }}\",\n  \"general_tools\": [\n    {\n      \"type\": \"end_call\",\n      \"name\": \"End_call\",\n      \"description\": \"End the call when: 1) User says goodbye, hang up, or requests to end. 2) Conversation goal completed and confirmed. 3) User unresponsive after 2-3 attempts to re-engage. 4) User is abusive, threatening, or inappropriate. 5) Voicemail/answering machine detected. 6) Wrong number confirmed. 7) Technical issues prevent conversation. 8) User requests removal from contact list. 9) All information collected/delivered. 10) Maximum call duration reached.\",\n      \"speak_during_execution\": true,\n      \"execution_message_description\": \"Thank you, it was a nice conversation.\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -5952,
+        2720
+      ],
+      "id": "4341f52d-ec29-46b4-afc0-d928b602d94b",
+      "name": "create LLM1",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "tableId": "bots",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $('Get many rows').item.json.id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -5504,
+        2816
+      ],
+      "id": "d77fb027-8d1a-4da2-89a0-a5bc8147a9ac",
+      "name": "Delete a row1",
+      "credentials": "[REDACTED]",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "6e2ef8d4-a4ad-460c-9c77-239488ed2c75",
+              "leftValue": "",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        -6400,
+        2720
+      ],
+      "id": "9536136f-e735-4e35-842e-201a80b49c35",
+      "name": "Filter1",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "inbound",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -5520,
+        3616
+      ],
+      "id": "3722bb6d-ce89-42eb-8499-91269b1cdd48",
+      "name": "Webhook3",
+      "webhookId": "47af5605-9539-4837-8bfa-57cc8c4e55c7"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.action }}",
+                    "rightValue": "create inbound agent",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "89de8fa0-93e1-4663-aedd-a3dd1b92a9d2"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "939a02d1-178b-4064-8b3e-c73f828e33ca",
+                    "leftValue": "={{ $json.body.action }}",
+                    "rightValue": "update",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "0100e76a-7911-4a45-905a-abf90541925f",
+                    "leftValue": "={{ $json.body.action }}",
+                    "rightValue": "delete",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -5296,
+        3600
+      ],
+      "id": "ae1dd340-31a8-4d61-bdd5-a10649e43a7d",
+      "name": "Switch2"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "profiles",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "user_id",
+              "keyValue": "={{ $json.body.user_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -5072,
+        3232
+      ],
+      "id": "a47644b3-6b75-4173-b635-cb87ffe8a5b8",
+      "name": "get api1",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3564d823-b80e-43ea-9aea-b716a04594f9",
+              "name": "prompt",
+              "value": "={{ $('Webhook3').item.json.body.general_prompt }}",
+              "type": "string"
+            },
+            {
+              "id": "cb059e20-23e4-4ca4-ba7b-8838701b544f",
+              "name": "begin-message",
+              "value": "={{ $('Webhook3').item.json.body.begin_message }}",
+              "type": "string"
+            },
+            {
+              "id": "74fba546-9476-4b50-9ade-acedbea889a8",
+              "name": "transfer-Number",
+              "value": "={{ $('Webhook3').item.json.body.transfer_call_to }}",
+              "type": "string"
+            },
+            {
+              "id": "availability-settings",
+              "name": "availability_settings",
+              "value": "={{ JSON.stringify($('Webhook3').item.json.body.unavailability_settings) }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -4848,
+        3232
+      ],
+      "id": "577fbd11-8f95-4547-9912-c66da109b1dc",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.retellai.com/create-retell-llm",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $('get api1').item.json.retell_api_key }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"s2s_model\": \"gpt-realtime-mini\",\n  \"model_temperature\": 0,\n  \"model_high_priority\": true,\n  \"tool_call_strict_mode\": true,\n  \"start_speaker\": \"user\",\n  \"begin_after_user_silence_ms\": 2000,\n  \"begin_message\": {{ JSON.stringify($json['begin-message']) }},\n  \"general_prompt\": {{ JSON.stringify($json.prompt) }},\n  \"general_tools\": [\n    {\n      \"type\": \"custom\",\n      \"name\": \"check_availability\",\n      \"description\": \"Check if we are currently available to take calls based on business hours\",\n      \"url\": \"https://auto.nsolbpo.com/webhook/check-availability\",\n      \"method\": \"POST\",\n      \"speak_during_execution\": false,\n      \"speak_after_execution\": true\n    },\n    {\n      \"type\": \"end_call\",\n      \"name\": \"end_call\",\n      \"description\": \"End the call with user.\"\n    }\n  ],\n  \"states\": [\n    {\n      \"name\": \"availability_check\",\n      \"state_prompt\": \"CRITICAL FIRST STEP: You MUST immediately call the 'check_availability' function before any greeting or interaction. Do not say anything until you receive the availability status. After receiving the response: If status is 'available', greet the caller warmly with 'Hello! How can I assist you today?' and transition to information_collection state. If status is 'unavailable', use the message from the response to politely inform the caller, then immediately use the end_call function to terminate the conversation.\",\n      \"tools\": [],\n      \"edges\": [\n        {\n          \"destination_state_name\": \"information_collection\",\n          \"description\": \"Transition to information collection if available\"\n        }\n      ]\n    },\n    {\n      \"name\": \"information_collection\",\n      \"state_prompt\": \"You will follow the steps below to collect information from the caller. Be professional and helpful.\",\n      \"tools\": [\n        {\n          \"type\": \"transfer_call\",\n          \"name\": \"transfer_to_support\",\n          \"description\": \"Transfer to the support team.\",\n          \"transfer_destination\": {\n            \"type\": \"predefined\",\n            \"number\": {{ JSON.stringify($json['transfer-Number']) }},\n            \"ignore_e164_validation\": false\n          },\n          \"transfer_option\": {\n            \"type\": \"cold_transfer\",\n            \"show_transferee_as_caller\": false\n          }\n        }\n      ]\n    }\n  ],\n  \"starting_state\": \"availability_check\"\n}",
+        "options": {}
+      },
+      "id": "5156d95e-6a5c-45ec-8ef9-6ce521cfba22",
+      "name": "Step 1: Create Retell LLM1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        -4400,
+        3136
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.retellai.com/create-agent",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $('get api1').item.json.retell_api_key }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"agent_name\": \"{{ $('Webhook3').item.json.body.name }}\",\n  \"voice_id\": \"{{ $('Webhook3').item.json.body.voice_id }}\",\n  \"language\": \"en-US\",\n  \n  \"response_engine\": {\n    \"type\": \"retell-llm\",\n    \"llm_id\": \"{{ $json.llm_id }}\"\n  },\n  \n  \"voice_temperature\": 1,\n  \"voice_speed\": 1,\n  \"volume\": 1,\n  \"responsiveness\": 1,\n  \"interruption_sensitivity\": 1,\n  \n  \"normalize_for_speech\": false,\n  \n  \"end_call_after_silence_ms\": 60000,\n  \"max_call_duration_ms\": 600000,\n  \n  \"enable_voicemail_detection\": true,\n  \"voicemail_message\": \"Hi, please give us a callback.\",\n  \"voicemail_option\": {\n    \"action\": {\n      \"type\": \"hangup\"\n    }\n  },\n  \n  \"analysis_summary_prompt\": \"Summarize the outcome of the conversation in five sentences.\",\n  \n  \"begin_message_delay_ms\": 5000,\n  \"ring_duration_ms\": 9000,\n  \n  \"webhook_url\": \"https://auto.nsolbpo.com/webhook/calllogs\",\n  \"webhook_timeout_ms\": 10000\n}",
+        "options": {}
+      },
+      "id": "32e9360f-c4b3-4790-a092-f5f87b912552",
+      "name": "Step 2: Create Agent1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        -4176,
+        3136
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://api.retellai.com/list-phone-numbers",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $('get api1').item.json.retell_api_key }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -3952,
+        3136
+      ],
+      "id": "337089bb-3c49-484a-81e1-077e862393db",
+      "name": "HTTP Request10"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "59b272a6-12ed-412d-9219-99cfebbaf4a4",
+              "leftValue": "={{ $('Webhook3').item.json.body.incoming_number }}",
+              "rightValue": "={{ $json.phone_number }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        -3728,
+        3136
+      ],
+      "id": "12a23921-47b5-4384-93ad-4c1ca52f1504",
+      "name": "Filter2"
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://api.retellai.com/update-phone-number/{{ $json.phone_number }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $('get api1').item.json.retell_api_key }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"inbound_agents\": [\n    { \n      \"agent_id\": \"{{ $('Step 2: Create Agent1').item.json.agent_id }}\", \n      \"weight\": 1 \n    }\n  ],\n  \"nickname\": \"{{ $('Webhook3').item.json.body.name }}\",\n  \"inbound_webhook_url\": \"https://auto.nsolbpo.com/webhook/calllogs\"\n}",
+        "options": {}
+      },
+      "id": "4e0f7b42-bc48-46ac-8687-ce5241405449",
+      "name": "Step 4: Link Phone to Agent1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        -3504,
+        3136
+      ]
+    },
+    {
+      "parameters": {
+        "tableId": "bots",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "user_id",
+              "fieldValue": "={{ $('Webhook3').item.json.body.user_id }}"
+            },
+            {
+              "fieldId": "name",
+              "fieldValue": "={{ $('Step 2: Create Agent1').item.json.agent_name }}"
+            },
+            {
+              "fieldId": "is_active",
+              "fieldValue": "true"
+            },
+            {
+              "fieldId": "retell_llm_id",
+              "fieldValue": "={{ $('Step 1: Create Retell LLM1').item.json.llm_id }}"
+            },
+            {
+              "fieldId": "voice_settings",
+              "fieldValue": "={{ $('Step 2: Create Agent1').item.json.voice_id }}"
+            },
+            {
+              "fieldId": "modal",
+              "fieldValue": "=gpt-4o-realtime"
+            },
+            {
+              "fieldId": "general_prompt",
+              "fieldValue": "={{ $('Step 1: Create Retell LLM1').item.json.general_prompt }}"
+            },
+            {
+              "fieldId": "begin_messgae",
+              "fieldValue": "={{ $('Step 1: Create Retell LLM1').item.json.begin_message }}"
+            },
+            {
+              "fieldId": "retell_agent_id",
+              "fieldValue": "={{ $('Step 2: Create Agent1').item.json.agent_id }}"
+            },
+            {
+              "fieldId": "agent_number",
+              "fieldValue": "={{ $('Webhook3').item.json.body.incoming_number }}"
+            },
+            {
+              "fieldId": "Transfer_to",
+              "fieldValue": "={{ $('Webhook3').item.json.body.transfer_call_to }}"
+            },
+            {
+              "fieldId": "availibility_settings",
+              "fieldValue": "={{ JSON.stringify($('Webhook3').item.json.body.unavailability_settings) }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -3280,
+        3136
+      ],
+      "id": "d4b81f68-3333-4e25-b21a-8d7b0f910dfa",
+      "name": "Create a row5",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "=Successfully Created",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        -3056,
+        3136
+      ],
+      "id": "3bf8d961-eff5-40da-8d9b-cfd3b59e8466",
+      "name": "Respond to Webhook5"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "profiles",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "user_id",
+              "keyValue": "={{ $('Webhook3').item.json.body.user_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -5072,
+        3616
+      ],
+      "id": "85c6775b-5d19-4418-9730-f6096de731a5",
+      "name": "Get a row9",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "bots",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "keyValue": "={{ $('Webhook3').item.json.body.bot_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -4848,
+        3616
+      ],
+      "id": "b5477e1f-5bbd-44f6-8eeb-1db4781fd48d",
+      "name": "Get a row4",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://api.retellai.com/update-retell-llm/{{ $json.retell_llm_id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $('Get a row9').item.json.retell_api_key }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"s2s_model\": \"gpt-realtime-mini\",\n  \"model_temperature\": 0,\n  \"model_high_priority\": true,\n  \"tool_call_strict_mode\": true,\n  \"start_speaker\": \"user\",\n  \"begin_after_user_silence_ms\": 2000,\n  \"begin_message\": {{ JSON.stringify($('Webhook3').item.json.body.begin_message) }},\n  \"general_prompt\": {{ JSON.stringify($('Webhook3').item.json.body.general_prompt) }},\n  \"general_tools\": [\n    {\n      \"type\": \"custom\",\n      \"name\": \"check_availability\",\n      \"description\": \"Check if we are currently available to take calls\",\n      \"url\": \"https://auto.nsolbpo.com/webhook/check-availability\",\n      \"method\": \"POST\",\n      \"speak_during_execution\": false,\n      \"speak_after_execution\": true\n    },\n    {\n      \"type\": \"end_call\",\n      \"name\": \"end_call\",\n      \"description\": \"End the call with user.\"\n    }\n  ],\n  \"states\": [\n    {\n      \"name\": \"availability_check\",\n      \"state_prompt\": \"CRITICAL FIRST STEP: You MUST immediately call the 'check_availability' function before any greeting. After receiving the response: If status is 'available', greet and transition to information_collection. If status is 'unavailable', inform the caller using the response message and end_call.\",\n      \"tools\": [],\n      \"edges\": [\n        {\n          \"destination_state_name\": \"information_collection\",\n          \"description\": \"Move to info collection if available\"\n        }\n      ]\n    },\n    {\n      \"name\": \"information_collection\",\n      \"state_prompt\": \"You will follow the steps below to collect information...\",\n      \"tools\": [\n        {\n          \"type\": \"transfer_call\",\n          \"name\": \"transfer_to_support\",\n          \"description\": \"Transfer to the support team.\",\n          \"transfer_destination\": {\n            \"type\": \"predefined\",\n            \"number\": \"{{ $('Webhook3').item.json.body.transfer_call_to }}\",\n            \"ignore_e164_validation\": false\n          },\n          \"transfer_option\": {\n            \"type\": \"cold_transfer\",\n            \"show_transferee_as_caller\": false\n          }\n        }\n      ]\n    }\n  ],\n  \"starting_state\": \"availability_check\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -4400,
+        3520
+      ],
+      "id": "0adb8073-bd11-40e6-a55d-483cba78492c",
+      "name": "edit1"
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://api.retellai.com/update-agent/{{ $('Webhook3').item.json.body.retell_agent_id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $('Get a row9').item.json.retell_api_key }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"agent_name\": \"{{ $('Webhook3').item.json.body.name }}\",\n  \"voice_id\": \"{{ $('Webhook3').item.json.body.voice_id }}\",\n  \"language\": \"en-US\",\n  \n  \"response_engine\": {\n    \"type\": \"retell-llm\",\n    \"llm_id\": \"{{ $json.llm_id }}\"\n  },\n  \n  \"voice_temperature\": 1,\n  \"voice_speed\": 1,\n  \"volume\": 1,\n  \"responsiveness\": 1,\n  \"interruption_sensitivity\": 1,\n  \n  \"normalize_for_speech\": false,\n  \n  \"end_call_after_silence_ms\": 60000,\n  \"max_call_duration_ms\": 600000,\n  \n  \"enable_voicemail_detection\": true,\n  \"voicemail_message\": \"Hi, please give us a callback.\",\n  \"voicemail_option\": {\n    \"action\": {\n      \"type\": \"hangup\"\n    }\n  },\n  \n  \"analysis_summary_prompt\": \"Summarize the outcome of the conversation in five sentences.\",\n  \n  \"begin_message_delay_ms\": 5000,\n  \"ring_duration_ms\": 9000,\n  \n  \"webhook_url\": \"https://auto.nsolbpo.com/webhook/calllogs\",\n  \"webhook_timeout_ms\": 10000\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -4176,
+        3520
+      ],
+      "id": "f9f3128d-ab2b-40a4-ac3c-e5d602b2a1f8",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "bots",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $('Get a row4').item.json.id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "name",
+              "fieldValue": "={{ $('Webhook3').item.json.body.name }}"
+            },
+            {
+              "fieldId": "retell_agent_id",
+              "fieldValue": "={{ $json.agent_id }}"
+            },
+            {
+              "fieldId": "voice_settings",
+              "fieldValue": "={{ $json.voice_id }}"
+            },
+            {
+              "fieldId": "is_active",
+              "fieldValue": "true"
+            },
+            {
+              "fieldId": "agent_number",
+              "fieldValue": "={{ $('Webhook3').item.json.body.incoming_number }}"
+            },
+            {
+              "fieldId": "Transfer_to",
+              "fieldValue": "={{ $('Webhook3').item.json.body.transfer_call_to }}"
+            },
+            {
+              "fieldId": "availibility_settings",
+              "fieldValue": "={{ JSON.stringify($('Webhook3').item.json.body.unavailability_settings) }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -3952,
+        3520
+      ],
+      "id": "2b288727-259f-45ea-9dd2-5ec49eebf649",
+      "name": "Update a row",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "Successfully Edited",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        -3728,
+        3520
+      ],
+      "id": "48ea46a2-ebc2-4dda-a977-59211268e70b",
+      "name": "Respond to Webhook6"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "profiles",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "user_id",
+              "keyValue": "={{ $json.body.user.id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -5296,
+        4416
+      ],
+      "id": "69cd3905-be3a-4028-9ae6-53e9cd2d4da8",
+      "name": "Get a row11",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.retellai.com/import-phone-number",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $json.retell_api_key }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "phone_number",
+              "value": "={{ $('Webhook4').item.json.body.phone_number }}"
+            },
+            {
+              "name": "termination_uri",
+              "value": "={{ $('Webhook4').item.json.body.termination_uri }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -5072,
+        4416
+      ],
+      "id": "db11ed7f-9eed-4fd8-958d-27cb4511eceb",
+      "name": "HTTP Request11",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "tableId": "imported_phone_numbers",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "user_id",
+              "fieldValue": "={{ $('Get a row11').item.json.user_id }}"
+            },
+            {
+              "fieldId": "phone_number",
+              "fieldValue": "={{ $json.phone_number }}"
+            },
+            {
+              "fieldId": "termination_uri",
+              "fieldValue": "={{ $json.sip_outbound_trunk_config.termination_uri }}"
+            },
+            {
+              "fieldId": "imported_at",
+              "fieldValue": "={{ $('Webhook4').item.json.body.timestamp }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -4848,
+        4320
+      ],
+      "id": "d4530afc-7903-46d1-bdfc-ad182eb7f983",
+      "name": "Create a row6",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "Successfully imported",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        -4624,
+        4320
+      ],
+      "id": "998c41ed-3748-4120-b63f-bb488639f423",
+      "name": "Respond to Webhook7"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "Could not import number ",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        -4848,
+        4512
+      ],
+      "id": "d55cc60c-8fe7-4c37-9a74-74b1638b8931",
+      "name": "Respond to Webhook8"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "profiles",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "user_id",
+              "keyValue": "={{ $('Webhook3').item.json.body.user_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -5072,
+        4000
+      ],
+      "id": "811bbe98-ab06-4aa1-9a9b-6a97f8cb7dfe",
+      "name": "Get a row12",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "bots",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "keyValue": "={{ $('Webhook3').item.json.body.bot_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -4848,
+        4000
+      ],
+      "id": "1af31cd9-6f37-4c62-9f54-938029b11621",
+      "name": "Get a row5",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "tableId": "bots",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $json.id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -4624,
+        3904
+      ],
+      "id": "9e505bd0-2ec7-48e0-91ec-d7f4a21c43cb",
+      "name": "Delete a row2",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "method": "DELETE",
+        "url": "=https://api.retellai.com/delete-agent/{{ $json.retell_agent_id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $('Get a row12').item.json.retell_api_key }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -4624,
+        4096
+      ],
+      "id": "4ee35e87-b242-4fbd-b3c7-a7e8f87a72c0",
+      "name": "delete1"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "Successfully Deleted",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        -4400,
+        3904
+      ],
+      "id": "d50f9b83-1085-4b01-83a0-2d067fa17f5e",
+      "name": "Respond to Webhook11"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "bots",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "retell_agent_id",
+              "keyValue": "={{ $json.body.call.agent_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -5296,
+        5056
+      ],
+      "id": "74a60a3e-26a3-49b3-99ea-ddcc19151776",
+      "name": "Get Agent Settings",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "check-availability",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -5520,
+        5056
+      ],
+      "id": "288aa668-eb37-4d2f-9a99-2a2f502a4309",
+      "name": "Availability Check Webhook1",
+      "webhookId": "check-availability-webhook-id"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the incoming webhook data\nconst webhookData = $input.first().json;\nconst requestBody = webhookData.body || webhookData;\n\n// Get agent data from Supabase\nconst agentData = $('Get Agent Settings').first().json;\n\nconst callId = requestBody.call_id;\nconst agentId = requestBody.agent_id;\nconst fromNumber = requestBody.from_number;\n\nconsole.log('=== AVAILABILITY CHECK START ===');\nconsole.log('Call ID:', callId);\nconsole.log('Agent ID:', agentId);\nconsole.log('Agent Data:', JSON.stringify(agentData));\n\n// Parse availability settings from the database\nlet availabilitySettings;\ntry {\n  if (typeof agentData.availability_settings === 'string') {\n    availabilitySettings = JSON.parse(agentData.availability_settings);\n  } else {\n    availabilitySettings = agentData.availability_settings;\n  }\n} catch (e) {\n  console.log('ERROR parsing availability settings:', e);\n  availabilitySettings = { enabled: false };\n}\n\nconsole.log('Parsed Availability Settings:', JSON.stringify(availabilitySettings));\n\n// If availability check is disabled or settings don't exist, always return available\nif (!availabilitySettings || !availabilitySettings.enabled) {\n  console.log('✅ Availability check DISABLED - returning available');\n  return {\n    json: {\n      call_id: callId,\n      agent_id: agentId,\n      from_number: fromNumber,\n      is_available: true,\n      reason: 'availability_check_disabled',\n      current_time: new Date().toISOString(),\n      timezone: 'N/A'\n    }\n  };\n}\n\n// Get timezone and unavailable hours from settings\nconst timezone = availabilitySettings.timezone || 'America/New_York';\nconst unavailableStartTime = availabilitySettings.unavailable_start_time || '20:00';\nconst unavailableEndTime = availabilitySettings.unavailable_end_time || '08:00';\n\nconsole.log(`⏰ Checking availability for agent ${agentId}...`);\nconsole.log(`  Timezone: ${timezone}`);\nconsole.log(`  Unavailable: ${unavailableStartTime} - ${unavailableEndTime}`);\n\n// Get current time in the agent's timezone\nconst now = new Date();\nconst formatter = new Intl.DateTimeFormat('en-US', {\n  timeZone: timezone,\n  hour: '2-digit',\n  minute: '2-digit',\n  hour12: false\n});\n\nconst parts = formatter.formatToParts(now);\nconst hour = parseInt(parts.find(p => p.type === 'hour').value);\nconst minute = parseInt(parts.find(p => p.type === 'minute').value);\nconst currentMinutes = hour * 60 + minute;\n\n// Parse unavailable times\nconst [startHour, startMinute] = unavailableStartTime.split(':').map(Number);\nconst [endHour, endMinute] = unavailableEndTime.split(':').map(Number);\nconst startMinutes = startHour * 60 + startMinute;\nconst endMinutes = endHour * 60 + endMinute;\n\nconsole.log(`  Current time: ${hour}:${minute} (${currentMinutes} minutes)`);\nconsole.log(`  Start unavailable: ${startHour}:${startMinute} (${startMinutes} minutes)`);\nconsole.log(`  End unavailable: ${endHour}:${endMinute} (${endMinutes} minutes)`);\n\n// Check if current time is in unavailable range\nlet isAvailable = true;\n\nif (startMinutes > endMinutes) {\n  // Overnight range (e.g., 20:00 to 08:00)\n  // UNAVAILABLE if: currentTime >= startTime OR currentTime < endTime\n  // AVAILABLE if: currentTime < startTime AND currentTime >= endTime\n  isAvailable = currentMinutes < startMinutes && currentMinutes >= endMinutes;\n  console.log(`  Range type: OVERNIGHT (crosses midnight)`);\n} else {\n  // Same day range (e.g., 12:00 to 18:00)\n  // UNAVAILABLE if: currentTime >= startTime AND currentTime < endTime\n  // AVAILABLE if: currentTime < startTime OR currentTime >= endTime\n  isAvailable = currentMinutes < startMinutes || currentMinutes >= endMinutes;\n  console.log(`  Range type: SAME DAY`);\n}\n\nconsole.log(`  Result: ${isAvailable ? '✅ AVAILABLE' : '❌ UNAVAILABLE'}`);\nconsole.log('=== AVAILABILITY CHECK END ===');\n\n// Return the result\nreturn {\n  json: {\n    call_id: callId,\n    agent_id: agentId,\n    from_number: fromNumber,\n    is_available: isAvailable,\n    current_time: `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`,\n    timezone: timezone,\n    unavailable_start: unavailableStartTime,\n    unavailable_end: unavailableEndTime,\n    reason: isAvailable ? 'within_business_hours' : 'outside_business_hours'\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -5072,
+        5056
+      ],
+      "id": "41ce5eee-a8e1-4689-9279-71e1ec32e4e6",
+      "name": "Process Availability Check1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.is_available }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        -4848,
+        5056
+      ],
+      "id": "a8c5c73b-73fd-4123-a8f6-14e8199679cc",
+      "name": "Check If Available1"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"status\": \"available\",\n  \"result\": \"We are available to assist you. How can I help you today?\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        -4624,
+        4960
+      ],
+      "id": "696ce123-fb97-4f9a-9f15-3d177796dc86",
+      "name": "Respond Available1"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"status\": \"unavailable\",\n  \"result\": \"Thank you for calling. We are currently unavailable. Our business hours are {{ $('Process Availability Check1').item.json.unavailable_end }} to {{ $('Process Availability Check1').item.json.unavailable_start }} {{ $('Process Availability Check1').item.json.timezone }}. Please call back during our operating hours. Have a great day.\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        -4624,
+        5152
+      ],
+      "id": "8edc5b0a-d0d1-491e-8f9e-acc4b7e868ce",
+      "name": "Respond Unavailable1"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "calllogs",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -5520,
+        2080
+      ],
+      "id": "1b4e0af4-ea53-41de-b39f-fc5962ec9aec",
+      "name": "Webhook - Call Events1",
+      "webhookId": "bdb5e006-1b37-4bd3-864e-4e887bfed101"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.event }}",
+                    "rightValue": "call_started",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "call-started-condition"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "call-ended-condition",
+                    "leftValue": "={{ $json.body.event }}",
+                    "rightValue": "call_ended",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -5072,
+        2080
+      ],
+      "id": "0a57413d-9d52-47e5-b064-34bc34bd8062",
+      "name": "Route by Event Type1"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "bots",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "retell_agent_id",
+              "keyValue": "={{ $('Route by Event Type1').item.json.body.call.agent_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -4848,
+        1984
+      ],
+      "id": "8ab985a7-07d6-4505-9cf6-2b88b12eb323",
+      "name": "Get Bot (Started)1",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "tableId": "calls",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "call_id",
+              "fieldValue": "={{ $('Route by Event Type1').item.json.body.call.call_id }}"
+            },
+            {
+              "fieldId": "user_id",
+              "fieldValue": "={{ $json.user_id }}"
+            },
+            {
+              "fieldId": "bot_id",
+              "fieldValue": "={{ $json.id }}"
+            },
+            {
+              "fieldId": "phone_number",
+              "fieldValue": "={{ $('Route by Event Type1').item.json.body.call.from_number || null }}"
+            },
+            {
+              "fieldId": "status",
+              "fieldValue": "in_progress"
+            },
+            {
+              "fieldId": "started_at",
+              "fieldValue": "={{ new Date($('Route by Event Type1').item.json.body.call.start_timestamp).toISOString().replace('T', ' ').substring(0, 19) }}"
+            },
+            {
+              "fieldId": "Lead_status",
+              "fieldValue": "No"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -4560,
+        1984
+      ],
+      "id": "58c1c194-99e4-46a0-82d7-2beeedb5fe32",
+      "name": "Create Call Record1",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\nreturn items.map(item => {\n  const call = item.json.body?.call || item.json.call || item.json;\n  \n  const formatTimestamp = (ts) => ts ? new Date(ts).toISOString().replace('T', ' ').substring(0, 19) : null;\n  \n  return {\n    json: {\n      ...item.json,\n      start_time_formatted: formatTimestamp(call.start_timestamp),\n      end_time_formatted: formatTimestamp(call.end_timestamp),\n      duration_formatted: call.duration_ms ? `${Math.floor(call.duration_ms / 60000)}m ${Math.floor((call.duration_ms % 60000) / 1000)}s` : '0s'\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4848,
+        2176
+      ],
+      "id": "0a0356af-e565-458d-9194-52cfbd5dc011",
+      "name": "Format Timestamps1"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.message.content.result }}",
+                    "rightValue": "no",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "not-lead-condition"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "is-lead-condition",
+                    "leftValue": "={{ $json.message.content.result }}",
+                    "rightValue": "yes",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -4272,
+        2176
+      ],
+      "id": "4f142ddf-9bd2-4ce0-a328-8ff081db3284",
+      "name": "Is Lead?1"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "bots",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "retell_agent_id",
+              "keyValue": "={{ $('Format Timestamps1').item.json.body.call.agent_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -4048,
+        2080
+      ],
+      "id": "4d290629-005b-4b6a-be5b-45a4992c8c81",
+      "name": "Get Bot (Not Lead)1",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "calls",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "call_id",
+              "condition": "eq",
+              "keyValue": "={{ $('Format Timestamps1').item.json.body.call.call_id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "Lead_status",
+              "fieldValue": "No"
+            },
+            {
+              "fieldId": "user_id",
+              "fieldValue": "={{ $json.user_id }}"
+            },
+            {
+              "fieldId": "bot_id",
+              "fieldValue": "={{ $json.id }}"
+            },
+            {
+              "fieldId": "phone_number",
+              "fieldValue": "={{ $('Format Timestamps1').item.json.body.call.from_number }}"
+            },
+            {
+              "fieldId": "status",
+              "fieldValue": "=completed"
+            },
+            {
+              "fieldId": "duration_seconds",
+              "fieldValue": "={{ $('Format Timestamps1').item.json.body.call.call_cost.total_duration_seconds }}"
+            },
+            {
+              "fieldId": "transcript",
+              "fieldValue": "={{ $('Format Timestamps1').item.json.body.call.transcript }}"
+            },
+            {
+              "fieldId": "recording_url",
+              "fieldValue": "={{ $('Format Timestamps1').item.json.body.call.recording_url }}"
+            },
+            {
+              "fieldId": "call_id",
+              "fieldValue": "={{ $('Webhook - Call Events1').item.json.body.call.call_id }}"
+            },
+            {
+              "fieldId": "completed_at",
+              "fieldValue": "={{$now}}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -3824,
+        2080
+      ],
+      "id": "24d0b82c-6d63-46c0-82c2-f419c4a9660a",
+      "name": "Update Call (Not Lead)1",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "deactivation-code",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -5520,
+        1760
+      ],
+      "id": "2ab781bf-a55b-44a2-a921-fe7e0da505de",
+      "name": "Webhook",
+      "webhookId": "7b198c4b-9212-4509-848a-27906cb17ff3",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "profiles",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "user_id",
+              "keyValue": "={{ $json.body.record.user_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -5072,
+        1760
+      ],
+      "id": "b0800f2b-ccf0-4c4e-a031-383acf5a2912",
+      "name": "Get a row",
+      "credentials": "[REDACTED]",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "fromEmail": "no-reply@duhanashrah.ai",
+        "toEmail": "={{ $json.email }}",
+        "subject": "Activation Code ",
+        "html": "=<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\" />\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"/>\n  <title>Account Deactivation Code</title>\n</head>\n\n<body style=\"margin:0; padding:0; background:#f4f6f8; font-family:Arial, sans-serif;\">\n\n  <table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"background:#f4f6f8; padding:30px 0;\">\n    <tr>\n      <td align=\"center\">\n\n        <!-- Main Box -->\n        <table width=\"520\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" \n          style=\"background:#ffffff; border-radius:10px; overflow:hidden; box-shadow:0 4px 12px rgba(0,0,0,0.08);\">\n\n          <!-- Header -->\n          <tr>\n            <td style=\"background:#dc3545; padding:25px; text-align:center;\">\n              <h2 style=\"margin:0; color:#ffffff; font-size:20px; font-weight:700;\">\n                Account Deactivation\n              </h2>\n              <p style=\"margin:8px 0 0; color:#ffffff; font-size:13px; opacity:0.9;\">\n                Verification Code Required\n              </p>\n            </td>\n          </tr>\n\n          <!-- Content -->\n          <tr>\n            <td style=\"padding:30px; text-align:left;\">\n\n              <p style=\"margin:0 0 15px; font-size:14px; color:#333; line-height:1.6;\">\n                You requested to deactivate your account.  \n                Use the verification code below to confirm.\n              </p>\n\n              <!-- Code Box -->\n              <div style=\"text-align:center; margin:25px 0;\">\n                <div style=\"display:inline-block; padding:18px 28px; border:2px dashed #dc3545; border-radius:10px; background:#fff5f5;\">\n                  <p style=\"margin:0; font-size:32px; font-weight:700; letter-spacing:6px; color:#dc3545;\">\n                    {{ $('Webhook').item.json.body.record.code }}\n                  </p>\n                </div>\n              </div>\n\n              <p style=\"margin:0 0 10px; font-size:13px; color:#555; line-height:1.6;\">\n                ⏳ This code expires in <b>15 minutes</b>.\n              </p>\n\n              <p style=\"margin:0; font-size:13px; color:#555; line-height:1.6;\">\n                🔒 Do not share this code with anyone.\n              </p>\n\n              <hr style=\"border:none; border-top:1px solid #eee; margin:25px 0;\">\n\n              <p style=\"margin:0; font-size:12px; color:#888; line-height:1.6;\">\n                If you didn’t request this, please ignore this email or contact support.\n              </p>\n\n            </td>\n          </tr>\n\n          <!-- Footer -->\n          <tr>\n            <td style=\"background:#fafafa; padding:15px; text-align:center;\">\n              <p style=\"margin:0; font-size:11px; color:#999;\">\n                © {{ new Date().getFullYear() }} Inbound Genie. All rights reserved.\n              </p>\n            </td>\n          </tr>\n\n        </table>\n\n      </td>\n    </tr>\n  </table>\n\n</body>\n</html>\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        -4848,
+        1760
+      ],
+      "id": "3cb2d86a-d130-4c3e-9c2c-03ab724701d9",
+      "name": "Send email",
+      "webhookId": "9eb97d4c-8be4-422d-a83f-8c5efdcd9148",
+      "credentials": "[REDACTED]",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "e9f218ea-ff70-47bd-8d9d-8e0fe536935f",
+              "leftValue": "",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        -5296,
+        1760
+      ],
+      "id": "570330ac-0089-4228-8004-97054abdf103",
+      "name": "Filter3",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "import",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -5520,
+        4416
+      ],
+      "id": "79d7e7bb-e69f-4628-9041-b0874e46c24a",
+      "name": "Webhook4",
+      "webhookId": "c7f1e7e1-707a-4f0d-9d1e-69315692a207"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "4c957c8b-55f8-4fbc-a25c-9ea441fbcb6a",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -5520,
+        4736
+      ],
+      "id": "0f534b80-9141-4d12-b27c-4a2892989d59",
+      "name": "Webhook5",
+      "webhookId": "4c957c8b-55f8-4fbc-a25c-9ea441fbcb6a"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=You are a Lead Qualification Analyst.\n\nAnalyze the call transcript and determine whether this call is a LEAD.\n\nA call is a LEAD (\"yes\") only if the caller clearly shows intent to take next steps, such as:\n- requesting a callback, meeting, appointment, demo, or follow-up\n- asking to buy a product/service\n- asking for pricing/packages/availability with interest\n- sharing contact details for future communication\n\nIf the caller is only asking general questions, calling for support, not interested, or no intent is shown, return \"no\".\n\nSTRICT RULES:\n- Do NOT guess.\n- Use ONLY what is explicitly mentioned in the transcript.\n- Output must be ONLY \"yes\" or \"no\" (lowercase).\n- Do not return JSON, explanation, or extra text.\n"
+            },
+            {
+              "content": "=Full Transcript:\n{{ $json.body.call.transcript }}"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.4,
+      "position": [
+        -4624,
+        2176
+      ],
+      "id": "eb8ce862-7b5d-44ba-82f9-e72aea8d4729",
+      "name": "OpenAI Lead Analysis",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "bots",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "retell_agent_id",
+              "keyValue": "={{ $('Format Timestamps1').item.json.body.call.agent_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -4048,
+        2272
+      ],
+      "id": "ca9526a8-6a70-46f1-afac-94088490b11c",
+      "name": "Get Bot (Not Lead)",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.call.call_type }}",
+                    "rightValue": "web_call",
+                    "operator": {
+                      "type": "string",
+                      "operation": "notEquals"
+                    },
+                    "id": "cd9e4999-183c-43ca-b050-7dc7a5b248ff"
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -5296,
+        2080
+      ],
+      "id": "f37086f1-50a5-42c7-adbf-ed1ed891d0f7",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "calls",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "call_id",
+              "condition": "eq",
+              "keyValue": "={{ $('Format Timestamps1').item.json.body.call.call_id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "Lead_status",
+              "fieldValue": "Yes"
+            },
+            {
+              "fieldId": "user_id",
+              "fieldValue": "={{ $json.user_id }}"
+            },
+            {
+              "fieldId": "bot_id",
+              "fieldValue": "={{ $json.id }}"
+            },
+            {
+              "fieldId": "phone_number",
+              "fieldValue": "={{ $('Format Timestamps1').item.json.body.call.from_number }}"
+            },
+            {
+              "fieldId": "status",
+              "fieldValue": "=completed"
+            },
+            {
+              "fieldId": "duration_seconds",
+              "fieldValue": "={{ $('Format Timestamps1').item.json.body.call.call_cost.total_duration_seconds }}"
+            },
+            {
+              "fieldId": "transcript",
+              "fieldValue": "={{ $('Format Timestamps1').item.json.body.call.transcript }}"
+            },
+            {
+              "fieldId": "recording_url",
+              "fieldValue": "={{ $('Format Timestamps1').item.json.body.call.recording_url }}"
+            },
+            {
+              "fieldId": "call_id",
+              "fieldValue": "={{ $('Webhook - Call Events1').item.json.body.call.call_id }}"
+            },
+            {
+              "fieldId": "completed_at",
+              "fieldValue": "={{$now}}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -3824,
+        2272
+      ],
+      "id": "0ed55aff-b0ca-408e-82e0-88990e4d4cdd",
+      "name": "Update Call (Not Lead)2",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "43e43033-cfd8-4ea9-9bac-f768c05e1f38",
+              "leftValue": "={{ $('Webhook3').item.json.body.transfer_call_to }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -4624,
+        3232
+      ],
+      "id": "2ea52f32-9991-4df3-892a-004b335f544b",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.retellai.com/create-retell-llm",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $('get api1').item.json.retell_api_key }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"s2s_model\": \"gpt-realtime-mini\",\n  \"model_temperature\": 0,\n  \"model_high_priority\": true,\n  \"tool_call_strict_mode\": true,\n  \"start_speaker\": \"user\",\n  \"begin_after_user_silence_ms\": 2000,\n  \"begin_message\": {{ JSON.stringify($json['begin-message']) }},\n  \"general_prompt\": {{ JSON.stringify($json.prompt) }},\n  \"general_tools\": [\n    {\n      \"type\": \"custom\",\n      \"name\": \"check_availability\",\n      \"description\": \"Check if we are currently available to take calls based on business hours\",\n      \"url\": \"https://auto.nsolbpo.com/webhook/check-availability\",\n      \"method\": \"POST\",\n      \"speak_during_execution\": false,\n      \"speak_after_execution\": true\n    },\n    {\n      \"type\": \"end_call\",\n      \"name\": \"end_call\",\n      \"description\": \"End the call with user.\"\n    }\n  ],\n  \"states\": [\n    {\n      \"name\": \"availability_check\",\n      \"state_prompt\": \"CRITICAL FIRST STEP: You MUST immediately call the 'check_availability' function before any greeting or interaction. Do not say anything until you receive the availability status. After receiving the response: If status is 'available', greet the caller warmly with 'Hello! How can I assist you today?' and transition to information_collection state. If status is 'unavailable', use the message from the response to politely inform the caller, then immediately use the end_call function to terminate the conversation.\",\n      \"tools\": [],\n      \"edges\": [\n        {\n          \"destination_state_name\": \"information_collection\",\n          \"description\": \"Transition to information collection if available\"\n        }\n      ]\n    },\n    {\n      \"name\": \"information_collection\",\n      \"state_prompt\": \"You will follow the steps below to collect information from the caller. Be professional and helpful.\",\n      \"tools\": []\n    }\n  ],\n  \"starting_state\": \"availability_check\"\n}",
+        "options": {}
+      },
+      "id": "eee4ed98-393e-4b51-8a05-dea99fa52a87",
+      "name": "Step 1: Create Retell LLM",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        -4400,
+        3328
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.retellai.com/create-agent",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $('get api1').item.json.retell_api_key }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"agent_name\": \"{{ $('Webhook3').item.json.body.name }}\",\n  \"voice_id\": \"{{ $('Webhook3').item.json.body.voice_id }}\",\n  \"language\": \"en-US\",\n  \n  \"response_engine\": {\n    \"type\": \"retell-llm\",\n    \"llm_id\": \"{{ $json.llm_id }}\"\n  },\n  \n  \"voice_temperature\": 1,\n  \"voice_speed\": 1,\n  \"volume\": 1,\n  \"responsiveness\": 1,\n  \"interruption_sensitivity\": 1,\n  \n  \"normalize_for_speech\": false,\n  \n  \"end_call_after_silence_ms\": 60000,\n  \"max_call_duration_ms\": 600000,\n  \n  \"enable_voicemail_detection\": true,\n  \"voicemail_message\": \"Hi, please give us a callback.\",\n  \"voicemail_option\": {\n    \"action\": {\n      \"type\": \"hangup\"\n    }\n  },\n  \n  \"analysis_summary_prompt\": \"Summarize the outcome of the conversation in five sentences.\",\n  \n  \"begin_message_delay_ms\": 5000,\n  \"ring_duration_ms\": 9000,\n  \n  \"webhook_url\": \"https://auto.nsolbpo.com/webhook/calllogs\",\n  \"webhook_timeout_ms\": 10000\n}",
+        "options": {}
+      },
+      "id": "8787a86c-6abf-48eb-b1a9-f5a7f9780b1e",
+      "name": "Step 2: Create Agent",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        -4176,
+        3328
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://api.retellai.com/list-phone-numbers",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $('get api1').item.json.retell_api_key }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -3952,
+        3328
+      ],
+      "id": "1fa1a319-cbd7-4c80-9c87-61419dee31d3",
+      "name": "HTTP Request12"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "59b272a6-12ed-412d-9219-99cfebbaf4a4",
+              "leftValue": "={{ $('Webhook3').item.json.body.incoming_number }}",
+              "rightValue": "={{ $json.phone_number }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        -3728,
+        3328
+      ],
+      "id": "2db98201-7458-493d-a6ea-79828111edd0",
+      "name": "Filter4"
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://api.retellai.com/update-phone-number/{{ $json.phone_number }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $('get api1').item.json.retell_api_key }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"inbound_agents\": [\n    { \n      \"agent_id\": \"{{ $('Step 2: Create Agent').item.json.agent_id }}\", \n      \"weight\": 1 \n    }\n  ],\n  \"nickname\": \"{{ $('Webhook3').item.json.body.name }}\",\n  \"inbound_webhook_url\": \"https://auto.nsolbpo.com/webhook/calllogs\"\n}",
+        "options": {}
+      },
+      "id": "15e136c3-44c1-4545-868f-35aa096f916c",
+      "name": "Step 4: Link Phone to Agent",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        -3504,
+        3328
+      ]
+    },
+    {
+      "parameters": {
+        "tableId": "bots",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "user_id",
+              "fieldValue": "={{ $('Webhook3').item.json.body.user_id }}"
+            },
+            {
+              "fieldId": "name",
+              "fieldValue": "={{ $('Step 2: Create Agent').item.json.agent_name }}"
+            },
+            {
+              "fieldId": "is_active",
+              "fieldValue": "true"
+            },
+            {
+              "fieldId": "retell_llm_id",
+              "fieldValue": "={{ $('Step 1: Create Retell LLM').item.json.llm_id }}"
+            },
+            {
+              "fieldId": "voice_settings",
+              "fieldValue": "={{ $('Step 2: Create Agent').item.json.voice_id }}"
+            },
+            {
+              "fieldId": "modal",
+              "fieldValue": "=gpt-4o-realtime"
+            },
+            {
+              "fieldId": "general_prompt",
+              "fieldValue": "={{ $('Step 1: Create Retell LLM').item.json.general_prompt }}"
+            },
+            {
+              "fieldId": "begin_messgae",
+              "fieldValue": "={{ $('Step 1: Create Retell LLM').item.json.begin_message }}"
+            },
+            {
+              "fieldId": "retell_agent_id",
+              "fieldValue": "={{ $('Step 2: Create Agent').item.json.agent_id }}"
+            },
+            {
+              "fieldId": "agent_number",
+              "fieldValue": "={{ $('Webhook3').item.json.body.incoming_number }}"
+            },
+            {
+              "fieldId": "Transfer_to",
+              "fieldValue": "={{ $('Webhook3').item.json.body.transfer_call_to }}"
+            },
+            {
+              "fieldId": "availibility_settings",
+              "fieldValue": "={{ JSON.stringify($('Webhook3').item.json.body.unavailability_settings) }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -3280,
+        3328
+      ],
+      "id": "83c6aa88-9fd5-44ef-b05a-5b1cdef1876f",
+      "name": "Create a row7",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "=Successfully Created",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        -3056,
+        3328
+      ],
+      "id": "bfe70037-0014-40c9-a5d9-fb07282bb22e",
+      "name": "Respond to Webhook9"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "1d56cbe5-6442-4f40-b59c-921ff80c20ea",
+              "leftValue": "={{ $('Webhook3').item.json.body.transfer_call_to }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notExists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -4624,
+        3616
+      ],
+      "id": "cf607caf-40cb-4b13-9849-78522f51ab77",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://api.retellai.com/update-retell-llm/{{ $json.retell_llm_id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $('Get a row9').item.json.retell_api_key }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"s2s_model\": \"gpt-realtime-mini\",\n  \"model_temperature\": 0,\n  \"model_high_priority\": true,\n  \"tool_call_strict_mode\": true,\n  \"start_speaker\": \"user\",\n  \"begin_after_user_silence_ms\": 2000,\n  \"begin_message\": {{ JSON.stringify($('Webhook3').item.json.body.begin_message) }},\n  \"general_prompt\": {{ JSON.stringify($('Webhook3').item.json.body.general_prompt) }},\n  \"general_tools\": [\n    {\n      \"type\": \"custom\",\n      \"name\": \"check_availability\",\n      \"description\": \"Check if we are currently available to take calls\",\n      \"url\": \"https://auto.nsolbpo.com/webhook/check-availability\",\n      \"method\": \"POST\",\n      \"speak_during_execution\": false,\n      \"speak_after_execution\": true\n    },\n    {\n      \"type\": \"end_call\",\n      \"name\": \"end_call\",\n      \"description\": \"End the call with user.\"\n    }\n  ],\n  \"states\": [\n    {\n      \"name\": \"availability_check\",\n      \"state_prompt\": \"CRITICAL FIRST STEP: You MUST immediately call the 'check_availability' function before any greeting. After receiving the response: If status is 'available', greet and transition to information_collection. If status is 'unavailable', inform the caller using the response message and end_call.\",\n      \"tools\": [],\n      \"edges\": [\n        {\n          \"destination_state_name\": \"information_collection\",\n          \"description\": \"Move to info collection if available\"\n        }\n      ]\n    },\n    {\n      \"name\": \"information_collection\",\n      \"state_prompt\": \"You will follow the steps below to collect information...\",\n      \"tools\": []\n    }\n  ],\n  \"starting_state\": \"availability_check\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -4400,
+        3712
+      ],
+      "id": "3f18296b-4296-4afd-a980-98df372c1054",
+      "name": "edit"
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://api.retellai.com/update-agent/{{ $('Webhook3').item.json.body.retell_agent_id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $('Get a row9').item.json.retell_api_key }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"agent_name\": \"{{ $('Webhook3').item.json.body.name }}\",\n  \"voice_id\": \"{{ $('Webhook3').item.json.body.voice_id }}\",\n  \"language\": \"en-US\",\n  \n  \"response_engine\": {\n    \"type\": \"retell-llm\",\n    \"llm_id\": \"{{ $json.llm_id }}\"\n  },\n  \n  \"voice_temperature\": 1,\n  \"voice_speed\": 1,\n  \"volume\": 1,\n  \"responsiveness\": 1,\n  \"interruption_sensitivity\": 1,\n  \n  \"normalize_for_speech\": false,\n  \n  \"end_call_after_silence_ms\": 60000,\n  \"max_call_duration_ms\": 600000,\n  \n  \"enable_voicemail_detection\": true,\n  \"voicemail_message\": \"Hi, please give us a callback.\",\n  \"voicemail_option\": {\n    \"action\": {\n      \"type\": \"hangup\"\n    }\n  },\n  \n  \"analysis_summary_prompt\": \"Summarize the outcome of the conversation in five sentences.\",\n  \n  \"begin_message_delay_ms\": 5000,\n  \"ring_duration_ms\": 9000,\n  \n  \"webhook_url\": \"https://auto.nsolbpo.com/webhook/calllogs\",\n  \"webhook_timeout_ms\": 10000\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -4176,
+        3712
+      ],
+      "id": "bf4a7667-0ecf-48f9-bd3c-a481a99359e5",
+      "name": "HTTP Request2"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "bots",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $('Get a row4').item.json.id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "name",
+              "fieldValue": "={{ $('Webhook3').item.json.body.name }}"
+            },
+            {
+              "fieldId": "retell_agent_id",
+              "fieldValue": "={{ $json.agent_id }}"
+            },
+            {
+              "fieldId": "voice_settings",
+              "fieldValue": "={{ $json.voice_id }}"
+            },
+            {
+              "fieldId": "is_active",
+              "fieldValue": "true"
+            },
+            {
+              "fieldId": "agent_number",
+              "fieldValue": "={{ $('Webhook3').item.json.body.incoming_number }}"
+            },
+            {
+              "fieldId": "Transfer_to",
+              "fieldValue": "={{ $('Webhook3').item.json.body.transfer_call_to }}"
+            },
+            {
+              "fieldId": "availibility_settings",
+              "fieldValue": "={{ JSON.stringify($('Webhook3').item.json.body.unavailability_settings) }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -3952,
+        3712
+      ],
+      "id": "7cfbd57c-167b-4b8a-a866-26976010eb47",
+      "name": "Update a row1",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "Successfully Edited",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        -3728,
+        3712
+      ],
+      "id": "73703af0-e24b-4c0e-bc93-ed3b36b3f0e5",
+      "name": "Respond to Webhook10"
+    }
+  ],
+  "connections": {
+    "Webhook1": {
+      "main": [
+        [
+          {
+            "node": "Filter1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many rows": {
+      "main": [
+        [
+          {
+            "node": "create LLM1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "agent1": {
+      "main": [
+        [
+          {
+            "node": "Create a row1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Delete a row1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "create LLM1": {
+      "main": [
+        [
+          {
+            "node": "agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter1": {
+      "main": [
+        [
+          {
+            "node": "Get many rows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook3": {
+      "main": [
+        [
+          {
+            "node": "Switch2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch2": {
+      "main": [
+        [
+          {
+            "node": "get api1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get a row9",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get a row12",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "get api1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Step 1: Create Retell LLM1": "[REDACTED]",
+    "Step 2: Create Agent1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request10",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request10": {
+      "main": [
+        [
+          {
+            "node": "Filter2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter2": {
+      "main": [
+        [
+          {
+            "node": "Step 4: Link Phone to Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Step 4: Link Phone to Agent1": {
+      "main": [
+        [
+          {
+            "node": "Create a row5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a row5": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a row9": {
+      "main": [
+        [
+          {
+            "node": "Get a row4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a row4": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "edit1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Update a row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update a row": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a row11": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request11",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request11": {
+      "main": [
+        [
+          {
+            "node": "Create a row6",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond to Webhook8",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a row6": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a row12": {
+      "main": [
+        [
+          {
+            "node": "Get a row5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a row5": {
+      "main": [
+        [
+          {
+            "node": "delete1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Delete a row2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete a row2": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook11",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Agent Settings": {
+      "main": [
+        [
+          {
+            "node": "Process Availability Check1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Availability Check Webhook1": {
+      "main": [
+        [
+          {
+            "node": "Get Agent Settings",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Availability Check1": {
+      "main": [
+        [
+          {
+            "node": "Check If Available1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check If Available1": {
+      "main": [
+        [
+          {
+            "node": "Respond Available1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Unavailable1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook - Call Events1": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route by Event Type1": {
+      "main": [
+        [
+          {
+            "node": "Get Bot (Started)1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Format Timestamps1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Bot (Started)1": {
+      "main": [
+        [
+          {
+            "node": "Create Call Record1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Timestamps1": {
+      "main": [
+        [
+          {
+            "node": "OpenAI Lead Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Lead?1": {
+      "main": [
+        [
+          {
+            "node": "Get Bot (Not Lead)1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get Bot (Not Lead)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Bot (Not Lead)1": {
+      "main": [
+        [
+          {
+            "node": "Update Call (Not Lead)1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Filter3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a row": {
+      "main": [
+        [
+          {
+            "node": "Send email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter3": {
+      "main": [
+        [
+          {
+            "node": "Get a row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook4": {
+      "main": [
+        [
+          {
+            "node": "Get a row11",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Lead Analysis": "[REDACTED]",
+    "Get Bot (Not Lead)": {
+      "main": [
+        [
+          {
+            "node": "Update Call (Not Lead)2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Route by Event Type1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Step 1: Create Retell LLM1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Step 1: Create Retell LLM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Step 1: Create Retell LLM": "[REDACTED]",
+    "Step 2: Create Agent": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request12",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request12": {
+      "main": [
+        [
+          {
+            "node": "Filter4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter4": {
+      "main": [
+        [
+          {
+            "node": "Step 4: Link Phone to Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Step 4: Link Phone to Agent": {
+      "main": [
+        [
+          {
+            "node": "Create a row7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a row7": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook9",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "edit1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "edit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "edit": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request2": {
+      "main": [
+        [
+          {
+            "node": "Update a row1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update a row1": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook10",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "triggerCount": 5,
+  "tags": [
+    {
+      "updatedAt": "2025-10-15T12:01:49.775Z",
+      "createdAt": "2025-10-15T12:01:49.775Z",
+      "id": "vqPjQ1pPoVp3pFKR",
+      "name": "Mark Edward"
+    }
+  ]
+}

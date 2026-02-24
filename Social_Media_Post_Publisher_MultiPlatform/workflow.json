@@ -1,0 +1,4185 @@
+{
+  "updatedAt": "2026-02-03T20:59:39.880Z",
+  "createdAt": "2025-10-26T16:41:32.906Z",
+  "id": "CUYMy2NlL4SvKCRn",
+  "name": "SendMessage",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "278d2dc5-0043-41f8-bd3f-fb3bb0c27037",
+      "name": "Execute Workflow Trigger",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [
+        -5504,
+        3984
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get API response from previous node\nconst apiResponse = $input.first().json;\n\n// Try to load data from \"Validate Input\" node if it exists\nlet validated = {};\ntry {\n  const validateItems = $items(\"Validate Input\");\n  if (validateItems.length > 0) {\n    validated = validateItems[0].json;\n  }\n} catch (e) {\n  validated = {};\n}\n\n// Determine if response is successful\nconst isSuccess =\n  apiResponse.success === true ||\n  apiResponse.message?.toLowerCase().includes(\"success\");\n\n// Return structured output\nreturn [{\n  json: {\n    success: isSuccess,\n    message: apiResponse.message || (isSuccess ? \"Success\" : \"Failed\"),\n\n    // Map response.data into consistent fields\n    agentId: apiResponse.data?.agentId || null,\n    to: apiResponse.data?.to || null,\n    sentAt: apiResponse.data?.sentAt || null,\n\n    validated,\n    rawResponse: apiResponse\n  }\n}];\n"
+      },
+      "id": "163b1787-1341-4ade-965d-07d57f4c5cc3",
+      "name": "Parse Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4912,
+        1408
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "success-check",
+              "leftValue": "={{ $json.success }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "c7bf09b5-fd26-485c-b2a4-e3506a2609a8",
+      "name": "Is Success?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -4688,
+        1408
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.item.json[0] || $input.item.json; // handle array or single object\nconst raw = data.rawResponse || {};\n\nconst recipientNumber = (raw.recipients && raw.recipients[0]) || data.recipients?.[0] || 'Unknown';\nconst contactName = data.contactName || 'Recipient'; // you can set your own name mapping logic\nconst messageText = data.message || 'No message content';\nconst messageLength = messageText.length;\n\nconst successMessage = `✅ Message sent successfully to ${contactName}!\n\n📱 Recipient: ${contactName}\n📞 Phone: ${recipientNumber}\n📊 Length: ${messageLength} characters\n⏰ Sent at: ${new Date().toLocaleString('en-US', { timeZone: 'Asia/Karachi', hour12: true })}`;\n\nreturn [\n  {\n    json: {\n      success: true,\n      message: successMessage,\n      details: {\n        recipient: contactName,\n        phone: recipientNumber,\n        messageLength,\n        sentAt: new Date().toISOString()\n      }\n    }\n  }\n];\n"
+      },
+      "id": "9afe08dc-471d-40a9-8379-c68a5743e938",
+      "name": "Format Success",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4464,
+        1312
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $('Parse Response').first().json;\nconst apiError = data.apiError || 'Unknown error';\n\nlet errorExplanation = '';\nconst errorLower = apiError.toLowerCase();\n\nif (errorLower.includes('timeout')) {\n  errorExplanation = 'WhatsApp service timed out.';\n} else if (errorLower.includes('invalid number')) {\n  errorExplanation = 'Invalid or unregistered WhatsApp number.';\n} else if (errorLower.includes('rate limit')) {\n  errorExplanation = 'Rate limit exceeded. Wait a few minutes.';\n} else if (errorLower.includes('blocked')) {\n  errorExplanation = 'Number may have blocked messages.';\n} else {\n  errorExplanation = 'Unexpected WhatsApp API error.';\n}\n\nconst errorMessage = `❌ Failed to send message to ${data.contactName}\n\n🔍 Issue: ${errorExplanation}\n📱 Recipient: ${data.contactName} (${data.phone})\n⚠️ Error: ${apiError}\n\n💡 Please verify the phone number and try again.`;\n\nreturn [{\n  json: {\n    success: false,\n    message: errorMessage,\n    details: {\n      recipient: data.contactName,\n      phone: data.phone,\n      error: apiError,\n      timestamp: data.timestamp\n    }\n  }\n}];"
+      },
+      "id": "a07e701a-cdce-427f-b32e-5eef38bc5f40",
+      "name": "Format Error",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4464,
+        1504
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.item.json[0] || $input.item.json;\nconst phoneNumberStr = data.query.phone_number.replace(/\\+/g, '');\nconst phoneNumber = parseInt(phoneNumberStr, 10);\nconst messageText = data.query.message;\nconst contactName = data.query.contact_name;\nconst conversationId = data.query.conversation_id;\nconst agentId = data.query.agent_id;\n\nreturn [\n  {\n    json: {\n      phone_number: phoneNumber,\n      message: messageText,\n      contact_name: contactName,\n      conversation_id: conversationId,\n      agent_id: agentId\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -5360,
+        1408
+      ],
+      "id": "87160807-8273-426d-b361-e07dc6eee951",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "post-now",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -5360,
+        -1488
+      ],
+      "id": "57756222-a742-4f78-9d7f-792b0ee89109",
+      "name": "Webhook2",
+      "webhookId": "9157ad23-93c0-4ff5-b0c5-a37fc60ff2e9",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.linkedin.com/rest/videos?action=initializeUpload",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"registerUploadRequest\": {\n    \"recipes\": [\"urn:li:digitalmediaRecipe:feedshare-video\"],\n    \"owner\": \"urn:li:person:8qMUCoKYtL\",\n    \"serviceRelationships\": [\n      {\n        \"relationshipType\": \"OWNER\",\n        \"identifier\": \"urn:li:userGeneratedContent\"\n      }\n    ]\n  }\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -5360,
+        416
+      ],
+      "id": "c1e95dc3-4901-4362-ae47-c740573cc191",
+      "name": "HTTP Request4"
+    },
+    {
+      "parameters": {
+        "url": "=https://graph.facebook.com/v21.0/{{ $json.meta.page_id }}",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "fields",
+              "value": "access_token"
+            },
+            {
+              "name": "access_token",
+              "value": "={{ $json.auth.access_token }}\n"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -4464,
+        -1136
+      ],
+      "id": "098ed1fc-4dc0-48df-80cf-33ad28ece389",
+      "name": "Get Page Access Token"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -3568,
+        -1136
+      ],
+      "id": "f6264247-85e1-46a5-b241-b2a0e75fe3c0",
+      "name": "Merge Results",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "content_calendar",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $('Merge').item.json.id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "post_status"
+            },
+            {
+              "fieldId": "status",
+              "fieldValue": "TRUE"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -3568,
+        -944
+      ],
+      "id": "702ae1ce-12f2-4cfb-96d6-7181a6f62432",
+      "name": "Update Post Status",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({\n  success: true,\n  message: 'Post published successfully',\n  postId: $('Check Platform').item.json.id,\n  fbResponse: $json,\n  publishedAt: new Date().toISOString()\n}) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        -3344,
+        -1136
+      ],
+      "id": "12fca3a7-9b4c-49e5-a2d9-ea0857a93a3d",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "content_calendar",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $json.body.postId }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -5136,
+        -1040
+      ],
+      "id": "8ef2acc0-516d-49cb-80e6-687aac41f6d4",
+      "name": "Get Main content",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.platforms }}",
+                    "rightValue": "Instagram",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "2df9a051-994c-4ad7-80b7-a4ce24ed7337"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "IG"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "eae02729-c861-49f5-a97e-767b76e42762",
+                    "leftValue": "={{ $json.platforms }}",
+                    "rightValue": "Facebook",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "FB"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "3f3be269-6b6a-41f1-af42-4621f2e17e9d",
+                    "leftValue": "={{ $json.platforms }}",
+                    "rightValue": "Linkedin",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "LD"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "b4db775c-b283-43a6-84f2-51bd59806e3b",
+                    "leftValue": "={{ $json.platforms }}",
+                    "rightValue": "TikTok",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "TK"
+            }
+          ]
+        },
+        "options": {
+          "ignoreCase": true
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -4688,
+        -1168
+      ],
+      "id": "4d2ea40a-69ce-452e-822b-26f166a949d3",
+      "name": "Check Platform"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Merge').item.json.media_url }}",
+        "options": {
+          "response": {
+            "response": {}
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -4016,
+        -1232
+      ],
+      "id": "fb723992-3d12-4596-b76a-8065c5f2ea9a",
+      "name": "Object get"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "social_accounts",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "keyValue": "={{ $json.body.socialAccountId }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -5136,
+        -1232
+      ],
+      "id": "9f1d092b-7a5e-4661-9ee8-d213260f5b89",
+      "name": "Get a row",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -4912,
+        -1136
+      ],
+      "id": "a6e51a9e-4991-4610-9c25-ee48ac2eb7ec",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v21.0/{{ $('Check Platform').item.json.meta.page_id }}/photos",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "access_token",
+              "value": "={{ $json.access_token }}"
+            },
+            {
+              "name": "message",
+              "value": "={{ $('Check Platform').item.json.description }}\n\n{{ $('Check Platform').item.json.hashtags }}"
+            },
+            {
+              "parameterType": "formBinaryData",
+              "name": "source",
+              "inputDataFieldName": "data"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -3792,
+        -944
+      ],
+      "id": "7aa3de8c-fec2-416e-ad8b-cba1e6e208fd",
+      "name": "Post Photo to Facebook1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v21.0/{{ $('Check Platform').item.json.meta.page_id }}/photos",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "access_token",
+              "value": "={{ $json.access_token }}"
+            },
+            {
+              "name": "message",
+              "value": "={{ $('Check Platform').item.json.description }}\n\n{{ $('Check Platform').item.json.hashtags }}"
+            },
+            {
+              "parameterType": "formBinaryData",
+              "name": "source",
+              "inputDataFieldName": "data"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -5360,
+        192
+      ],
+      "id": "b65879e7-9046-4618-98c8-906d6e3f5e89",
+      "name": "Post Photo to Facebook"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v21.0/{{ $json.id }}/videos",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "access_token",
+              "value": "={{ $json.access_token }}"
+            },
+            {
+              "name": "description",
+              "value": "={{ $('Check Platform').item.json.description }}\n\n{{ $('Check Platform').item.json.hashtags }}"
+            },
+            {
+              "parameterType": "formBinaryData",
+              "name": "source",
+              "inputDataFieldName": "data"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -3792,
+        -1232
+      ],
+      "id": "e5dbbbb5-3ded-44a1-bc41-207271be94e9",
+      "name": "Post Video/Reel to Facebook"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v21.0/{{ $('Check Platform').item.json.meta.page_id }}/photos",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "access_token",
+              "value": "={{ $json.access_token }}"
+            },
+            {
+              "name": "message",
+              "value": "={{ $('Check Platform').item.json.description }}\n\n{{ $('Check Platform').item.json.hashtags }}"
+            },
+            {
+              "parameterType": "formBinaryData",
+              "name": "source",
+              "inputDataFieldName": "data"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -5360,
+        864
+      ],
+      "id": "eab6f54e-749b-4268-bdee-6990be82b630",
+      "name": "Post Photo to Facebook2",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "check_media_type",
+              "leftValue": "={{ $('Merge').item.json.media_url }}",
+              "rightValue": ".mp4",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -4240,
+        -1136
+      ],
+      "id": "36bdd7ca-2e73-48cd-b663-f7bd64f2b9ed",
+      "name": "Check Media Type"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Merge').item.json.media_url }}",
+        "options": {
+          "response": {
+            "response": {}
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -4016,
+        -944
+      ],
+      "id": "f7bea1e2-0102-4628-aa61-58674bcb7243",
+      "name": "Object get1"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "content_calendar"
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -3568,
+        -1344
+      ],
+      "id": "b9975f7b-0d54-49e6-9140-27571105cf16",
+      "name": "Update Post Status1",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "instagram-post",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -5360,
+        640
+      ],
+      "id": "d7b3730b-390f-4a09-b989-0ad84b753c83",
+      "name": "Webhook - Receive Request",
+      "webhookId": "instagram-post-webhook",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({\n  success: false,\n  message: 'Failed to post to Instagram',\n  error: $json.error || 'Unknown error',\n  postId: $('Webhook - Receive Request').item.json.body.postId\n}) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        -5360,
+        1088
+      ],
+      "id": "cfae96a8-b99a-4b4c-9f51-ae4f1dd9d171",
+      "name": "Respond Error",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "content_calendar",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "keyValue": "={{ $('Webhook2').item.json.body.postId }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -5136,
+        -1536
+      ],
+      "id": "a96f4740-8d55-49e2-8cc8-51c6ed334168",
+      "name": "Get Post Content1",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "url": "https://graph.facebook.com/v24.0/791966747334015",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "fields",
+              "value": "access_token,instagram_business_account"
+            },
+            {
+              "name": "access_token",
+              "value": "EAATIAWaAxasBPxAwc33JrRJ6H0nOZCz88Ip1Y31X2fayU9yTpOZCKDSYEGj7BeYlYkTZAuHBZBVHtTobDZCbpsO8XZBm4BDdQd6zVjc5H0LRYRW1WF514d0iN4N6CwZCILPrGmNbuifpgCQuxPSZB2NcFugR4L5PUw0Ka4bHZCft5bQB0Di6vNsBZCrIARSLi5"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -4912,
+        -1536
+      ],
+      "id": "dcf455ec-16f2-40e5-9060-d242f739269e",
+      "name": "Get Page Access Token2"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "video-check",
+              "leftValue": "={{ $('Get Post Content1').item.json.media_url.toLowerCase() }}",
+              "rightValue": ".mp4",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -4688,
+        -1536
+      ],
+      "id": "92c770c2-429d-4683-a22b-e360ad7d1560",
+      "name": "Is Video?1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph.facebook.com/v24.0/17841476789400418/media",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "image_url",
+              "value": "={{ $('Get Post Content1').item.json.media_url }}"
+            },
+            {
+              "name": "caption",
+              "value": "={{ $('Get Post Content1').item.json.description }}\n\n{{ $('Get Post Content1').item.json.hashtags }}"
+            },
+            {
+              "name": "access_token",
+              "value": "={{ $('Get Page Access Token2').item.json.access_token }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -4016,
+        -1760
+      ],
+      "id": "33b74452-752a-45c4-9770-3df4679942eb",
+      "name": "Create Image Container1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph.facebook.com/v24.0/17841476789400418/media",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "media_type",
+              "value": "REELS"
+            },
+            {
+              "name": "video_url",
+              "value": "={{ $('Get Post Content1').item.json.media_url }}"
+            },
+            {
+              "name": "caption",
+              "value": "={{ $('Get Post Content1').item.json.description }}\n\n{{ $('Get Post Content1').item.json.hashtags }}"
+            },
+            {
+              "name": "access_token",
+              "value": "={{ $('Get Page Access Token2').item.json.access_token }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -4464,
+        -1488
+      ],
+      "id": "7cda2241-bf3c-4ff8-aeee-72632863cfe5",
+      "name": "Create Video Container1"
+    },
+    {
+      "parameters": {
+        "url": "=https://graph.facebook.com/v24.0/{{ $json.id }}",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "fields",
+              "value": "status_code"
+            },
+            {
+              "name": "access_token",
+              "value": "={{ $('Get Page Access Token2').item.json.access_token }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -4240,
+        -1488
+      ],
+      "id": "7930ba25-740e-48f7-8884-4adc0af6aeb9",
+      "name": "Check Video Status1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "status-check",
+              "leftValue": "={{ $json.status_code }}",
+              "rightValue": "FINISHED",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -4016,
+        -1568
+      ],
+      "id": "1ada215e-0572-44a8-bbf3-f54c81ebd7c7",
+      "name": "Is Processing Complete?1"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -3792,
+        -1440
+      ],
+      "id": "b4fa59ae-547f-4c30-8fb0-8c9af3b8313d",
+      "name": "Wait 5 Seconds1",
+      "webhookId": "wait-for-video"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph.facebook.com/v24.0/17841476789400418/media_publish",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "creation_id",
+              "value": "={{ $json.id }}"
+            },
+            {
+              "name": "access_token",
+              "value": "={{ $('Get Page Access Token2').item.json.access_token }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -3792,
+        -1712
+      ],
+      "id": "e3d97558-74d2-4a1b-b622-5bb5bedc148a",
+      "name": "Publish to Instagram1"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "content_calendar",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $('Get Post Content1').item.json.id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "status",
+              "fieldValue": "published"
+            },
+            {
+              "fieldId": "published_at",
+              "fieldValue": "={{ new Date().toISOString() }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -3568,
+        -1712
+      ],
+      "id": "bb9ea47b-5b7d-46a0-a2f8-88b3f09dae20",
+      "name": "Update Post Status3",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({\n  success: true,\n  message: 'Posted to Instagram successfully',\n  platform: 'instagram',\n  postId: $('Get Post Content1').item.json.id,\n  instagramMediaId: $json.id,\n  publishedAt: new Date().toISOString()\n}) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        -3344,
+        -1712
+      ],
+      "id": "1f248fa4-79eb-4280-adad-e6f5372f3a75",
+      "name": "Respond Success1"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "tiktok-post",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -5360,
+        -2816
+      ],
+      "id": "b788cb05-1997-4ca0-8608-f88e0977884e",
+      "name": "Webhook - TikTok Post",
+      "webhookId": "tiktok-post-webhook",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "content_calendar",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "keyValue": "={{ $json.body.postId }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -5136,
+        -2208
+      ],
+      "id": "8c2ad454-1f72-4b14-89d8-2851002bf504",
+      "name": "Get Post Content",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Get Post Content').item.json.media_url }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -5360,
+        -4160
+      ],
+      "id": "5e9e79ed-9ec4-4431-a73f-f5cfc655d646",
+      "name": "Download Video1"
+    },
+    {
+      "parameters": {
+        "content": "## Instagram\n**Double click** to edit me. [Guide](https://docs.n8n.io/workflows/sticky-notes/)",
+        "height": 864,
+        "width": 2448
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -5536,
+        -528
+      ],
+      "typeVersion": 1,
+      "id": "fcc716cc-f455-4652-9c90-4e89d3e5b4d3",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "path": "tiktok-auth-start",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -5360,
+        -496
+      ],
+      "id": "aa8d8972-ae5a-4105-a9fd-9f45de260382",
+      "name": "Start Auth",
+      "webhookId": "tiktok-auth-start",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Generate random state for security\nconst state = Math.random().toString(36).substring(7);\n\n// Your credentials\nconst CLIENT_KEY = 'YOUR_CLIENT_KEY_HERE';\nconst REDIRECT_URI = 'https://auto.nsolbpo.com:5678/webhook/tiktok-callback';\nconst SCOPES = 'video.upload,video.publish,user.info.basic';\n\n// Build authorization URL\nconst authUrl = `https://www.tiktok.com/v2/auth/authorize/?client_key=${CLIENT_KEY}&scope=${SCOPES}&response_type=code&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&state=${state}`;\n\nreturn {\n  authUrl: authUrl,\n  state: state\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -5136,
+        -496
+      ],
+      "id": "975fd8cf-346f-4e4d-b542-028f34216c5d",
+      "name": "Generate Auth URL"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({\n  message: 'Click the link below to authorize TikTok',\n  authUrl: $json.authUrl,\n  instructions: 'After authorization, you will be redirected back and we will capture your access token'\n}) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        -4912,
+        -496
+      ],
+      "id": "ff8eb097-3659-46e7-a530-2f68e79798ec",
+      "name": "Send Auth Link"
+    },
+    {
+      "parameters": {
+        "path": "tiktok-callback",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -5360,
+        -272
+      ],
+      "id": "4a82b36c-9e0b-4cfb-8246-c2cd261b3496",
+      "name": "Callback Webhook",
+      "webhookId": "tiktok-callback",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://open.tiktokapis.com/v2/post/publish/video/init/",
+        "authentication": "[REDACTED]",
+        "genericAuthType": "[REDACTED]",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $json.access_token }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json; charset=UTF-8"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"post_info\": {\n    \"title\": \"{{ $json.topic }}\",\n    \"privacy_level\": \"PUBLIC_TO_EVERYONE\",\n    \"disable_duet\": false,\n    \"disable_comment\": false,\n    \"disable_stitch\": false,\n    \"video_cover_timestamp_ms\": 1000\n  },\n  \"source_info\": {\n    \"source\": \"FILE_UPLOAD\",\n    \"video_size\": ,\n    \"chunk_size\": 10000000,\n    \"total_chunk_count\": 1\n  }\n}",
+        "options": {}
+      },
+      "name": "Initialize Upload",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -5360,
+        -720
+      ],
+      "id": "ffe1e286-fbf0-4622-bc45-2a6d5680f20e",
+      "typeVersion": 4.2,
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "={{ $json.data.upload_url }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "video/mp4"
+            },
+            {
+              "name": "Content-Length",
+              "value": "={{ $json.data.video_size }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "binaryData",
+        "options": {}
+      },
+      "name": "Upload Video",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -5136,
+        -720
+      ],
+      "id": "b35612e1-5bf5-4127-bf79-5f9fd39fb755",
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://open.tiktokapis.com/v2/post/publish/status/fetch/",
+        "authentication": "[REDACTED]",
+        "genericAuthType": "[REDACTED]",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json; charset=UTF-8"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"publish_id\": \"{{ $node[\"Initialize Upload\"].json.data.publish_id }}\"\n}",
+        "options": {}
+      },
+      "name": "Check Status",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -4912,
+        -720
+      ],
+      "id": "75ff1c5c-90f8-4e94-a0ae-743021100356",
+      "typeVersion": 4.2,
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "upload-tiktok",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "name": "Webhook1",
+      "type": "n8n-nodes-base.webhook",
+      "position": [
+        -5360,
+        -3936
+      ],
+      "id": "3a2a8635-522d-462a-84bf-ea89b37cc03d",
+      "typeVersion": 2.1,
+      "webhookId": "7fc86b93-120a-4b0c-bdbb-dcf3099c185c",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://open.tiktokapis.com/v2/oauth/token/",
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "client_key",
+              "value": "sbawc97ms48r29i7ab"
+            },
+            {
+              "name": "client_secret",
+              "value": "kzRGjjPG2Smpdt0hb6GpWrPjcDBSddvr"
+            },
+            {
+              "name": "grant_type",
+              "value": "client_credentials"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "TikTok Access Token",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -4912,
+        -2400
+      ],
+      "id": "f4e3a1aa-31a7-4350-9db6-2501266d58f8"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Get Post Content').item.json.media_url }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -4688,
+        -2400
+      ],
+      "id": "7062c4ae-19d8-45d9-9237-d8e2d4778474",
+      "name": "Download Video"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://open.tiktokapis.com/v2/post/publish/video/init/",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $json.access_token }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"source_info\": {\n    \"source\": \"FILE_UPLOAD\",\n    \"video_size\": {{ $binary.data.fileSize.replace(' MB', '') * 1024 * 1024 }},\n    \"chunk_size\": {{ $binary.data.fileSize.replace(' MB', '') * 1024 * 1024 }},\n    \"total_chunk_count\": 1\n  }\n}\n",
+        "options": {}
+      },
+      "name": "Initiate Upload",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -4464,
+        -2208
+      ],
+      "id": "da45fa03-7354-4eb8-8752-f9d62711a2c5",
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "={{ $json.data.upload_url }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "video/mp4"
+            },
+            {
+              "name": "Content-Range",
+              "value": "=bytes 0-{{ $binary.data.fileSize - 1 }}/{{ $binary.data.fileSize }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "binaryData",
+        "options": {}
+      },
+      "name": "Upload Video File",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -4240,
+        -2208
+      ],
+      "id": "53b5d4b7-5cf2-4048-a414-e41e1906512f",
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://open.tiktokapis.com/v2/post/publish/status/fetch/",
+        "authentication": "[REDACTED]",
+        "genericAuthType": "[REDACTED]",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $json.access_token }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"publish_id\": \"{{ $node[\\\"Initiate Upload\\\"].json.data.publish_id }}\"\n}",
+        "options": {}
+      },
+      "name": "Check Upload Status",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -4016,
+        -2208
+      ],
+      "id": "f899e86c-d9b6-4e14-9554-0a125260a0af",
+      "typeVersion": 4.2,
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://open.tiktokapis.com/v2/post/publish/video/init/",
+        "authentication": "[REDACTED]",
+        "genericAuthType": "[REDACTED]",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json; charset=UTF-8"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"source_info\": {\n    \"source\": \"FILE_UPLOAD\",\n    \"video_size\": {{ $json.videoSizeBytes || 10485760 }},\n    \"chunk_size\": {{ $json.videoSizeBytes || 10485760 }},\n    \"total_chunk_count\": 1\n  },\n  \"post_info\": {\n    \"title\": \"{{ $json.videoTitle || 'My Video' }}\",\n    \"privacy_level\": \"{{ $json.privacyLevel || 'SELF_ONLY' }}\",\n    \"disable_duet\": false,\n    \"disable_comment\": false,\n    \"disable_stitch\": false,\n    \"video_cover_timestamp_ms\": 1000\n  }\n}",
+        "options": {}
+      },
+      "name": "TikTok - Initiate Video Upload",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -5360,
+        -3712
+      ],
+      "id": "d8c92927-a8ba-48fd-bb58-76f582cbeaf1",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://open.tiktokapis.com/v2/post/publish/video/init/",
+        "authentication": "[REDACTED]",
+        "genericAuthType": "[REDACTED]",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "access token",
+              "value": "=Bearer {{ $json.access_token }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json; charset=UTF-8"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"source_info\": {\n    \"source\": \"FILE_UPLOAD\",\n    \"video_size\": {{ $json.videoSizeBytes || 10485760 }},\n    \"chunk_size\": {{ $json.videoSizeBytes || 10485760 }},\n    \"total_chunk_count\": 1\n  },\n  \"post_info\": {\n    \"title\": \"{{ $json.videoTitle || 'My Video' }}\",\n    \"privacy_level\": \"{{ $json.privacyLevel || 'SELF_ONLY' }}\",\n    \"disable_duet\": false,\n    \"disable_comment\": false,\n    \"disable_stitch\": false,\n    \"video_cover_timestamp_ms\": 1000\n  }\n}",
+        "options": {}
+      },
+      "name": "TikTok - Initiate Video Upload1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -4464,
+        -2400
+      ],
+      "id": "524c97fb-6434-47a4-8c33-d5f5e85260a9",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://open.tiktokapis.com/v2/post/publish/video/init/",
+        "authentication": "[REDACTED]",
+        "genericAuthType": "[REDACTED]",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json; charset=UTF-8"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"source_info\": {\n    \"source\": \"FILE_UPLOAD\",\n    \"video_size\": {{ $json.videoSizeBytes || 10485760 }},\n    \"chunk_size\": {{ $json.videoSizeBytes || 10485760 }},\n    \"total_chunk_count\": 1\n  },\n  \"post_info\": {\n    \"title\": \"{{ $json.videoTitle || 'My Video' }}\",\n    \"privacy_level\": \"{{ $json.privacyLevel || 'SELF_ONLY' }}\",\n    \"disable_duet\": false,\n    \"disable_comment\": false,\n    \"disable_stitch\": false,\n    \"video_cover_timestamp_ms\": 1000\n  }\n}",
+        "options": {}
+      },
+      "name": "TikTok - Initiate Video Upload2",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -5360,
+        -3264
+      ],
+      "id": "cc8543a5-2bc8-445b-978e-a0f4f22df3f0",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://open.tiktokapis.com/v2/sandbox/post/publish/video/init/",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $json.access_token }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json; charset=UTF-8"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"post_info\": {\n    \"title\": \"{{ $json.title || 'this will be a funny #cat video on your @tiktok #fyp' }}\",\n    \"privacy_level\": \"{{ $json.privacy_level || 'MUTUAL_FOLLOW_FRIENDS' }}\",\n    \"disable_duet\": {{ $json.disable_duet || false }},\n    \"disable_comment\": {{ $json.disable_comment || false }},\n    \"disable_stitch\": {{ $json.disable_stitch || false }},\n    \"video_cover_timestamp_ms\": {{ $json.video_cover_timestamp_ms || 1000 }}\n  },\n  \"source_info\": {\n    \"source\": \"{{ $json.source || 'FILE_UPLOAD' }}\",\n    \"video_size\": {{ $json.video_size || 50000123 }},\n    \"chunk_size\": {{ $json.chunk_size || 10000000 }},\n    \"total_chunk_count\": {{ $json.total_chunk_count || 5 }}\n  }\n}",
+        "options": {}
+      },
+      "name": "TikTok - Initiate Video Upload3",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -4464,
+        -2592
+      ],
+      "id": "3327f625-3942-4d9f-8379-bab9c9a90da3"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://open.tiktokapis.com/v2/oauth/token/",
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "client_key",
+              "value": "sbawc97ms48r29i7ab"
+            },
+            {
+              "name": "client_secret",
+              "value": "kzRGjjPG2Smpdt0hb6GpWrPjcDBSddvr"
+            },
+            {
+              "name": "grant_type",
+              "value": "authorization_code"
+            },
+            {
+              "name": "code",
+              "value": "YOUR_AUTHORIZATION_CODE_HERE"
+            },
+            {
+              "name": "redirect_uri",
+              "value": "https://auto.nsolbpo.com/rest/oauth2-credential/callback"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "TikTok Access Token1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -4912,
+        -1824
+      ],
+      "id": "83bd9288-e5ab-4d24-b7d2-3a24616c5c65"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://open.tiktokapis.com/v2/oauth/token/",
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "client_key",
+              "value": "sbawc97ms48r29i7ab"
+            },
+            {
+              "name": "client_secret",
+              "value": "kzRGjjPG2Smpdt0hb6GpWrPjcDBSddvr"
+            },
+            {
+              "name": "grant_type",
+              "value": "authorization_code"
+            },
+            {
+              "name": "code",
+              "value": "={{ $json[\"code\"] }}"
+            },
+            {
+              "name": "redirect_uri",
+              "value": "https://auto.nsolbpo.com/rest/oauth2-credential/callback"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "TikTok Authorization Token",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -4912,
+        -2592
+      ],
+      "id": "9e5a455b-5abf-436a-840c-490b8cb2c2f3"
+    },
+    {
+      "parameters": {
+        "path": "tiktok-auth",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "bc6df0ef-429c-4405-8723-28b5eec34ec3",
+      "name": "Webhook - Receive Auth Code",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -5360,
+        -3040
+      ],
+      "webhookId": "74a7e58c-e7d0-46bd-926d-557cadb9529e",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://open.tiktokapis.com/v2/oauth/token/",
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "client_key",
+              "value": "sbawc97ms48r29i7ab"
+            },
+            {
+              "name": "client_secret",
+              "value": "kzRGjjPG2Smpdt0hb6GpWrPjcDBSddvr"
+            },
+            {
+              "name": "grant_type",
+              "value": "authorization_code"
+            },
+            {
+              "name": "code",
+              "value": "={{ $json.query.code }}"
+            },
+            {
+              "name": "redirect_uri",
+              "value": "={{ $node['Webhook - Receive Auth Code'].json.headers.host }}/webhook/{{ $node['Webhook - Receive Auth Code'].webhookId }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a2e1f1bd-6791-4a58-96ae-be5d17f92478",
+      "name": "Exchange Code for Token",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -5136,
+        -3040
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: true, access_token: $json.access_token, expires_in: $json.expires_in, refresh_token: $json.refresh_token, token_type: $json.token_type }) }}",
+        "options": {}
+      },
+      "id": "c165ee79-eb3c-4bfe-875f-eb12fae56c33",
+      "name": "Respond to Webhook1",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        -4912,
+        -3040
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://open.tiktokapis.com/v2/post/publish/inbox/video/init/",
+        "authentication": "[REDACTED]",
+        "genericAuthType": "[REDACTED]",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json; charset=UTF-8"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"post_info\": {\n    \"title\": \"Test video from n8n\",\n    \"privacy_level\": \"SELF_ONLY\",\n    \"disable_duet\": false,\n    \"disable_comment\": false,\n    \"disable_stitch\": false,\n    \"video_cover_timestamp_ms\": 1000\n  },\n  \"source_info\": {\n    \"source\": \"FILE_UPLOAD\",\n    \"video_size\": 50000000,\n    \"chunk_size\": 10000000,\n    \"total_chunk_count\": 5\n  }\n}",
+        "options": {}
+      },
+      "id": "51ee4a81-5ce6-4089-964f-7c604e89566a",
+      "name": "1. Initialize Video Upload",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -4912,
+        -2016
+      ],
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.data.upload_url }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Range",
+              "value": "bytes 0-9999999/50000000"
+            },
+            {
+              "name": "Content-Type",
+              "value": "video/mp4"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "video/mp4",
+        "body": "={{ $binary.video.data }}",
+        "options": {}
+      },
+      "id": "8b1681f5-3a82-4c2f-8a18-bf3c0707a429",
+      "name": "2. Upload Video Chunk",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -4688,
+        -2016
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://open.tiktokapis.com/v2/post/publish/status/fetch/",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json; charset=UTF-8"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"publish_id\": \"{{ $('1. Initialize Video Upload').item.json.data.publish_id }}\"\n}",
+        "options": {}
+      },
+      "id": "ca4ee5f4-67c8-4cfe-a4a2-32d7cfb8bf1e",
+      "name": "3. Check Upload Status",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -4464,
+        -2016
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "options": {
+          "responseCode": 400
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        -5360,
+        -3488
+      ],
+      "id": "560eb02e-5483-46c1-a084-b10711508f5c",
+      "name": "Respond Error1",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "editpost",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -5360,
+        -5120
+      ],
+      "id": "41d29965-497a-4595-a77d-1b20d07a576e",
+      "name": "Webhook7",
+      "webhookId": "d9a1657b-e3d1-42a9-9f1a-f070b7fd3c0e",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "social_accounts",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "keyValue": "={{ $json.body.socialAccountId }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -5136,
+        -5216
+      ],
+      "id": "b69c6fc0-28fd-443a-a824-4c1a5a8beef4",
+      "name": "Get Social Account4",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "content_calendar",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "keyValue": "={{ $json.body.postId }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -5136,
+        -5024
+      ],
+      "id": "2eb4b9bd-58c7-4a03-beb6-db65aba0e63d",
+      "name": "Get Post Details5",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        -4912,
+        -5120
+      ],
+      "id": "173fa7c5-9de8-411c-a4ee-ee231bb4a7e4",
+      "name": "Merge Post & Account Data4"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract LinkedIn post URN from social_id\nconst socialId = $input.item.json.social_id;\nlet shareUrn = '';\n\n// Parse social_id to get the post URN\nif (typeof socialId === 'string') {\n  try {\n    const parsed = JSON.parse(socialId);\n    const location = parsed.location || parsed['x-restli-id'];\n    \n    if (location) {\n      // Extract URN from location or x-restli-id\n      // Handle URL-encoded URN in location\n      const decodedLocation = decodeURIComponent(location);\n      const match = decodedLocation.match(/urn:li:share:\\d+/);\n      if (match) {\n        shareUrn = match[0];\n      }\n    }\n  } catch (e) {\n    // If it's already a URN string\n    const match = socialId.match(/urn:li:share:\\d+/);\n    if (match) {\n      shareUrn = match[0];\n    }\n  }\n}\n\n// Get access token from auth object (direct access since data is merged)\nconst accessToken = $input.item.json.auth?.access_token || '';\n\n// Get post ID (using the content_calendar id field)\nconst postId = $input.item.json.id;\n\n// Validation\nif (!shareUrn) {\n  throw new Error(`Could not extract LinkedIn share URN from social_id: ${socialId}`);\n}\n\nif (!accessToken) {\n  throw new Error('Access token not found in social account data');\n}\n\n// Return the data needed for deletion\nreturn {\n  shareUrn: shareUrn,\n  accessToken: accessToken,\n  postId: postId,\n  // Optional: include for logging/debugging\n  organizationId: $input.item.json.linkedin_organization_id,\n  handle: $input.item.json.handle\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4688,
+        -5120
+      ],
+      "id": "415042df-af1c-492b-8788-2ea9575f7dde",
+      "name": "Extract Delete Data"
+    },
+    {
+      "parameters": {
+        "method": "DELETE",
+        "url": "=https://api.linkedin.com/v2/shares/{{ encodeURIComponent($json.shareUrn) }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $json.accessToken }}"
+            },
+            {
+              "name": "X-Restli-Protocol-Version",
+              "value": "2.0.0"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -4464,
+        -5120
+      ],
+      "id": "28bad500-895c-4311-8dd7-aaccca216d77",
+      "name": "Delete LinkedIn Post3"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "content_calendar"
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -4240,
+        -5120
+      ],
+      "id": "839c201f-fa5b-40bf-aefd-005a5cad70c7",
+      "name": "Update Post Status to Deleted1",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"message\": \"LinkedIn post deleted successfully\",\n  \"postId\": \"{{ $('Webhook9').item.json.body.postId }}\",\n  \"socialAccountId\": \"{{ $('Webhook9').item.json.body.socialAccountId }}\",\n  \"deletedUrn\": \"{{ $('Extract Delete Data').item.json.shareUrn }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        -4016,
+        -5120
+      ],
+      "id": "78447860-f58a-4318-a58f-8d19a25ac16f",
+      "name": "Respond to Webhook3"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract LinkedIn post URN from social_id\nconst socialId = $input.item.json.social_id;\nlet shareUrn = '';\n\n// Parse social_id to get the post URN\nif (typeof socialId === 'string') {\n  try {\n    const parsed = JSON.parse(socialId);\n    const location = parsed.location || parsed['x-restli-id'];\n    \n    if (location) {\n      // Extract URN from location or x-restli-id\n      const decodedLocation = decodeURIComponent(location);\n      const match = decodedLocation.match(/urn:li:share:\\d+/);\n      if (match) {\n        shareUrn = match[0];\n      }\n    }\n  } catch (e) {\n    // If it's already a URN string\n    const match = socialId.match(/urn:li:share:\\d+/);\n    if (match) {\n      shareUrn = match[0];\n    }\n  }\n}\n\n// Get access token from auth object\nconst accessToken = $input.item.json.auth?.access_token || '';\n\n// Get post ID\nconst postId = $input.item.json.id;\n\n// Get new content from webhook body\nconst newContent = $('Webhook8').item.json.body.content || '';\nconst newMediaUrls = $('Webhook8').item.json.body.mediaUrls || [];\n\n// Get organization ID\nconst organizationId = $input.item.json.linkedin_organization_id;\n\n// Validation\nif (!shareUrn) {\n  throw new Error(`Could not extract LinkedIn share URN from social_id: ${socialId}`);\n}\n\nif (!accessToken) {\n  throw new Error('Access token not found in social account data');\n}\n\nif (!newContent) {\n  throw new Error('New content is required to edit the post');\n}\n\nif (!organizationId) {\n  throw new Error('Organization ID is required');\n}\n\n// Return the data needed for editing\nreturn {\n  shareUrn: shareUrn,\n  accessToken: accessToken,\n  postId: postId,\n  newContent: newContent,\n  mediaUrls: newMediaUrls,\n  organizationId: organizationId,\n  handle: $input.item.json.handle\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4688,
+        -4480
+      ],
+      "id": "1a632e5a-78de-4f0e-a26b-87b91d9411da",
+      "name": "Extract Edit Data"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Build the LinkedIn API update payload\nconst content = $input.item.json.newContent;\nconst mediaUrls = $input.item.json.mediaUrls || [];\nconst organizationId = $input.item.json.organizationId;\n\n// Build the specificContent object\nlet specificContent = {\n  \"com.linkedin.ugc.ShareContent\": {\n    \"shareCommentary\": {\n      \"text\": content\n    },\n    \"shareMediaCategory\": mediaUrls.length > 0 ? \"IMAGE\" : \"NONE\"\n  }\n};\n\n// Add media if provided\nif (mediaUrls.length > 0) {\n  specificContent[\"com.linkedin.ugc.ShareContent\"].media = mediaUrls.map(url => ({\n    \"status\": \"READY\",\n    \"media\": url,\n    \"title\": {\n      \"text\": \"Image\"\n    }\n  }));\n}\n\n// Build the full payload for LinkedIn API v2\nconst payload = {\n  \"patch\": {\n    \"$set\": {\n      \"specificContent\": specificContent,\n      \"text\": {\n        \"text\": content\n      }\n    }\n  }\n};\n\nreturn {\n  ...($input.item.json),\n  payload: payload\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4464,
+        -4480
+      ],
+      "id": "3302ec45-755e-46ab-9e1b-024bf51debf1",
+      "name": "Build Edit Payload"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.linkedin.com/v2/shares/{{ encodeURIComponent($json.shareUrn) }}",
+        "authentication": "[REDACTED]",
+        "genericAuthType": "[REDACTED]",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $json.accessToken }}"
+            },
+            {
+              "name": "X-Restli-Protocol-Version",
+              "value": "2.0.0"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "X-Restli-Method",
+              "value": "partial_update"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.payload) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -4240,
+        -4480
+      ],
+      "id": "19a1fcdd-82c3-42fe-aea3-59e8ffa2b45e",
+      "name": "Edit LinkedIn Post",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "content_calendar",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "keyValue": "={{ $('Extract Edit Data').item.json.postId }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -4016,
+        -4480
+      ],
+      "id": "8cdc9f45-d01d-4bee-b53a-d1d49430e3c8",
+      "name": "Update Post in Database",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "editpost2",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -5360,
+        -4480
+      ],
+      "id": "4d82c1ac-11d7-4677-a0bf-6f2433b4e9ed",
+      "name": "Webhook8",
+      "webhookId": "d9a1657b-e3d1-42a9-9f1a-f070b7fd3c0e",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "social_accounts",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "keyValue": "={{ $json.body.socialAccountId }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -5136,
+        -4576
+      ],
+      "id": "83bfa40d-beb4-40ac-8d34-a434914d2c4e",
+      "name": "Get Social Account",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "content_calendar",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "keyValue": "={{ $json.body.postId }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -5136,
+        -4384
+      ],
+      "id": "cd0004f4-9a2b-4963-a0e5-489e673fe464",
+      "name": "Get Post Details",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        -4912,
+        -4480
+      ],
+      "id": "3725df49-0ff4-41a4-b0e9-667ef43169b9",
+      "name": "Merge Post & Account Data"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"message\": \"LinkedIn post edited successfully\",\n  \"postId\": \"{{ $('Webhook8').item.json.body.postId }}\",\n  \"socialAccountId\": \"{{ $('Webhook8').item.json.body.socialAccountId }}\",\n  \"editedUrn\": \"{{ $('Extract Edit Data').item.json.shareUrn }}\",\n  \"newContent\": \"{{ $('Extract Edit Data').item.json.newContent }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        -3792,
+        -4480
+      ],
+      "id": "1d3ecce7-5b8a-493e-b0e7-688deff190ae",
+      "name": "Respond to Webhook4"
+    },
+    {
+      "parameters": {
+        "method": "DELETE",
+        "url": "=https://api.linkedin.com/v2/shares/{{ $json.shareUrn }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $json.accessToken }}"
+            },
+            {
+              "name": "X-Restli-Protocol-Version",
+              "value": "2.0.0"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -5360,
+        -4800
+      ],
+      "id": "606dc9ed-35b9-4c00-94e2-4acbb9e0b308",
+      "name": "Delete LinkedIn Post"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://pa.duhanashrah.ai/api/webhooks/send-message",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"agentId\": \"{{ $json.agent_id }}\",\n  \"to\": \"{{ $json.phone_number }}\",\n  \"message\": \"{{ $json.message }}\"\n}",
+        "options": {}
+      },
+      "id": "f2f41927-8f77-4ebe-aa19-d8e03e438f4e",
+      "name": "Send Selection Request1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -5136,
+        1408
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.item.json[0] || $input.item.json;\nconst phoneNumberStr = String(data.query.phone_number || '').replace(/\\+/g, '');\nconst phoneNumber = phoneNumberStr;\nconst messageText = data.query.message || '';\nconst contactName = data.query.contact_name || 'Unknown';\nconst conversationId = data.query.conversation_id || '';\nconst agentId = data.query.agent_id || '';\nconst userId = data.query.user_id || null;\n\nreturn [\n  {\n    json: {\n      phone_number: phoneNumber,\n      message: messageText,\n      contact_name: contactName,\n      conversation_id: conversationId,\n      agent_id: agentId,\n      user_id: userId\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -5136,
+        1824
+      ],
+      "id": "3148e96f-21cd-48e2-8eb1-056b27abd527",
+      "name": "Extract Input Data"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://pa.duhanashrah.ai/api/webhooks/send-message",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"agentId\": \"{{ $json.agent_id }}\",\n  \"to\": \"{{ $json.phone_number }}\",\n  \"message\": \"{{ $json.message }}\"\n}",
+        "options": {}
+      },
+      "id": "0a247b17-73a2-4aca-9416-20dd4b0f47e7",
+      "name": "Send WhatsApp Message",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -4912,
+        1824
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const apiResponse = $input.first().json;\nconst originalData = $('Extract Input Data').first().json;\n\nconst isSuccess = apiResponse.success === true || apiResponse.message?.toLowerCase().includes(\"success\");\n\nlet sentMessageId = null;\nif (apiResponse.data?.messageId) {\n  sentMessageId = apiResponse.data.messageId;\n} else if (apiResponse.data?.id) {\n  sentMessageId = apiResponse.data.id;\n} else if (apiResponse.messageId) {\n  sentMessageId = apiResponse.messageId;\n} else if (apiResponse.id) {\n  sentMessageId = apiResponse.id;\n} else {\n  sentMessageId = `MANUAL_${Date.now()}`;\n}\n\nreturn [{\n  json: {\n    success: isSuccess,\n    sent_message_id: sentMessageId,\n    original_data: originalData,\n    raw_response: apiResponse\n  }\n}];"
+      },
+      "id": "3ca625b5-4be5-4162-a421-bf7b3d4dc5b3",
+      "name": "Parse API Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4688,
+        1824
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const parseData = $input.first().json;\nconst originalData = parseData.original_data;\n\nconst senderPhone = String(originalData.conversation_id || '').replace(/@.*/, '').replace(/\\+/g, '');\nconst recipientPhone = String(originalData.phone_number).replace(/\\+/g, '');\nconst sentMessageId = parseData.sent_message_id;\nconst messageContent = originalData.message;\nconst recipientName = originalData.contact_name;\nconst agentId = originalData.agent_id;\nconst userId = originalData.user_id;\nconst conversationId = originalData.conversation_id;\n\nconst expiresAt = new Date(Date.now() + (48 * 60 * 60 * 1000)).toISOString();\n\nreturn [{\n  json: {\n    original_message_id: sentMessageId,\n    sender_phone: senderPhone,\n    recipient_phone: recipientPhone,\n    agent_id: agentId,\n    user_id: userId,\n    conversation_id: conversationId,\n    message_content: messageContent,\n    sent_at: new Date().toISOString(),\n    reply_received: false,\n    status: 'awaiting_reply',\n    expires_at: expiresAt,\n    recipient_name: recipientName\n  }\n}];"
+      },
+      "id": "fd0c9ace-2b1c-418e-a37f-9e43b5b2b3d6",
+      "name": "Prepare Tracking Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4240,
+        1728
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO message_threads (\n  original_message_id,\n  sender_phone,\n  recipient_phone,\n  agent_id,\n  user_id,\n  conversation_id,\n  message_content,\n  sent_at,\n  reply_received,\n  status,\n  expires_at\n)\nVALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)\nON CONFLICT (original_message_id) \nDO UPDATE SET\n  sent_at = EXCLUDED.sent_at\nRETURNING id, original_message_id;",
+        "options": {
+          "queryReplacement": "={{ [\n  $json.original_message_id,\n  $json.sender_phone,\n  $json.recipient_phone,\n  $json.agent_id,\n  $json.user_id,\n  $json.conversation_id,\n  $json.message_content,\n  $json.sent_at,\n  $json.reply_received,\n  $json.status,\n  $json.expires_at\n] }}"
+        }
+      },
+      "id": "e1f65a41-447e-459d-8bc6-d17cd507e8c9",
+      "name": "Insert Message Thread",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        -4016,
+        1728
+      ],
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "success-check",
+              "leftValue": "={{ $json.success }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "821951ca-5397-494d-8d1c-5f71a93484df",
+      "name": "Is Success?1",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -4464,
+        1824
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const trackingData = $('Prepare Tracking Data').first().json;\n\nconst recipientName = trackingData.recipient_name || 'Recipient';\nconst recipientPhone = trackingData.recipient_phone;\nconst messageText = trackingData.message_content;\nconst messageLength = messageText.length;\n\nconst successMessage = `✅ Message sent successfully to ${recipientName}!\n\n📱 Recipient: ${recipientName}\n📞 Phone: +${recipientPhone}\n📊 Length: ${messageLength} characters\n⏰ Sent at: ${new Date().toLocaleString('en-US', { timeZone: 'Asia/Karachi', hour12: true })}\n🔔 Reply tracking: Active (48 hours)`;\n\nreturn [\n  {\n    json: {\n      success: true,\n      message: successMessage,\n      details: {\n        recipient: recipientName,\n        phone: recipientPhone,\n        messageLength,\n        sentAt: new Date().toISOString(),\n        trackingEnabled: true\n      }\n    }\n  }\n];"
+      },
+      "id": "793001e5-5dbe-456d-a152-740fd427c97f",
+      "name": "Format Success1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3792,
+        1728
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const parseData = $('Parse API Response').first().json;\nconst originalData = parseData.original_data;\n\nconst errorMessage = `❌ Failed to send message to ${originalData.contact_name}\n\n🔍 Issue: Message delivery failed\n📱 Recipient: ${originalData.contact_name}\n⚠️ Error: ${parseData.raw_response?.message || 'Unknown error'}\n\n💡 Please verify the phone number and try again.`;\n\nreturn [{\n  json: {\n    success: false,\n    message: errorMessage,\n    details: {\n      recipient: originalData.contact_name,\n      phone: originalData.phone_number,\n      error: parseData.raw_response?.message || 'Unknown error'\n    }\n  }\n}];"
+      },
+      "id": "aaaa35fe-fecc-42e6-95b7-b5bdab153679",
+      "name": "Format Error1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4240,
+        1920
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.item.json[0] || $input.item.json;\nconst phoneNumberStr = String(data.query.phone_number || '').replace(/\\+/g, '');\nconst phoneNumber = phoneNumberStr;\nconst messageText = data.query.message || '';\nconst contactName = data.query.contact_name || 'Unknown';\nconst conversationId = data.query.conversation_id || '';\nconst agentId = data.query.agent_id || '';\nconst userId = data.query.user_id || null;\n\nreturn [\n  {\n    json: {\n      phone_number: phoneNumber,\n      message: messageText,\n      contact_name: contactName,\n      conversation_id: conversationId,\n      agent_id: agentId,\n      user_id: userId\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -5072,
+        2352
+      ],
+      "id": "40751a4f-beae-41ba-979c-000041571585",
+      "name": "Extract Input Data2"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://pa.duhanashrah.ai/api/webhooks/send-message",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"agentId\": \"{{ $json.agent_id }}\",\n  \"to\": \"{{ $json.phone_number }}\",\n  \"message\": \"{{ $json.message }}\"\n}",
+        "options": {}
+      },
+      "id": "11674e81-2f73-4534-82bd-1c7c246f415a",
+      "name": "Send WhatsApp Message2",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -4816,
+        2352
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const apiResponse = $input.first().json;\nconst originalData = $('Extract Input Data2').first().json;\n\nconst isSuccess = apiResponse.success === true || apiResponse.message?.toLowerCase().includes(\"success\");\n\nlet sentMessageId = null;\nif (apiResponse.data?.messageId) {\n  sentMessageId = apiResponse.data.messageId;\n} else if (apiResponse.data?.id) {\n  sentMessageId = apiResponse.data.id;\n} else if (apiResponse.messageId) {\n  sentMessageId = apiResponse.messageId;\n} else if (apiResponse.id) {\n  sentMessageId = apiResponse.id;\n} else {\n  sentMessageId = `MANUAL_${Date.now()}`;\n}\n\nreturn [{\n  json: {\n    success: isSuccess,\n    sent_message_id: sentMessageId,\n    original_data: originalData,\n    raw_response: apiResponse\n  }\n}];"
+      },
+      "id": "bb653124-70cd-4058-a4ff-7224543b67d6",
+      "name": "Parse API Response2",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4592,
+        2352
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const parseData = $input.first().json;\nconst originalData = parseData.original_data;\n\nconst senderPhone = String(originalData.conversation_id || '').replace(/@.*/, '').replace(/\\+/g, '');\nconst recipientPhone = String(originalData.phone_number).replace(/\\+/g, '');\nconst sentMessageId = parseData.sent_message_id;\nconst messageContent = originalData.message;\nconst recipientName = originalData.contact_name;\nconst agentId = originalData.agent_id;\nconst userId = originalData.user_id;\nconst conversationId = originalData.conversation_id;\n\nconst expiresAt = new Date(Date.now() + (48 * 60 * 60 * 1000)).toISOString();\n\nreturn [{\n  json: {\n    original_message_id: sentMessageId,\n    sender_phone: senderPhone,\n    recipient_phone: recipientPhone,\n    agent_id: agentId,\n    user_id: userId,\n    conversation_id: conversationId,\n    message_content: messageContent,\n    sent_at: new Date().toISOString(),\n    reply_received: false,\n    status: 'awaiting_reply',\n    expires_at: expiresAt,\n    recipient_name: recipientName\n  }\n}];"
+      },
+      "id": "8e13189d-694a-46e1-81bd-ce041ecd8e43",
+      "name": "Prepare Tracking Data2",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4128,
+        2256
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO message_threads (\n  original_message_id,\n  sender_phone,\n  recipient_phone,\n  agent_id,\n  user_id,\n  conversation_id,\n  message_content,\n  sent_at,\n  reply_received,\n  status,\n  expires_at\n)\nVALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)\nRETURNING id, original_message_id;",
+        "options": {
+          "queryReplacement": "={{ [\n  $json.original_message_id,\n  $json.sender_phone,\n  $json.recipient_phone,\n  $json.agent_id,\n  $json.user_id,\n  $json.conversation_id,\n  $json.message_content,\n  $json.sent_at,\n  $json.reply_received,\n  $json.status,\n  $json.expires_at\n] }}"
+        }
+      },
+      "id": "18d9938f-e4d3-4b45-b191-9fedc1157614",
+      "name": "Insert Message Thread2",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        -3904,
+        2256
+      ],
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "success-check",
+              "leftValue": "={{ $json.success }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "dff4ba55-3806-4426-b511-15bedc90a6cf",
+      "name": "Is Success?3",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -4352,
+        2352
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const trackingData = $('Prepare Tracking Data2').first().json;\n\nconst recipientName = trackingData.recipient_name || 'Recipient';\nconst recipientPhone = trackingData.recipient_phone;\nconst messageText = trackingData.message_content;\nconst messageLength = messageText.length;\n\nconst successMessage = `✅ Message sent successfully to ${recipientName}!\n\n📱 Recipient: ${recipientName}\n📞 Phone: +${recipientPhone}\n📊 Length: ${messageLength} characters\n⏰ Sent at: ${new Date().toLocaleString('en-US', { timeZone: 'Asia/Karachi', hour12: true })}\n🔔 Reply tracking: Active (48 hours)`;\n\nreturn [\n  {\n    json: {\n      success: true,\n      message: successMessage,\n      details: {\n        recipient: recipientName,\n        phone: recipientPhone,\n        messageLength,\n        sentAt: new Date().toISOString(),\n        trackingEnabled: true\n      }\n    }\n  }\n];"
+      },
+      "id": "d61e058d-d49d-4ef9-86a6-acdb86e7e52e",
+      "name": "Format Success3",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3680,
+        2256
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const parseData = $('Parse API Response2').first().json;\nconst originalData = parseData.original_data;\n\nconst errorMessage = `❌ Failed to send message to ${originalData.contact_name}\n\n🔍 Issue: Message delivery failed\n📱 Recipient: ${originalData.contact_name}\n⚠️ Error: ${parseData.raw_response?.message || 'Unknown error'}\n\n💡 Please verify the phone number and try again.`;\n\nreturn [{\n  json: {\n    success: false,\n    message: errorMessage,\n    details: {\n      recipient: originalData.contact_name,\n      phone: originalData.phone_number,\n      error: parseData.raw_response?.message || 'Unknown error'\n    }\n  }\n}];"
+      },
+      "id": "87f08868-a05c-48a2-a8a1-ec42ec44e768",
+      "name": "Format Error3",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4128,
+        2448
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.item.json[0] || $input.item.json;\nconst phoneNumberStr = String(data.query.phone_number || '').replace(/\\+/g, '');\nconst phoneNumber = phoneNumberStr;\nconst messageText = data.query.message || '';\nconst contactName = data.query.contact_name || 'Unknown';\nconst conversationId = data.query.conversation_id || '';\nconst agentId = data.query.agent_id || '';\nconst userId = data.query.user_id || null;\n\nreturn [\n  {\n    json: {\n      phone_number: phoneNumber,\n      message: messageText,\n      contact_name: contactName,\n      conversation_id: conversationId,\n      agent_id: agentId,\n      user_id: userId\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -5136,
+        2816
+      ],
+      "id": "649007c1-2d8c-4a80-954a-1ee294a82d2c",
+      "name": "Extract Input Data1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://pa.duhanashrah.ai/api/webhooks/send-message",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"agentId\": \"{{ $json.agent_id }}\",\n  \"to\": \"{{ $json.phone_number }}\",\n  \"message\": \"{{ $json.message }}\"\n}",
+        "options": {}
+      },
+      "id": "ce15d826-86ec-4f7b-8674-15ca6a1619bd",
+      "name": "Send WhatsApp Message1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -4880,
+        2816
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const apiResponse = $input.first().json;\nconst originalData = $('Extract Input Data1').first().json;\n\nconst isSuccess = apiResponse.success === true || apiResponse.message?.toLowerCase().includes(\"success\");\n\nlet sentMessageId = null;\nif (apiResponse.data?.messageId) {\n  sentMessageId = apiResponse.data.messageId;\n} else if (apiResponse.data?.id) {\n  sentMessageId = apiResponse.data.id;\n} else if (apiResponse.messageId) {\n  sentMessageId = apiResponse.messageId;\n} else if (apiResponse.id) {\n  sentMessageId = apiResponse.id;\n} else {\n  sentMessageId = `MANUAL_${Date.now()}`;\n}\n\nreturn [{\n  json: {\n    success: isSuccess,\n    sent_message_id: sentMessageId,\n    original_data: originalData,\n    raw_response: apiResponse\n  }\n}];"
+      },
+      "id": "e5f63c44-cf55-4585-8be2-32ab9bd9145d",
+      "name": "Parse API Response1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4656,
+        2816
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const parseData = $input.first().json;\nconst originalData = parseData.original_data;\n\nconst senderPhone = String(originalData.conversation_id || '').replace(/@.*/, '').replace(/\\+/g, '');\nconst recipientPhone = String(originalData.phone_number).replace(/\\+/g, '');\nconst sentMessageId = parseData.sent_message_id;\nconst messageContent = originalData.message;\nconst recipientName = originalData.contact_name;\nconst agentId = originalData.agent_id;\nconst conversationId = originalData.conversation_id;\n\nconst expiresAt = new Date(Date.now() + (48 * 60 * 60 * 1000)).toISOString();\n\nreturn [{\n  json: {\n    original_message_id: sentMessageId,\n    sender_phone: senderPhone,\n    recipient_phone: recipientPhone,\n    agent_id: agentId,\n    conversation_id: conversationId,\n    message_content: messageContent,\n    sent_at: new Date().toISOString(),\n    reply_received: false,\n    status: 'awaiting_reply',\n    expires_at: expiresAt,\n    recipient_name: recipientName\n  }\n}];"
+      },
+      "id": "cf236809-e90f-4afa-8f4c-deda2dd99896",
+      "name": "Prepare Tracking Data1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4192,
+        2720
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO message_threads (\n  original_message_id,\n  sender_phone,\n  recipient_phone,\n  agent_id,\n  conversation_id,\n  message_content,\n  sent_at,\n  reply_received,\n  status,\n  expires_at\n)\nVALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)\nRETURNING id, original_message_id;",
+        "options": {
+          "queryReplacement": "={{ [\n  $json.original_message_id,\n  $json.sender_phone,\n  $json.recipient_phone,\n  $json.agent_id,\n  $json.conversation_id,\n  $json.message_content,\n  $json.sent_at,\n  $json.reply_received,\n  $json.status,\n  $json.expires_at\n] }}"
+        }
+      },
+      "id": "527bacdd-78c9-42e2-91e6-ce741b7f9f05",
+      "name": "Insert Message Thread1",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        -3968,
+        2720
+      ],
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "success-check",
+              "leftValue": "={{ $json.success }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "f45b62e7-73fe-4a1c-995f-417ba9b3a07d",
+      "name": "Is Success?2",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -4416,
+        2816
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const trackingData = $('Prepare Tracking Data1').first().json;\n\nconst recipientName = trackingData.recipient_name || 'Recipient';\nconst recipientPhone = trackingData.recipient_phone;\nconst messageText = trackingData.message_content;\nconst messageLength = messageText.length;\n\nconst successMessage = `✅ Message sent successfully to ${recipientName}!\n\n📱 Recipient: ${recipientName}\n📞 Phone: +${recipientPhone}\n📊 Length: ${messageLength} characters\n⏰ Sent at: ${new Date().toLocaleString('en-US', { timeZone: 'Asia/Karachi', hour12: true })}\n🔔 Reply tracking: Active (48 hours)`;\n\nreturn [\n  {\n    json: {\n      success: true,\n      message: successMessage,\n      details: {\n        recipient: recipientName,\n        phone: recipientPhone,\n        messageLength,\n        sentAt: new Date().toISOString(),\n        trackingEnabled: true\n      }\n    }\n  }\n];"
+      },
+      "id": "396c1253-99f6-4cc5-901e-5936fab7505a",
+      "name": "Format Success2",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3744,
+        2720
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const parseData = $('Parse API Response1').first().json;\nconst originalData = parseData.original_data;\n\nconst errorMessage = `❌ Failed to send message to ${originalData.contact_name}\n\n🔍 Issue: Message delivery failed\n📱 Recipient: ${originalData.contact_name}\n⚠️ Error: ${parseData.raw_response?.message || 'Unknown error'}\n\n💡 Please verify the phone number and try again.`;\n\nreturn [{\n  json: {\n    success: false,\n    message: errorMessage,\n    details: {\n      recipient: originalData.contact_name,\n      phone: originalData.phone_number,\n      error: parseData.raw_response?.message || 'Unknown error'\n    }\n  }\n}];"
+      },
+      "id": "8fbc5437-cb22-455c-ab3f-dc65b4a6ee47",
+      "name": "Format Error2",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4192,
+        2912
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO message_log (\n  message_id,\n  sender_phone,\n  recipient_phone,\n  agent_id,\n  conversation_id,\n  message_text,\n  message_type,\n  direction,\n  timestamp,\n  processed\n)\nVALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW(), $9)\nON CONFLICT (message_id) DO NOTHING\nRETURNING message_id;",
+        "options": {
+          "queryReplacement": "={{ [\n  $('Parse API Response3').item.json.sent_message_id,\n  $('Extract Input Data3').item.json.conversation_id.replace(/@.*/, '').replace(/\\\\+/g, ''),\n  $('Extract Input Data3').item.json.phone_number,\n  $('Extract Input Data3').item.json.agent_id,\n  $('Extract Input Data3').item.json.conversation_id,\n  $('Extract Input Data3').item.json.message,\n  'text',\n  'outbound',\n  true\n] }}"
+        }
+      },
+      "id": "c5f6046c-e8b4-4f2d-ab7a-dd61730c8e41",
+      "name": "Log to Message Log",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        -4416,
+        3152
+      ],
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.item.json[0] || $input.item.json;\nconst phoneNumberStr = String(data.query.phone_number || '').replace(/\\+/g, '');\nconst phoneNumber = phoneNumberStr;\nconst messageText = data.query.message || '';\nconst contactName = data.query.contact_name || 'Unknown';\nconst conversationId = data.query.conversation_id || '';\nconst agentId = data.query.agent_id || '';\nconst userId = data.query.user_id || null;\n\nreturn [\n  {\n    json: {\n      phone_number: phoneNumber,\n      message: messageText,\n      contact_name: contactName,\n      conversation_id: conversationId,\n      agent_id: agentId,\n      user_id: userId\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -5184,
+        3312
+      ],
+      "id": "3cc8b913-b39f-4b76-84f9-898b420a4100",
+      "name": "Extract Input Data3"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://pa.duhanashrah.ai/api/webhooks/send-message",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"agentId\": \"{{ $json.agent_id }}\",\n  \"to\": \"{{ $json.phone_number }}\",\n  \"message\": \"{{ $json.message }}\"\n}",
+        "options": {}
+      },
+      "id": "f4562d84-e474-4330-9bd6-65b869e25fbc",
+      "name": "Send WhatsApp Message3",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -4928,
+        3312
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const apiResponse = $input.first().json;\nconst originalData = $('Extract Input Data3').first().json;\n\nconst isSuccess = apiResponse.success === true || apiResponse.message?.toLowerCase().includes(\"success\");\n\nlet sentMessageId = null;\nif (apiResponse.data?.messageId) {\n  sentMessageId = apiResponse.data.messageId;\n} else if (apiResponse.data?.id) {\n  sentMessageId = apiResponse.data.id;\n} else if (apiResponse.messageId) {\n  sentMessageId = apiResponse.messageId;\n} else if (apiResponse.id) {\n  sentMessageId = apiResponse.id;\n} else {\n  sentMessageId = `MANUAL_${Date.now()}`;\n}\n\nreturn [{\n  json: {\n    success: isSuccess,\n    sent_message_id: sentMessageId,\n    original_data: originalData,\n    raw_response: apiResponse\n  }\n}];"
+      },
+      "id": "7e8895df-8219-4059-93b2-4d0545f9c3b1",
+      "name": "Parse API Response3",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4704,
+        3312
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const parseData = $('Parse API Response3').first().json;\nconst originalData = parseData.original_data;\n\nconst senderPhone = String(originalData.conversation_id || '').replace(/@.*/, '').replace(/\\+/g, '');\nconst recipientPhone = String(originalData.phone_number).replace(/\\+/g, '');\nconst sentMessageId = parseData.sent_message_id;\nconst messageContent = originalData.message;\nconst recipientName = originalData.contact_name;\nconst agentId = originalData.agent_id;\nconst userId = originalData.user_id || originalData.agent_id || 'system';\nconst conversationId = originalData.conversation_id;\n\nconst expiresAt = new Date(Date.now() + (48 * 60 * 60 * 1000)).toISOString();\n\nreturn [{\n  json: {\n    original_message_id: sentMessageId,\n    sender_phone: senderPhone,\n    recipient_phone: recipientPhone,\n    agent_id: agentId,\n    user_id: userId,\n    conversation_id: conversationId,\n    message_content: messageContent,\n    sent_at: new Date().toISOString(),\n    reply_received: false,\n    status: 'awaiting_reply',\n    expires_at: expiresAt,\n    recipient_name: recipientName\n  }\n}];"
+      },
+      "id": "58f56273-8097-46ad-90e3-3dd5f5003246",
+      "name": "Prepare Tracking Data3",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4240,
+        3216
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO message_threads (\n  original_message_id,\n  sender_phone,\n  recipient_phone,\n  agent_id,\n  user_id,\n  conversation_id,\n  message_content,\n  sent_at,\n  reply_received,\n  status,\n  expires_at\n)\nVALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)\nRETURNING id, original_message_id;",
+        "options": {
+          "queryReplacement": "={{ [\n  $json.original_message_id,\n  $json.sender_phone,\n  $json.recipient_phone,\n  $json.agent_id,\n  $json.user_id,\n  $json.conversation_id,\n  $json.message_content,\n  $json.sent_at,\n  $json.reply_received,\n  $json.status,\n  $json.expires_at\n] }}"
+        }
+      },
+      "id": "0dbb6d0f-5048-4b7c-8cee-0e68a5bc766f",
+      "name": "Insert Message Thread3",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        -4016,
+        3216
+      ],
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "success-check",
+              "leftValue": "={{ $json.success }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "97104d38-58f3-4c39-bbe4-3426504feb44",
+      "name": "Is Success?4",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -4464,
+        3312
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const trackingData = $('Prepare Tracking Data3').first().json;\n\nconst recipientName = trackingData.recipient_name || 'Recipient';\nconst recipientPhone = trackingData.recipient_phone;\nconst messageText = trackingData.message_content;\nconst messageLength = messageText.length;\n\nconst successMessage = `✅ Message sent successfully to ${recipientName}!\n\n📱 Recipient: ${recipientName}\n📞 Phone: +${recipientPhone}\n📊 Length: ${messageLength} characters\n⏰ Sent at: ${new Date().toLocaleString('en-US', { timeZone: 'Asia/Karachi', hour12: true })}\n🔔 Reply tracking: Active (48 hours)`;\n\nreturn [\n  {\n    json: {\n      success: true,\n      message: successMessage,\n      details: {\n        recipient: recipientName,\n        phone: recipientPhone,\n        messageLength,\n        sentAt: new Date().toISOString(),\n        trackingEnabled: true\n      }\n    }\n  }\n];"
+      },
+      "id": "66b43f82-c530-4811-9bfc-c0a24ab5e686",
+      "name": "Format Success4",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3792,
+        3216
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const parseData = $('Parse API Response3').first().json;\nconst originalData = parseData.original_data;\n\nconst errorMessage = `❌ Failed to send message to ${originalData.contact_name}\n\n🔍 Issue: Message delivery failed\n📱 Recipient: ${originalData.contact_name}\n⚠️ Error: ${parseData.raw_response?.message || 'Unknown error'}\n\n💡 Please verify the phone number and try again.`;\n\nreturn [{\n  json: {\n    success: false,\n    message: errorMessage,\n    details: {\n      recipient: originalData.contact_name,\n      phone: originalData.phone_number,\n      error: parseData.raw_response?.message || 'Unknown error'\n    }\n  }\n}];"
+      },
+      "id": "007095f3-55af-4fec-b9e3-df5063091eed",
+      "name": "Format Error4",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4240,
+        3408
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO message_log (\n  message_id,\n  conversation_id,\n  sender_phone,\n  message_text,\n  message_type,\n  agent_id,\n  user_id,\n  processed,\n  received_at\n)\nVALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())\nON CONFLICT (message_id) DO NOTHING\nRETURNING message_id;",
+        "options": {
+          "queryReplacement": "={{ [\n  $('Parse API Response4').item.json.sent_message_id,\n  $('Extract Input Data4').item.json.conversation_id,\n  $('Extract Input Data4').item.json.conversation_id.replace(/@.*/, '').replace(/\\\\+/g, ''),\n  $('Extract Input Data4').item.json.message,\n  'TEXT',\n  $('Extract Input Data4').item.json.agent_id,\n  $('Extract Input Data4').item.json.user_id || $('Extract Input Data4').item.json.agent_id,\n  true\n] }}"
+        }
+      },
+      "id": "afdd09ba-e315-455a-bddc-29ecd7add9a9",
+      "name": "Log to Message Log1",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        -4128,
+        3920
+      ],
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.item.json[0] || $input.item.json;\nconst phoneNumberStr = String(data.query.phone_number || '').replace(/\\+/g, '');\nconst phoneNumber = phoneNumberStr;\nconst messageText = data.query.message || '';\nconst contactName = data.query.contact_name || 'Unknown';\nconst conversationId = data.query.conversation_id || '';\nconst agentId = data.query.agent_id || '';\nconst userId = data.query.user_id || null;\n\nreturn [\n  {\n    json: {\n      phone_number: phoneNumber,\n      message: messageText,\n      contact_name: contactName,\n      conversation_id: conversationId,\n      agent_id: agentId,\n      user_id: userId\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -5168,
+        4000
+      ],
+      "id": "b7a72ced-b38b-4c0f-9e23-790413cb560c",
+      "name": "Extract Input Data4"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://pa.duhanashrah.ai/api/webhooks/send-message",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"agentId\": \"{{ $json.agent_id }}\",\n  \"to\": \"{{ $json.phone_number }}\",\n  \"message\": \"{{ $json.message }}\"\n}",
+        "options": {}
+      },
+      "id": "168f3017-c37f-46c2-9244-7e346aeb0602",
+      "name": "Send WhatsApp Message4",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -4912,
+        4000
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const apiResponse = $input.first().json;\nconst originalData = $('Extract Input Data4').first().json;\n\nconst isSuccess = apiResponse.success === true || apiResponse.message?.toLowerCase().includes(\"success\");\n\nlet sentMessageId = null;\nif (apiResponse.data?.messageId) {\n  sentMessageId = apiResponse.data.messageId;\n} else if (apiResponse.data?.id) {\n  sentMessageId = apiResponse.data.id;\n} else if (apiResponse.messageId) {\n  sentMessageId = apiResponse.messageId;\n} else if (apiResponse.id) {\n  sentMessageId = apiResponse.id;\n} else {\n  sentMessageId = `MANUAL_${Date.now()}`;\n}\n\nreturn [{\n  json: {\n    success: isSuccess,\n    sent_message_id: sentMessageId,\n    original_data: originalData,\n    raw_response: apiResponse\n  }\n}];"
+      },
+      "id": "c6ffb883-91c5-42fb-a318-f1489f4da4a4",
+      "name": "Parse API Response4",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4688,
+        4000
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const parseData = $('Parse API Response4').first().json;\nconst originalData = parseData.original_data;\n\nconst senderPhone = String(originalData.conversation_id || '').replace(/@.*/, '').replace(/\\+/g, '');\nconst recipientPhone = String(originalData.phone_number).replace(/\\+/g, '');\nconst sentMessageId = parseData.sent_message_id;\nconst messageContent = originalData.message;\nconst recipientName = originalData.contact_name;\nconst agentId = originalData.agent_id;\nconst userId = originalData.user_id || originalData.agent_id || 'system';\nconst conversationId = originalData.conversation_id;\n\nconst expiresAt = new Date(Date.now() + (48 * 60 * 60 * 1000)).toISOString();\n\nreturn [{\n  json: {\n    original_message_id: sentMessageId,\n    sender_phone: senderPhone,\n    recipient_phone: recipientPhone,\n    agent_id: agentId,\n    user_id: userId,\n    conversation_id: conversationId,\n    message_content: messageContent,\n    sent_at: new Date().toISOString(),\n    reply_received: false,\n    status: 'awaiting_reply',\n    expires_at: expiresAt,\n    recipient_name: recipientName\n  }\n}];"
+      },
+      "id": "cccf2e5b-4aec-4760-9062-febc75bf7825",
+      "name": "Prepare Tracking Data4",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3904,
+        3920
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO message_threads (\n  original_message_id,\n  sender_phone,\n  recipient_phone,\n  agent_id,\n  user_id,\n  conversation_id,\n  message_content,\n  sent_at,\n  reply_received,\n  status,\n  expires_at\n)\nVALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)\nRETURNING id, original_message_id;",
+        "options": {
+          "queryReplacement": "={{ [\n  $json.original_message_id,\n  $json.sender_phone,\n  $json.recipient_phone,\n  $json.agent_id,\n  $json.user_id,\n  $json.conversation_id,\n  $json.message_content,\n  $json.sent_at,\n  $json.reply_received,\n  $json.status,\n  $json.expires_at\n] }}"
+        }
+      },
+      "id": "b7c048f4-8db7-42ec-8f43-6389ba5cdcb5",
+      "name": "Insert Message Thread4",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        -3680,
+        3920
+      ],
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "success-check",
+              "leftValue": "={{ $json.success }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "81e18791-a81a-4f21-89b2-10786487ab7d",
+      "name": "Is Success?5",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -4448,
+        4000
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const trackingData = $('Prepare Tracking Data4').first().json;\n\nconst recipientName = trackingData.recipient_name || 'Recipient';\nconst recipientPhone = trackingData.recipient_phone;\nconst messageText = trackingData.message_content;\nconst messageLength = messageText.length;\n\nconst successMessage = `✅ Message sent successfully to ${recipientName}!\n\n📱 Recipient: ${recipientName}\n📞 Phone: +${recipientPhone}\n📊 Length: ${messageLength} characters\n⏰ Sent at: ${new Date().toLocaleString('en-US', { timeZone: 'Asia/Karachi', hour12: true })}\n🔔 Reply tracking: Active (48 hours)`;\n\nreturn [\n  {\n    json: {\n      success: true,\n      message: successMessage,\n      details: {\n        recipient: recipientName,\n        phone: recipientPhone,\n        messageLength,\n        sentAt: new Date().toISOString(),\n        trackingEnabled: true\n      }\n    }\n  }\n];"
+      },
+      "id": "294c1247-413b-4960-9bf8-32ae5d9ebf07",
+      "name": "Format Success5",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3120,
+        3920
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const parseData = $('Parse API Response4').first().json;\nconst originalData = parseData.original_data;\n\nconst errorMessage = `❌ Failed to send message to ${originalData.contact_name}\n\n🔍 Issue: Message delivery failed\n📱 Recipient: ${originalData.contact_name}\n⚠️ Error: ${parseData.raw_response?.message || 'Unknown error'}\n\n💡 Please verify the phone number and try again.`;\n\nreturn [{\n  json: {\n    success: false,\n    message: errorMessage,\n    details: {\n      recipient: originalData.contact_name,\n      phone: originalData.phone_number,\n      error: parseData.raw_response?.message || 'Unknown error'\n    }\n  }\n}];"
+      },
+      "id": "e48a636f-0d65-4186-8f32-0be9e1c954bd",
+      "name": "Format Error5",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4032,
+        4224
+      ]
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "sent_messages",
+          "mode": "list",
+          "cachedResultName": "sent_messages"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "sender_phone": "={{ $('Prepare Tracking Data4').item.json.sender_phone }}",
+            "recipient_phone": "={{ $('Prepare Tracking Data4').item.json.recipient_phone }}",
+            "message_text": "={{ $('Extract Input Data4').item.json.message }}",
+            "status": "sent",
+            "agent_id": "={{ $('Extract Input Data4').item.json.agent_id }}",
+            "recipient_name": "={{ $('Prepare Tracking Data4').item.json.recipient_name }}",
+            "user_id": "={{ $('Prepare Tracking Data4').item.json.user_id }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "sender_phone",
+              "displayName": "sender_phone",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "recipient_phone",
+              "displayName": "recipient_phone",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "message_text",
+              "displayName": "message_text",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "message_type",
+              "displayName": "message_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "sent_at",
+              "displayName": "sent_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "delivered_at",
+              "displayName": "delivered_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "read_at",
+              "displayName": "read_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "agent_id",
+              "displayName": "agent_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "sender_name",
+              "displayName": "sender_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "agent_name",
+              "displayName": "agent_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "recipient_name",
+              "displayName": "recipient_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ai_response",
+              "displayName": "ai_response",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "user_id",
+              "displayName": "user_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -3424,
+        3920
+      ],
+      "id": "b9b121bf-6600-433a-95c1-12f2d1d49ccc",
+      "name": "send message db update",
+      "credentials": "[REDACTED]"
+    }
+  ],
+  "connections": {
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Extract Input Data4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Response": {
+      "main": [
+        [
+          {
+            "node": "Is Success?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Success?": {
+      "main": [
+        [
+          {
+            "node": "Format Success",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Format Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Send Selection Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook2": {
+      "main": [
+        [
+          {
+            "node": "Get a row",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get Main content",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get Post Content1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get Post Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Page Access Token": "[REDACTED]",
+    "Merge Results": {
+      "main": [
+        []
+      ]
+    },
+    "Update Post Status": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Main content": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Check Platform": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Get Page Access Token",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Object get": {
+      "main": [
+        [
+          {
+            "node": "Post Video/Reel to Facebook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a row": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Check Platform",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Post Photo to Facebook1": {
+      "main": [
+        [
+          {
+            "node": "Update Post Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Media Type": {
+      "main": [
+        [
+          {
+            "node": "Object get",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Object get1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Post Video/Reel to Facebook": {
+      "main": [
+        [
+          {
+            "node": "Merge Results",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Update Post Status1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Object get1": {
+      "main": [
+        [
+          {
+            "node": "Post Photo to Facebook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Post Status1": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook - Receive Request": {
+      "main": [
+        []
+      ]
+    },
+    "Get Post Content1": {
+      "main": [
+        [
+          {
+            "node": "Get Page Access Token2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Page Access Token2": "[REDACTED]",
+    "Is Video?1": {
+      "main": [
+        [
+          {
+            "node": "Create Video Container1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create Image Container1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Image Container1": {
+      "main": [
+        [
+          {
+            "node": "Publish to Instagram1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Video Container1": {
+      "main": [
+        [
+          {
+            "node": "Check Video Status1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Video Status1": {
+      "main": [
+        [
+          {
+            "node": "Is Processing Complete?1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Processing Complete?1": {
+      "main": [
+        [
+          {
+            "node": "Publish to Instagram1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait 5 Seconds1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 5 Seconds1": {
+      "main": [
+        [
+          {
+            "node": "Check Video Status1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Publish to Instagram1": {
+      "main": [
+        [
+          {
+            "node": "Update Post Status3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Post Status3": {
+      "main": [
+        [
+          {
+            "node": "Respond Success1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook - TikTok Post": {
+      "main": [
+        []
+      ]
+    },
+    "Get Post Content": {
+      "main": [
+        [
+          {
+            "node": "TikTok Access Token",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "TikTok Access Token1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "TikTok Authorization Token",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "1. Initialize Video Upload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Video1": {
+      "main": [
+        []
+      ]
+    },
+    "Start Auth": "[REDACTED]",
+    "Generate Auth URL": "[REDACTED]",
+    "Callback Webhook": {
+      "main": [
+        []
+      ]
+    },
+    "Initialize Upload": {
+      "main": [
+        [
+          {
+            "node": "Upload Video",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload Video": {
+      "main": [
+        [
+          {
+            "node": "Check Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook1": {
+      "main": [
+        []
+      ]
+    },
+    "TikTok Access Token": "[REDACTED]",
+    "Download Video": {
+      "main": [
+        [
+          {
+            "node": "Initiate Upload",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "TikTok - Initiate Video Upload1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "TikTok - Initiate Video Upload3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Initiate Upload": {
+      "main": [
+        [
+          {
+            "node": "Upload Video File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload Video File": {
+      "main": [
+        [
+          {
+            "node": "Check Upload Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook - Receive Auth Code": "[REDACTED]",
+    "Exchange Code for Token": "[REDACTED]",
+    "1. Initialize Video Upload": {
+      "main": [
+        [
+          {
+            "node": "2. Upload Video Chunk",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "2. Upload Video Chunk": {
+      "main": [
+        [
+          {
+            "node": "3. Check Upload Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook7": {
+      "main": [
+        [
+          {
+            "node": "Get Social Account4",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get Post Details5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Social Account4": {
+      "main": [
+        [
+          {
+            "node": "Merge Post & Account Data4",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Get Post Details5": {
+      "main": [
+        [
+          {
+            "node": "Merge Post & Account Data4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Post & Account Data4": {
+      "main": [
+        [
+          {
+            "node": "Extract Delete Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Delete Data": {
+      "main": [
+        [
+          {
+            "node": "Delete LinkedIn Post3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete LinkedIn Post3": {
+      "main": [
+        [
+          {
+            "node": "Update Post Status to Deleted1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Post Status to Deleted1": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Edit Data": {
+      "main": [
+        [
+          {
+            "node": "Build Edit Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Edit Payload": {
+      "main": [
+        [
+          {
+            "node": "Edit LinkedIn Post",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit LinkedIn Post": {
+      "main": [
+        [
+          {
+            "node": "Update Post in Database",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Post in Database": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook8": {
+      "main": [
+        [
+          {
+            "node": "Get Social Account",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get Post Details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Social Account": {
+      "main": [
+        [
+          {
+            "node": "Merge Post & Account Data",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Get Post Details": {
+      "main": [
+        [
+          {
+            "node": "Merge Post & Account Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Post & Account Data": {
+      "main": [
+        [
+          {
+            "node": "Extract Edit Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Selection Request1": {
+      "main": [
+        [
+          {
+            "node": "Parse Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Input Data": {
+      "main": [
+        [
+          {
+            "node": "Send WhatsApp Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send WhatsApp Message": {
+      "main": [
+        [
+          {
+            "node": "Parse API Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse API Response": {
+      "main": [
+        [
+          {
+            "node": "Is Success?1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Tracking Data": {
+      "main": [
+        [
+          {
+            "node": "Insert Message Thread",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert Message Thread": {
+      "main": [
+        [
+          {
+            "node": "Format Success1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Success?1": {
+      "main": [
+        [
+          {
+            "node": "Prepare Tracking Data",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Format Error1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Input Data2": {
+      "main": [
+        [
+          {
+            "node": "Send WhatsApp Message2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send WhatsApp Message2": {
+      "main": [
+        [
+          {
+            "node": "Parse API Response2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse API Response2": {
+      "main": [
+        [
+          {
+            "node": "Is Success?3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Tracking Data2": {
+      "main": [
+        [
+          {
+            "node": "Insert Message Thread2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert Message Thread2": {
+      "main": [
+        [
+          {
+            "node": "Format Success3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Success?3": {
+      "main": [
+        [
+          {
+            "node": "Prepare Tracking Data2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Format Error3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Input Data1": {
+      "main": [
+        [
+          {
+            "node": "Send WhatsApp Message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send WhatsApp Message1": {
+      "main": [
+        [
+          {
+            "node": "Parse API Response1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse API Response1": {
+      "main": [
+        [
+          {
+            "node": "Is Success?2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Tracking Data1": {
+      "main": [
+        [
+          {
+            "node": "Insert Message Thread1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert Message Thread1": {
+      "main": [
+        [
+          {
+            "node": "Format Success2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Success?2": {
+      "main": [
+        [
+          {
+            "node": "Prepare Tracking Data1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Format Error2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log to Message Log": {
+      "main": [
+        [
+          {
+            "node": "Prepare Tracking Data3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Input Data3": {
+      "main": [
+        [
+          {
+            "node": "Send WhatsApp Message3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send WhatsApp Message3": {
+      "main": [
+        [
+          {
+            "node": "Parse API Response3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse API Response3": {
+      "main": [
+        [
+          {
+            "node": "Is Success?4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Tracking Data3": {
+      "main": [
+        [
+          {
+            "node": "Insert Message Thread3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert Message Thread3": {
+      "main": [
+        [
+          {
+            "node": "Format Success4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Success?4": {
+      "main": [
+        [
+          {
+            "node": "Log to Message Log",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Format Error4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log to Message Log1": {
+      "main": [
+        [
+          {
+            "node": "Prepare Tracking Data4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Input Data4": {
+      "main": [
+        [
+          {
+            "node": "Send WhatsApp Message4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send WhatsApp Message4": {
+      "main": [
+        [
+          {
+            "node": "Parse API Response4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse API Response4": {
+      "main": [
+        [
+          {
+            "node": "Is Success?5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Tracking Data4": {
+      "main": [
+        [
+          {
+            "node": "Insert Message Thread4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert Message Thread4": {
+      "main": [
+        [
+          {
+            "node": "send message db update",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Success?5": {
+      "main": [
+        [
+          {
+            "node": "Log to Message Log1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Format Error5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "send message db update": {
+      "main": [
+        [
+          {
+            "node": "Format Success5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "triggerCount": 7,
+  "tags": [
+    {
+      "updatedAt": "2025-10-28T07:41:35.810Z",
+      "createdAt": "2025-10-28T07:41:35.810Z",
+      "id": "Bjds4VMsUOfAftkN",
+      "name": "Abdul Wasay"
+    },
+    {
+      "updatedAt": "2025-10-24T04:04:28.048Z",
+      "createdAt": "2025-10-24T04:04:28.048Z",
+      "id": "SgbCkdz8ViP8OAzg",
+      "name": "SamCliff"
+    }
+  ]
+}

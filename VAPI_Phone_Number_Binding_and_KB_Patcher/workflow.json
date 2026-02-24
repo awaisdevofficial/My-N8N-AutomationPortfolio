@@ -1,0 +1,827 @@
+{
+  "updatedAt": "2026-02-10T16:03:33.057Z",
+  "createdAt": "2026-01-22T20:38:46.788Z",
+  "id": "v2aVgz8txvZJerq5",
+  "name": "vapi Patch",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -304,
+        16
+      ],
+      "id": "e3c54019-4728-4ca2-8dc6-85b59f2d7dbf",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://api.vapi.ai/assistant/{{ $json.id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": {\n    \"provider\": \"{{ $json.model.provider }}\",\n    \"model\": \"{{ $json.model.model }}\",\n    \"toolIds\": [\n      \"2c5b0c45-9e1b-4ef2-8e9f-acf60ab8a729\"\n    ]\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        2528,
+        0
+      ],
+      "id": "659f0253-dc58-41a7-a6cd-4ce6cf5987dc",
+      "name": "HTTP Request2",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "batchSize": 10,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        720,
+        16
+      ],
+      "id": "1a005256-17fa-456d-b5c3-42b130c25978",
+      "name": "Loop Over Items1"
+    },
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "value": "3LK7FfwS5zeqREhu",
+          "mode": "list",
+          "cachedResultName": "Error Vapi Patch",
+          "cachedResultUrl": "/projects/4c8dNr3COizlrO9M/datatables/3LK7FfwS5zeqREhu"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "error_id": "={{ $json.id }}"
+          },
+          "matchingColumns": [
+            "error_id"
+          ],
+          "schema": [
+            {
+              "id": "error_id",
+              "displayName": "error_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        -288,
+        1024
+      ],
+      "id": "b89ce17a-cada-4988-a235-fa797afa5472",
+      "name": "Insert row2"
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://api.vapi.ai/assistant/{{ $json.id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"transcriber\": {\n    \"provider\": \"deepgram\",\n    \"model\": \"nova-2\"\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        2272,
+        16
+      ],
+      "id": "0028acca-beee-4db1-b456-810fa86d5966",
+      "name": "HTTP Request5",
+      "executeOnce": false,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.vapi.ai/assistant/{{ $json.error_id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1152,
+        32
+      ],
+      "id": "131965eb-31eb-46a7-af98-aa4acb052438",
+      "name": "HTTP Request6",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "3LK7FfwS5zeqREhu",
+          "mode": "list",
+          "cachedResultName": "Error Vapi Patch",
+          "cachedResultUrl": "/projects/4c8dNr3COizlrO9M/datatables/3LK7FfwS5zeqREhu"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "condition": "lte",
+              "keyValue": "156"
+            }
+          ]
+        },
+        "returnAll": true
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        320,
+        16
+      ],
+      "id": "965c1d7c-2b0f-491b-8515-c67fedf771a2",
+      "name": "Get row(s)1"
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://api.vapi.ai/assistant/{{ $json.id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"voice\": {\n    \"provider\": \"{{ $json.voice.provider }}\",\n    \"voiceId\": \"Savannah\"\n  }\n} ",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1856,
+        16
+      ],
+      "id": "5f78e21e-03df-4cf5-b919-54da1979a693",
+      "name": "HTTP Request7",
+      "executeOnce": false,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "deleteRows",
+        "dataTableId": {
+          "__rl": true,
+          "value": "3LK7FfwS5zeqREhu",
+          "mode": "list",
+          "cachedResultName": "Error Vapi Patch",
+          "cachedResultUrl": "/projects/4c8dNr3COizlrO9M/datatables/3LK7FfwS5zeqREhu"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "error_id",
+              "keyValue": "={{ $json.id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        2928,
+        -16
+      ],
+      "id": "67c77c19-b83f-4f08-99a7-08c5ffcc5d9d",
+      "name": "Delete row(s)1"
+    },
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "value": "GTup8BAPxp7ui9ar",
+          "mode": "list",
+          "cachedResultName": "Error Assistant",
+          "cachedResultUrl": "/projects/4c8dNr3COizlrO9M/datatables/GTup8BAPxp7ui9ar"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Assistant_id": "={{ $json.id }}"
+          },
+          "matchingColumns": [
+            "Assistant_id"
+          ],
+          "schema": [
+            {
+              "id": "Assistant_id",
+              "displayName": "Assistant_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        3056,
+        544
+      ],
+      "id": "06795284-2af3-42ef-893f-f3142da8886a",
+      "name": "Insert row3"
+    },
+    {
+      "parameters": {
+        "amount": 2,
+        "unit": "minutes"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1440,
+        256
+      ],
+      "id": "d59ca573-e3fa-4747-80d4-1daa1e3812a4",
+      "name": "Wait1",
+      "webhookId": "69878f87-f89a-42a0-82fb-b25d241616d1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "09fe3e03-0e48-426e-8dc5-356b00802bf2",
+              "leftValue": "={{ $json.voice.provider }}",
+              "rightValue": "vapi",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1440,
+        0
+      ],
+      "id": "09bc5b9b-0227-4b6b-9c81-8f8e7fe094a4",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "value": "U08pwRtw2QqkhI2q",
+          "mode": "list",
+          "cachedResultName": "Wrong Provider",
+          "cachedResultUrl": "/projects/4c8dNr3COizlrO9M/datatables/U08pwRtw2QqkhI2q"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "assist_id": "={{ $json.id }}"
+          },
+          "matchingColumns": [
+            "assist_id"
+          ],
+          "schema": [
+            {
+              "id": "assist_id",
+              "displayName": "assist_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        1888,
+        368
+      ],
+      "id": "a9312ebc-453b-4ae0-8cf4-27caa10b5d6b",
+      "name": "Insert row"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.vapi.ai/phone-number",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "number",
+              "value": "+15550101234"
+            },
+            {
+              "name": "provider",
+              "value": "twilio"
+            },
+            {
+              "name": "twilioAccountSid",
+              "value": "YOUR_TWILIO_ACCOUNT_SID"
+            },
+            {
+              "name": "twilioAuthToken",
+              "value": "YOUR_TWILIO_AUTH_TOKEN"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1216,
+        1056
+      ],
+      "id": "0fb4a107-b9cb-44ca-923d-28cd36813cdf",
+      "name": "twilio_number_import"
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "https://api.vapi.ai/phone-number/YOUR_IMPORTED_PHONE_NUMBER_ID",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "assistantId",
+              "value": "YOUR_ASSISTANT_ID"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1200,
+        1328
+      ],
+      "id": "e31b1d9b-0246-4af1-a797-1c14aa9f78fc",
+      "name": "vapi_number_binding"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.vapi.ai/phone-number",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "number",
+              "value": "+15550105678"
+            },
+            {
+              "name": "provider",
+              "value": "vonage"
+            },
+            {
+              "name": "vonageApiKey",
+              "value": "YOUR_VONAGE_API_KEY"
+            },
+            {
+              "name": "vonageApiSecret",
+              "value": "YOUR_VONAGE_API_SECRET"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1568,
+        1120
+      ],
+      "id": "9bf98ba8-7b67-4e3c-9db7-bea3299f5b63",
+      "name": "vonage_number_import1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.vapi.ai/knowledge-base",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"name\": \"My Knowledge Base\",\n  \"fileIds\": [\n    \"<FILE_ID_FROM_STEP_1>\"\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        3328,
+        1152
+      ],
+      "id": "5ee1a97c-ec3b-4399-acc5-a3c788d4cecd",
+      "name": "Making Knowledge Base"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.vapi.ai/file",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "binaryData",
+        "inputDataFieldName": "data",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        3056,
+        1152
+      ],
+      "id": "c9c171cc-b2e0-44b9-b187-68b61f5ae990",
+      "name": "Uploading File To Vapi"
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "https://api.vapi.ai/assistant/YOUR_ASSISTANT_ID",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"model\": {\n    \"knowledgeBaseId\": \"YOUR_KNOWLEDGE_BASE_ID\"\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        3600,
+        1152
+      ],
+      "id": "43342c23-4e25-4ee9-a45d-03b45f7db7c2",
+      "name": "Patch Knowledge Base With Assistent"
+    },
+    {
+      "parameters": {
+        "formTitle": "test",
+        "formDescription": "test",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "test",
+              "fieldType": "file",
+              "multipleFiles": false
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.3,
+      "position": [
+        2800,
+        1152
+      ],
+      "id": "fb956a52-3aad-44a5-9328-384838c12f35",
+      "name": "On form submission",
+      "webhookId": "51b198b2-d221-436e-b905-19fb6d19a9d0"
+    }
+  ],
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Get row(s)1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request2": {
+      "main": [
+        [
+          {
+            "node": "Delete row(s)1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Insert row3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items1": {
+      "main": [
+        [],
+        [
+          {
+            "node": "HTTP Request6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request5": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Insert row3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request6": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s)1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request7": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request5",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Insert row3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete row(s)1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert row3": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request7",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Insert row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert row": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Making Knowledge Base": {
+      "main": [
+        [
+          {
+            "node": "Patch Knowledge Base With Assistent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Uploading File To Vapi": "[REDACTED]",
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Uploading File To Vapi",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": null,
+  "triggerCount": 1,
+  "tags": [
+    {
+      "updatedAt": "2026-01-16T15:13:31.431Z",
+      "createdAt": "2026-01-16T15:13:31.431Z",
+      "id": "XNgax37VvLrR0son",
+      "name": "Bruce Banner"
+    }
+  ]
+}

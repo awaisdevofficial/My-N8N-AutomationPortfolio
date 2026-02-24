@@ -1,0 +1,662 @@
+{
+  "updatedAt": "2026-02-03T21:30:41.402Z",
+  "createdAt": "2025-10-24T08:00:02.271Z",
+  "id": "jxagZ78YKcHxcuRW",
+  "name": "Handling Meetings",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "da929409-6247-435f-8ada-3698ff488fbc",
+      "name": "Execute Workflow Trigger",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [
+        -848,
+        -16
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// --- Extract Inputs ---\nconst input = $input.first().json;\n\n// --- Validate Basic Structure ---\nif (!input || Object.keys(input).length === 0) {\n  return [{\n    json: {\n      error: true,\n      success: false,\n      message: '❌ No input data found.'\n    }\n  }];\n}\n\n// --- Extract Data from Nested Structure ---\nconst agentData = input.agentData || {};\nconst messageData = input.messageData || {};\n\n// Extract agent information\nconst agentId = agentData.agentId || null;\nconst agentName = agentData.agentName || null;\nconst agentPhone = agentData.agentPhoneNumber || null;\nconst userId = agentData.userId || messageData.userId || null;\n\n// Extract message information\nconst message = (messageData.body || '').trim().toLowerCase();\nconst senderName = messageData.senderName || null;\nconst timestamp = messageData.timestamp || null;\nconst conversationId = messageData.conversationId || null;\n\n// Extract meeting data (if exists in input)\nconst hasPendingMeeting = !!input.hasPendingMeeting;\nconst meetingId = input.meetingId || null;\nconst title = (input.title || '').trim();\nconst dateTime = (input.dateTime || '').trim();\nconst purpose = (input.purpose || '').trim();\nconst location = (input.location || 'Virtual').trim();\nconst meetingStatus = (input.meetingStatus || '').trim();\n\nconst errors = [];\n\n// --- Validate Required Fields ---\nif (!agentId) errors.push('Agent ID is required.');\nif (!userId) errors.push('User ID is required.');\nif (!senderName) errors.push('Sender name is required.');\nif (!conversationId) errors.push('Conversation ID is required.');\n\n// --- Validate Response Message ---\nif (!message) {\n  errors.push('Response message is required.');\n}\n\n// --- Optional: Validate Meeting Fields (only if hasPendingMeeting is true) ---\nif (hasPendingMeeting) {\n  if (!meetingId) errors.push('Meeting ID is required for pending meeting.');\n  if (!title) errors.push('Meeting title is required.');\n  if (!dateTime) errors.push('Meeting date and time required.');\n  if (!purpose) errors.push('Meeting purpose is required.');\n}\n\n// --- Return Validation Errors Early ---\nif (errors.length > 0) {\n  return [{\n    json: {\n      error: true,\n      success: false,\n      message: `❌ Validation failed:\\n${errors.join('\\n')}`,\n      errors\n    }\n  }];\n}\n\n// --- Define Enhanced Response Categories ---\nconst confirmKeywords = [\n  'ok', 'yes', 'yeah', 'yep', 'sure', 'confirm', 'confirmed',\n  'schedule', 'scheduled', 'done', 'agreed', 'agree', 'fine',\n  'perfect', 'accept', 'accepted', 'approve', 'approved',\n  'good', 'great', 'sounds good', 'looks good', 'alright'\n];\n\nconst rejectKeywords = [\n  'no', 'nope', 'not', 'cant', \"can't\", 'cannot', 'unable',\n  'reschedule', 'change', 'unavailable', 'busy', 'decline',\n  'declined', 'reject', 'rejected', 'cancel', 'cancelled',\n  'sorry', 'unfortunately', 'won\\'t', 'wont'\n];\n\nconst rescheduleKeywords = [\n  'reschedule', 'change', 'another time', 'different time',\n  'later', 'postpone', 'move', 'adjust'\n];\n\n// --- Determine Response Type with Priority ---\nlet responseType = 'unknown';\nlet confidence = 'low';\n\n// Check for reschedule first (higher priority)\nif (rescheduleKeywords.some(k => message.includes(k))) {\n  responseType = 'reschedule_requested';\n  confidence = 'high';\n}\n// Then check for rejection\nelse if (rejectKeywords.some(k => message.includes(k))) {\n  responseType = 'rejected';\n  confidence = 'high';\n}\n// Finally check for confirmation\nelse if (confirmKeywords.some(k => message.includes(k))) {\n  responseType = 'confirmed';\n  confidence = 'high';\n}\n// If message is very short and ambiguous\nelse if (message.length <= 3) {\n  confidence = 'very_low';\n}\n\n// --- Extract contact phone from conversationId (WhatsApp format) ---\nconst contactPhone = conversationId ? conversationId.replace('@s.whatsapp.net', '') : null;\n\n// --- Construct Validated Output ---\nreturn [{\n  json: {\n    // Agent Info\n    agentId,\n    agentName,\n    agentPhone,\n    userId,\n    \n    // Contact Info\n    contactName: senderName,\n    contactPhone,\n    conversationId,\n    \n    // Meeting Info (if exists)\n    hasPendingMeeting,\n    meetingId,\n    title,\n    dateTime,\n    purpose,\n    location,\n    meetingStatus,\n    \n    // Message Info\n    originalMessage: messageData.body,\n    normalizedMessage: message,\n    messageTimestamp: timestamp,\n    \n    // Response Analysis\n    responseType,\n    confidence,\n    \n    // Metadata\n    primaryCategory: input.primaryCategory || null,\n    timestamp: new Date().toISOString(),\n    success: true,\n    error: false\n  }\n}];"
+      },
+      "id": "2caabc55-5e36-4fa1-9620-bce21126a259",
+      "name": "Validate & Classify Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -896,
+        -256
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "error-check",
+              "leftValue": "={{ $json.hasPendingMeeting }}",
+              "rightValue": "confirmed",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "322fa8fe-0e9e-4daf-843d-a12327a683e4",
+      "name": "Is Valid Input?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -672,
+        -256
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{\n  json: {\n    success: false,\n    message: $input.first().json.message\n  }\n}];"
+      },
+      "id": "c1f97d98-b061-4b9d-8d54-7fca0c2cc698",
+      "name": "Return Error",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -368,
+        -304
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT \n  id,\n  contact_phone,\n  contact_name,\n  title,\n  date_time,\n  purpose,\n  location,\n  status,\n  scheduler_phone,\n  created_at,\n  user_id\nFROM meetings\nWHERE contact_phone = $1\n  AND status = 'pending_confirmation'\nORDER BY created_at DESC\nLIMIT 5;",
+        "options": {
+          "queryReplacement": "={{ $json.contactPhone }}"
+        }
+      },
+      "id": "dbd6e5ef-aa41-47ed-952c-50b5f44b9e5d",
+      "name": "Find Pending Meeting",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        -288,
+        -16
+      ],
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "meeting-exists",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "number",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "c90802ac-f918-4e8c-87fe-0c0d1ebf1adf",
+      "name": "Meeting Found?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -64,
+        -16
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{\n  json: {\n    success: false,\n    message: '❌ No pending meeting found for this contact.'\n  }\n}];"
+      },
+      "id": "477238b3-c56a-4737-a1c5-560cca59411f",
+      "name": "No Meeting Error",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        160,
+        -176
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const meeting = $('Find Pending Meeting').first().json;\nconst responseData = $('Validate & Classify Response1').first().json;\nconst agentId = $('Meeting Found?').first().json.agentId || null; // ✅ Extract agentId\n\n// --- Validate Inputs ---\nif (!meeting || !meeting.id) {\n  return [{\n    json: {\n      error: true,\n      success: false,\n      message: '❌ No valid meeting data found from \"Find Pending Meeting\".'\n    }\n  }];\n}\n\nif (!responseData || !responseData.responseType) {\n  return [{\n    json: {\n      error: true,\n      success: false,\n      message: '❌ No valid response data found from \"Validate & Classify Response\".'\n    }\n  }];\n}\n\n// --- Merge Data ---\nreturn [{\n  json: {\n    hasPendingMeeting: !!responseData.hasPendingMeeting,\n    meetingId: meeting.id,\n    userId: meeting.user_id || null,\n    agentId: $('Execute Workflow Trigger').first().json.agentId, // ✅ Include agentId\n    contactPhone: meeting.contact_phone,\n    contactName: meeting.contact_name,\n    schedulerPhone: meeting.scheduler_phone || null,\n    title: meeting.title,\n    dateTime: meeting.date_time,\n    purpose: meeting.purpose,\n    location: meeting.location,\n    meetingStatus: meeting.status,\n    createdAt: meeting.created_at,\n    message: $('Execute Workflow Trigger').first().json.message || null,\n    messageSuccess: responseData.messageSuccess || false,\n    responseType: responseData.responseType,\n    reason: responseData.reason || responseData.message || null,\n    timestamp: responseData.timestamp || new Date().toISOString(),\n    success: true\n  }\n}];"
+      },
+      "id": "a58ccfc2-ddca-44d7-96b3-7ed007191f17",
+      "name": "Merge Meeting & Response Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        160,
+        -32
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "confirmed-check",
+              "leftValue": "={{ $json.responseType }}",
+              "rightValue": "confirmed",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "c8d44344-e526-4c15-a9da-394ed33aac84",
+      "name": "Is Confirmed?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        384,
+        -32
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE meetings\nSET \n  status = 'scheduled',\n  updated_at = NOW()\nWHERE id = $1\nRETURNING id, status, updated_at;",
+        "options": {
+          "queryReplacement": "={{ [$json.meetingId] }}"
+        }
+      },
+      "id": "0c038296-a7c2-433e-a5c6-b03e3979fa7e",
+      "name": "Update Status to Scheduled",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        592,
+        -128
+      ],
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $('Merge Meeting & Response Data').first().json;\n\nconst schedulerMessage = `✅ *Meeting Confirmed!*\\n\\n${data.contactName} has confirmed the meeting:\\n\\n📅 **${data.title}**\\n🕐 ${data.dateTime}\\n📍 ${data.location}\\n\\nThe meeting is now scheduled. If you want to reschedule it just let me know?`;\n\nconst contactMessage = `✅ *Meeting Confirmed*\\n\\nThank you for confirming! Your meeting is now scheduled:\\n\\n📅 **${data.title}**\\n🕐 ${data.dateTime}\\n📍 ${data.location}\\n\\nWe'll send you a reminder before the meeting.`;\n\nreturn [{\n  json: {\n    schedulerPhone: data.schedulerPhone,\n    schedulerMessage: schedulerMessage,\n    contactPhone: data.contactPhone,\n    contactMessage: contactMessage,\n    meetingId: data.meetingId,\n    contactName: data.contactName,\n    agentId: $('Validate & Classify Response1').first().json.agentId || null // ✅ Include agentId\n  }\n}];"
+      },
+      "id": "7941b347-493c-41fe-a155-4dfd3ec76e60",
+      "name": "Format Confirmation Messages",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        816,
+        -128
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $('Format Confirmation Messages').first().json;\n\nreturn [{\n  json: {\n    success: true,\n    message: `✅ Meeting confirmed by ${data.contactName}!`,\n    details: {\n      meetingId: data.meetingId,\n      status: 'scheduled',\n      contactName: data.contactName,\n      notificationsSent: true\n    }\n  }\n}];"
+      },
+      "id": "41c39564-7fc5-42a5-b56f-0be2910137c2",
+      "name": "Return Confirmation Success",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1472,
+        -128
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE meetings\nSET \n  status = 'cancelled',\n  rejection_reason = $2,\n  updated_at = NOW()\nWHERE id = $1\nRETURNING id, status, rejection_reason, updated_at;",
+        "options": {
+          "queryReplacement": "={{ [\n  $json.meetingId,\n  $json.reason\n] }}"
+        }
+      },
+      "id": "2ea056aa-63a8-494d-abba-bee93297bc3b",
+      "name": "Update Status to Cancelled",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        592,
+        112
+      ],
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $('Merge Meeting & Response Data').first().json;\n\nconst schedulerMessage = `❌ **Meeting Declined**\\n\\n${data.contactName} has declined the meeting:\\n\\n📅 **${data.title}**\\n🕐 ${data.dateTime}\\n📍 ${data.location}\\n\\n**Reason:** ${data.reason}\\n\\nThe meeting has been cancelled. Please reschedule if needed.`;\n\nconst contactMessage = `✅ **Response Received**\\n\\nThank you for your response. We've notified the scheduler about your unavailability.\\n\\nThey may reach out to reschedule the meeting.`;\n\nreturn [{\n  json: {\n    schedulerPhone: data.schedulerPhone,\n    schedulerMessage: schedulerMessage,\n    contactPhone: data.contactPhone,\n    contactMessage: contactMessage,\n    meetingId: data.meetingId,\n    contactName: data.contactName,\n    reason: data.reason,\n    agentId: data.agentId || null // ✅ Include agentId\n  }\n}];"
+      },
+      "id": "be50fc67-8195-46b0-93a6-deb63e7873b8",
+      "name": "Format Rejection Messages",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        816,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "DELETE FROM meetings WHERE id = $1 RETURNING id;",
+        "options": {
+          "queryReplacement": "={{ [$('Format Rejection Messages').first().json.meetingId] }}"
+        }
+      },
+      "id": "7f41c5a4-b931-4c4f-bc8a-8f2e5bd8db5e",
+      "name": "Delete Meeting from DB",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        1472,
+        112
+      ],
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $('Format Rejection Messages').first().json;\n\nreturn [{\n  json: {\n    success: true,\n    message: `❌ Meeting declined by ${data.contactName} and removed from database.`,\n    details: {\n      meetingId: data.meetingId,\n      status: 'cancelled_and_deleted',\n      contactName: data.contactName,\n      reason: data.reason,\n      notificationsSent: true\n    }\n  }\n}];"
+      },
+      "id": "53f5dd88-8a0e-41ae-948c-879ea8de329b",
+      "name": "Return Rejection Success",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1696,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://pa.duhanashrah.ai/api/webhooks/send-message",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "agentId",
+              "value": "={{ $json.agentId }}"
+            },
+            {
+              "name": "to",
+              "value": "={{ $json.schedulerPhone }}"
+            },
+            {
+              "name": "message",
+              "value": "={{ $json.schedulerMessage }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "9110100d-d102-45a6-aaa4-b681eea45667",
+      "name": "Notify Scheduler (Confirmed)1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1056,
+        -128
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://pa.duhanashrah.ai/api/webhooks/send-message",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "agentId",
+              "value": "={{ $json.data.agentId }}"
+            },
+            {
+              "name": "to",
+              "value": "={{ $('Format Confirmation Messages').item.json.contactPhone }}"
+            },
+            {
+              "name": "message",
+              "value": "={{ $('Format Confirmation Messages').item.json.contactMessage }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "8faaea05-f7c4-4821-9c73-d5a335f28fd0",
+      "name": "Notify Contact",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1264,
+        -128
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://pa.duhanashrah.ai/api/webhooks/send-message",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "agentId",
+              "value": "={{ $json.agentId }}"
+            },
+            {
+              "name": "to",
+              "value": "={{ $json.schedulerPhone }}"
+            },
+            {
+              "name": "message",
+              "value": "={{ $json.schedulerMessage }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "349eeaeb-5d74-4a22-a0b0-1094972327c5",
+      "name": "Notify Scheduler (Rejected)1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1056,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://pa.duhanashrah.ai/api/webhooks/send-message",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "agentId",
+              "value": "={{ $json.data.agentId }}"
+            },
+            {
+              "name": "to",
+              "value": "={{ $('Format Rejection Messages').first().json.contactPhone }}"
+            },
+            {
+              "name": "message",
+              "value": "={{ $('Format Rejection Messages').first().json.contactMessage }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a45b555d-222a-4686-81aa-03a4499c40d7",
+      "name": "Notify Contact (Rejected)1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1280,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// --- Extract Inputs ---\nconst input = $input.first().json;\n\n// --- Validate Basic Structure ---\nif (!input || Object.keys(input).length === 0) {\n  return [{\n    json: {\n      error: true,\n      success: false,\n      message: '❌ No input data found.'\n    }\n  }];\n}\n\n// --- Extract Data from New Structure ---\nconst hasPendingMeeting = input.hasPendingMeeting || false;\nconst meeting = input.meeting || {};\nconst message = (input.message || '').trim().toLowerCase();\nconst agentId = input.agentId || null;\nconst senderPhone = input.senderPhone || null;\n\n// Extract meeting information\nconst meetingId = meeting.id || null;\nconst title = (meeting.title || '').trim();\nconst dateTime = (meeting.date_time || '').trim();\nconst purpose = (meeting.purpose || '').trim();\nconst location = (meeting.location || 'Virtual').trim();\nconst contactName = (meeting.contact_name || '').trim();\nconst contactPhone = (meeting.contact_phone || senderPhone || '').trim();\nconst meetingStatus = (meeting.status || '').trim();\nconst userId = meeting.user_id || null;\nconst createdAt = meeting.created_at || null;\n\nconst errors = [];\n\n// --- Validate Required Fields ---\nif (!agentId) errors.push('Agent ID is required.');\nif (!senderPhone) errors.push('Sender phone is required.');\n\n// --- Validate Response Message ---\nif (!message) {\n  errors.push('Response message is required.');\n}\n\n// --- Validate Meeting Fields (only if hasPendingMeeting is true) ---\nif (hasPendingMeeting) {\n  if (!meetingId) errors.push('Meeting ID is required for pending meeting.');\n  if (!userId) errors.push('User ID is required for pending meeting.');\n  if (!title) errors.push('Meeting title is required.');\n  if (!dateTime) errors.push('Meeting date and time required.');\n  if (!purpose) errors.push('Meeting purpose is required.');\n  if (!contactName) errors.push('Contact name is required.');\n  if (!contactPhone) errors.push('Contact phone is required.');\n}\n\n// --- Return Validation Errors Early ---\nif (errors.length > 0) {\n  return [{\n    json: {\n      error: true,\n      success: false,\n      message: `❌ Validation failed:\\n${errors.join('\\n')}`,\n      errors\n    }\n  }];\n}\n\n// --- Define Enhanced Response Categories ---\nconst confirmKeywords = [\n  'ok', 'yes', 'yeah', 'yep', 'sure', 'confirm', 'confirmed',\n  'schedule', 'scheduled', 'done', 'agreed', 'agree', 'fine',\n  'perfect', 'accept', 'accepted', 'approve', 'approved',\n  'good', 'great', 'sounds good', 'looks good', 'alright'\n];\n\nconst rejectKeywords = [\n  'no', 'nope', 'not', 'cant', \"can't\", 'cannot', 'unable',\n  'reschedule', 'change', 'unavailable', 'busy', 'decline',\n  'declined', 'reject', 'rejected', 'cancel', 'cancelled',\n  'sorry', 'unfortunately', 'won\\'t', 'wont'\n];\n\nconst rescheduleKeywords = [\n  'reschedule', 'change', 'another time', 'different time',\n  'later', 'postpone', 'move', 'adjust'\n];\n\n// --- Determine Response Type with Priority ---\nlet responseType = 'unknown';\nlet confidence = 'low';\n\n// Check for reschedule first (higher priority)\nif (rescheduleKeywords.some(k => message.includes(k))) {\n  responseType = 'reschedule_requested';\n  confidence = 'high';\n}\n// Then check for rejection\nelse if (rejectKeywords.some(k => message.includes(k))) {\n  responseType = 'rejected';\n  confidence = 'high';\n}\n// Finally check for confirmation\nelse if (confirmKeywords.some(k => message.includes(k))) {\n  responseType = 'confirmed';\n  confidence = 'high';\n}\n// If message is very short and ambiguous\nelse if (message.length <= 3) {\n  confidence = 'very_low';\n}\n\n// --- Generate conversationId from phone (WhatsApp format) ---\nconst conversationId = senderPhone ? `${senderPhone}@s.whatsapp.net` : null;\n\n// --- Construct Validated Output ---\nreturn [{\n  json: {\n    // Agent Info\n    agentId,\n    userId,\n    \n    // Contact Info\n    contactName,\n    contactPhone,\n    senderPhone,\n    conversationId,\n    \n    // Meeting Info (if exists)\n    hasPendingMeeting,\n    meetingId,\n    title,\n    dateTime,\n    purpose,\n    location,\n    meetingStatus,\n    createdAt,\n    \n    // Message Info\n    originalMessage: input.message,\n    normalizedMessage: message,\n    \n    // Response Analysis\n    responseType,\n    confidence,\n    \n    // Metadata\n    timestamp: new Date().toISOString(),\n    success: true,\n    error: false\n  }\n}];"
+      },
+      "id": "3ff7459d-6334-4d8b-b32d-371dec389f29",
+      "name": "Validate & Classify Response1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -624,
+        -16
+      ]
+    }
+  ],
+  "connections": {
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Validate & Classify Response1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate & Classify Response": {
+      "main": [
+        [
+          {
+            "node": "Is Valid Input?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Valid Input?": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Return Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Pending Meeting": {
+      "main": [
+        [
+          {
+            "node": "Meeting Found?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Meeting Found?": {
+      "main": [
+        [
+          {
+            "node": "Merge Meeting & Response Data",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Meeting Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Meeting & Response Data": {
+      "main": [
+        [
+          {
+            "node": "Is Confirmed?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Confirmed?": {
+      "main": [
+        [
+          {
+            "node": "Update Status to Scheduled",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update Status to Cancelled",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Status to Scheduled": {
+      "main": [
+        [
+          {
+            "node": "Format Confirmation Messages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Confirmation Messages": {
+      "main": [
+        [
+          {
+            "node": "Notify Scheduler (Confirmed)1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Status to Cancelled": {
+      "main": [
+        [
+          {
+            "node": "Format Rejection Messages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Rejection Messages": {
+      "main": [
+        [
+          {
+            "node": "Notify Scheduler (Rejected)1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete Meeting from DB": {
+      "main": [
+        [
+          {
+            "node": "Return Rejection Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify Scheduler (Confirmed)1": {
+      "main": [
+        [
+          {
+            "node": "Notify Contact",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify Contact": {
+      "main": [
+        [
+          {
+            "node": "Return Confirmation Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify Scheduler (Rejected)1": {
+      "main": [
+        [
+          {
+            "node": "Notify Contact (Rejected)1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify Contact (Rejected)1": {
+      "main": [
+        [
+          {
+            "node": "Delete Meeting from DB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate & Classify Response1": {
+      "main": [
+        [
+          {
+            "node": "Find Pending Meeting",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": null,
+  "triggerCount": 0,
+  "tags": [
+    {
+      "updatedAt": "2025-10-28T07:41:35.810Z",
+      "createdAt": "2025-10-28T07:41:35.810Z",
+      "id": "Bjds4VMsUOfAftkN",
+      "name": "Abdul Wasay"
+    },
+    {
+      "updatedAt": "2025-10-24T04:04:28.048Z",
+      "createdAt": "2025-10-24T04:04:28.048Z",
+      "id": "SgbCkdz8ViP8OAzg",
+      "name": "SamCliff"
+    }
+  ]
+}

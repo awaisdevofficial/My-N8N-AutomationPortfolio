@@ -1,0 +1,5394 @@
+{
+  "updatedAt": "2026-01-29T15:16:55.739Z",
+  "createdAt": "2025-08-28T06:18:28.815Z",
+  "id": "N0qUORRNEzMpxQxT",
+  "name": "erp bot start stop button",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://erp.ycsols.com/api/customers/{{ $json.callId }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "status",
+              "value": "completed"
+            },
+            {
+              "name": "calling_link",
+              "value": "={{ $json.artifact.recordingUrl }}"
+            },
+            {
+              "name": "description",
+              "value": "={{ $json.summary }}"
+            },
+            {
+              "name": "status_comment",
+              "value": "={{ $('Check Call Status1').item.json.endedReason }}"
+            },
+            {
+              "name": "agent_id",
+              "value": "={{ $item(0).$node['Webhook1'].json.query.agent_id }}"
+            },
+            {
+              "name": "duration",
+              "value": "={{ \n(() => {\n  const start = new Date($('Check Call Status1').item.json.startedAt);\n  const end = new Date($('Check Call Status1').item.json.endedAt);\n\n  if (!start || !end || isNaN(start) || isNaN(end)) {\n    return '00:00:00';\n  }\n\n  const diffMs = end - start; // difference in milliseconds\n  const totalSeconds = Math.floor(diffMs / 1000);\n\n  const hours = Math.floor(totalSeconds / 3600);\n  const minutes = Math.floor((totalSeconds % 3600) / 60);\n  const seconds = totalSeconds % 60;\n\n  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;\n})()\n}}"
+            },
+            {
+              "name": "transcript",
+              "value": "={{ $('Call Completed?1').item.json.transcript || 0  }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -7104,
+        -2272
+      ],
+      "id": "e15236c7-388f-4e61-ba26-569f7b6c8117",
+      "name": "HTTP Request4",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://erp.ycsols.com/api/customers/{{ $('Process Customer Data1').item.json.id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"status\": \"calling\",\n  \"call_id\": \"{{ $json.id }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -8512,
+        -1520
+      ],
+      "id": "1ac9154a-d55c-43c1-8ea5-0ca3ba3a0eee",
+      "name": "HTTP Request3"
+    },
+    {
+      "parameters": {
+        "content": "if namke, email, phone number and meeting date exsist in summary then hit erp end point",
+        "height": 256,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -6592,
+        -2368
+      ],
+      "id": "d13e7281-2d8e-4202-8a14-b5cdf8ae4904",
+      "name": "Sticky Note30"
+    },
+    {
+      "parameters": {
+        "content": "if no name, email, phone number and meeting date then workflow ends ",
+        "height": 256,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -6848,
+        -2016
+      ],
+      "id": "9575d6e4-e447-4b05-8ace-5ba152788f1f",
+      "name": "Sticky Note29"
+    },
+    {
+      "parameters": {
+        "content": "this node see if the summary have email, name and phone number ",
+        "height": 208,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -6896,
+        -2336
+      ],
+      "id": "4e7a2d00-701b-42fa-bf95-eba4c393f596",
+      "name": "Sticky Note28"
+    },
+    {
+      "parameters": {
+        "content": "if call hasnt been ended go back to wait node and wait for another 60 seconds and then check call status again this process is repeated until call ends and status gets updated",
+        "height": 320,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -7504,
+        -2880
+      ],
+      "id": "43548b95-e578-48a9-824b-a11c017ae1ec",
+      "name": "Sticky Note27"
+    },
+    {
+      "parameters": {
+        "content": "update the status of call from calling to completed",
+        "height": 224,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -7168,
+        -2352
+      ],
+      "id": "7f1cea1b-7c89-4a9f-a064-dfbd8a46b034",
+      "name": "Sticky Note26"
+    },
+    {
+      "parameters": {
+        "content": "if call is ended it analyzes call summary and look for whether the meeting have been booked or not and gather full name, email and phone number from call transcribtion",
+        "height": 272,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -7184,
+        -2080
+      ],
+      "id": "080363e1-238e-4e82-9fa0-3dcb756ee61e",
+      "name": "Sticky Note25"
+    },
+    {
+      "parameters": {
+        "content": "this node decide what to do on basis of call status ",
+        "height": 224,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -7504,
+        -2304
+      ],
+      "id": "2fbbd594-1093-42fb-9b7a-14fc59055b24",
+      "name": "Sticky Note24"
+    },
+    {
+      "parameters": {
+        "content": "check the call status to see if call have ended or not",
+        "height": 240,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -7792,
+        -2320
+      ],
+      "id": "dafab662-0d6b-4abd-a890-6bddc5cb4027",
+      "name": "Sticky Note23"
+    },
+    {
+      "parameters": {
+        "content": "this node do exactly nothing just make the workflow to wait for 60 seconds",
+        "height": 240,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -8080,
+        -2320
+      ],
+      "id": "6f44d80c-784a-4bc6-963d-f0bf69b5d962",
+      "name": "Sticky Note22"
+    },
+    {
+      "parameters": {
+        "amount": 90,
+        "unit": "seconds"
+      },
+      "id": "2eab4d82-425e-4d40-9c7f-ae07d2f12f92",
+      "name": "Wait 60 Seconds1",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [
+        -8016,
+        -2240
+      ],
+      "webhookId": "f4abb3c3-c205-4168-ad1c-e79e6cffed3f",
+      "notes": "Initial wait before checking call status"
+    },
+    {
+      "parameters": {
+        "content": "stores call details such as call id assistant id phone number id etc\n",
+        "height": 256,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -8096,
+        -1904
+      ],
+      "id": "429eb622-37f5-43ff-91d9-76c1a5822a89",
+      "name": "Sticky Note21"
+    },
+    {
+      "parameters": {
+        "content": "initiate the vapi by hitting the api\n",
+        "height": 224
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -8608,
+        -2032
+      ],
+      "id": "bdb0abf3-9461-4748-af62-5611b97bf32e",
+      "name": "Sticky Note19"
+    },
+    {
+      "parameters": {
+        "content": "transfer the collected data into format that is supported by vapi\n"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -8624,
+        -2288
+      ],
+      "id": "bf894a6b-c732-4ce1-b085-05bc9cd7b55d",
+      "name": "Sticky Note18"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "3599f988-b52e-4fb4-a271-c1eb4395c7b1",
+              "leftValue": "={{ $json.meetingAccepted }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -6816,
+        -2256
+      ],
+      "id": "dacb1b48-7878-40e8-8811-683a45d1cd03",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://erp.ycsols.com/api/storeycclead",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"firstname\": \"{{ $json.parentName }}\",\n  \"email\": \"{{ $json.email }}\",\n  \"contactno\": \"{{ $json.phone }}\",\n  \"Subject\": \"{{ $json.subject }}\",\n  \"grade\": \"{{ $json.childGrade }}\",\n  \"demo_datetime\": \"{{ $json.appointmentDateTime }}\"\n}\n",
+        "options": {
+          "proxy": ""
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -6528,
+        -2272
+      ],
+      "id": "56dae818-50a0-4518-a7a3-735febd170e3",
+      "name": "HTTP Request2"
+    },
+    {
+      "parameters": {},
+      "id": "d7a903c9-4931-4265-9b60-c89c284fecd7",
+      "name": "Meeting Declined - Process End1",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        -6784,
+        -1920
+      ],
+      "notes": "Log when meeting is declined and end process"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nreturn items.map(item => {\n  const data = item.json;\n  \n  // Get phone number and remove '+' if it exists\n  let phoneNumber = data.customer?.number || '';\n  if (phoneNumber.startsWith('+')) {\n    phoneNumber = phoneNumber.substring(1);\n  }\n  \n  return {\n    json: {\n      callId: data.id,\n      summary: data.summary || \"null\",\n      phoneNumber: phoneNumber,\n      artifact: {\n        recordingUrl: data.artifact?.recordingUrl || null,\n        stereoRecordingUrl: data.artifact?.stereoRecordingUrl || null\n      },\n      // Add pre-formatted data for HTTP request\n      httpRequestData: {\n        status: \"completed\",\n        calling_link: data.artifact?.recordingUrl || null,\n        description: data.summary || \"null\"\n      }\n    }\n  };\n});\n```\n\nThen in your HTTP Request node, reference the pre-built object:\n```\n{{ $json.httpRequestData }}"
+      },
+      "id": "dec28621-db7f-4515-b543-0ced2b3fdc59",
+      "name": "Analyze Call Summary1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -7104,
+        -1936
+      ],
+      "notes": "Analyzes summary and extracts customer info"
+    },
+    {
+      "parameters": {
+        "amount": 2.5,
+        "unit": "minutes"
+      },
+      "id": "ac2bb02d-89f1-45a0-809f-6b288a59955c",
+      "name": "Wait & Retry1",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [
+        -7440,
+        -2736
+      ],
+      "webhookId": "480f637b-b8f1-4455-ac6c-c462fbc13b93",
+      "notes": "Wait before checking again"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "condition-1",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "ended",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "1216a4f8-a3e9-49d3-b948-b11b0f2da38d",
+      "name": "Call Completed?1",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -7440,
+        -2240
+      ],
+      "notes": "Checks if call is completed"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.vapi.ai/call/{{ $('Initiate VAPI Call1').item.json.id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "f422179e-5d67-45f2-aec7-0cd8cd7ef489",
+      "name": "Check Call Status1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        -7712,
+        -2240
+      ],
+      "retryOnFail": true,
+      "maxTries": 5,
+      "waitBetweenTries": 5000,
+      "onError": "continueErrorOutput",
+      "notes": "Checks if call has completed"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Process ALL VAPI responses instead of just first one\nconst allResponses = $input.all();\nreturn allResponses.map((item, index) => {\n  const vapiResponse = item.json;\n  \n  console.log(`=== VAPI RESPONSE ${index + 1} ===`);\n  console.log(JSON.stringify(vapiResponse, null, 2));\n  \n  let callId = vapiResponse.id || vapiResponse.callId || vapiResponse.call_id;\n  \n  if (!callId) {\n    throw new Error('Failed to get call ID from VAPI response. Full response: ' + JSON.stringify(vapiResponse));\n  }\n  \n  // Validate UUID format\n  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;\n  if (!uuidRegex.test(callId)) {\n    throw new Error('Call ID is not a valid UUID: ' + callId);\n  }\n  \n  console.log('Valid Call ID extracted:', callId);\n  \n  // Get corresponding customer data from \"Process Customer Data1\" node\n  const customerData = $('Process Customer Data1').all()[index].json;\n  \n  return {\n    json: {\n      callId: callId,\n      callStatus: vapiResponse.status || 'initiated',\n      customerName: customerData.name,\n      customerPhone: customerData.phone,\n      customerEmail: customerData.email,\n      customerId: customerData.id,  // Database ID\n      callStartTime: new Date().toISOString()\n    }\n  };\n});"
+      },
+      "id": "01f0f6a3-a3ca-4937-9088-e9018d374e8f",
+      "name": "Store Call Details1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -8032,
+        -1792
+      ],
+      "notes": "Stores call ID and customer details for later use"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.vapi.ai/call",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"assistantId\": \"3c302940-6536-4d59-81b3-1e43a6dabf9f\",\n  \"phoneNumberId\": \"{{ (['5ce9f721-daec-4365-a935-ff96bc5f3079', '06ca1545-5723-4e1a-871b-45071f13e075', '40e4cb9f-2dc1-43c2-8d8d-6b7d13734029', '375930ea-61e6-460c-a7fa-77a64640824e', '6ba1f3df-2a50-400a-92e3-33ebb0ba72c0', '1a8cf881-2755-40c7-989a-bba138cee2cc','ca8f1cbd-afc2-4e32-8516-347cae74db56','6403abcb-5861-4330-bbd9-f446e7c1e3cc','73473096-6e74-4e12-a6c3-decbe2dabd9a','78d18746-1e01-4707-ad11-622238513ad0','175c66c9-7bec-4270-9d7d-b37f0d2fb52b','33b04e7f-ee51-4282-82d9-2adaf1127370','127b60f5-538f-4b22-af92-35e199559145'])[Math.floor(Math.random() * 13)] }}\",\n  \"customer\": {\n    \"number\": \"{{ $json.phone }}\",\n    \"name\": \"{{ $json.name }}\"\n  },\n  \"name\": \"{{ $json.customerName || 'Cold Call' }}\"\n}\n",
+        "options": {}
+      },
+      "id": "d850ce74-22df-4c5d-8f7b-1a9b7bfea4bc",
+      "name": "Initiate VAPI Call1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        -8544,
+        -1968
+      ],
+      "retryOnFail": false,
+      "alwaysOutputData": false,
+      "onError": "continueErrorOutput",
+      "notes": "Makes the call using VAPI API"
+    },
+    {
+      "parameters": {
+        "jsCode": "const inputData = $input.all();\nconst customers = inputData[0].json.data;\n\nreturn customers\n  .filter(customer => {\n    if (!customer.phone) return false;\n    let phone = customer.phone.trim();\n    return phone.length > 0;\n  })\n  .map(customer => {\n    let phone = customer.phone.trim();\n    \n    if (!phone.startsWith('+')) {\n      phone = '+' + phone;\n    }\n    \n    return {\n      json: {\n        id: customer.id,\n        name: customer.name,\n        phone: phone,\n        email: customer.email,\n        status: customer.status,\n        call_id: customer.call_id,\n        recording: customer.recording\n      }\n    };\n  });"
+      },
+      "id": "8cb9cd60-a513-4a2f-aff3-cc9dac4feef8",
+      "name": "Process Customer Data1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -8560,
+        -2224
+      ],
+      "notes": "Validates and formats customer information"
+    },
+    {
+      "parameters": {
+        "content": "update the roe sheet from pending to calling\n",
+        "height": 224
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -8576,
+        -1584
+      ],
+      "id": "ecd9d3b8-8c45-41a0-a9fc-bfa4984c366e",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://erp.ycsols.com/api/storeycclead ",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"firstname\": \"moez\",\n  \"lastname\": \"moiz\",\n  \"email\": \"jane.smith@example.com\",\n  \"contactno\": \"+92300555779876543\",\n  \"Subject\": \"Math Tutoring\",\n  \"demo_datetime\": \"2025-10-21 15:00:00\",\n  \"status\": 4,\n  \"Parentname\": \"Michael Smith\",\n  \"State\": \"Punjab\",\n  \"grade\": \"10\",\n  \"comment\": \"Interested in online classes\",\n  \"source\": \"Website\",\n  \"timezone\": \"Asia/Karachi\",\n  \"country\": \"Pakistan\"\n}",
+        "options": {
+          "response": {
+            "response": {}
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -6464,
+        -1920
+      ],
+      "id": "18ce734f-edda-4bf8-893f-473119051708",
+      "name": "HTTP Request9"
+    },
+    {
+      "parameters": {
+        "url": "https://erp.ycsols.com/api/customers?status=calling",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -9584,
+        -1904
+      ],
+      "id": "504e613b-b62f-443f-8c3e-ec7bda5d72da",
+      "name": "Fetch Calling Customers"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get calling customers from previous node\nconst apiResponse = $input.first().json;\nconst callingCustomers = apiResponse.data || apiResponse || [];\n\nconsole.log('Currently calling:', callingCustomers.length);\n\n// Calculate available slots\nconst MAX_CONCURRENT = 10;\nconst availableSlots = Math.max(0, MAX_CONCURRENT - callingCustomers.length);\n\nconsole.log('Available slots:', availableSlots);\n\n// If no slots available, stop workflow\nif (availableSlots === 0) {\n  console.log('All 10 slots occupied - stopping workflow');\n  return [];\n}\n\n// Pass available slots to next node\nreturn [{\n  json: {\n    availableSlots: availableSlots,\n    currentlyCalling: callingCustomers.length\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -9008,
+        -2224
+      ],
+      "id": "40fb7e32-124b-4fb4-a1cd-911458370b7b",
+      "name": "Calculate Available Slots"
+    },
+    {
+      "parameters": {
+        "url": "=https://erp.ycsols.com/api/customers?campain_id={{ $('Webhook1').item.json.query.campaign_id }}&status=pending&limit={{ $('Calculate Available Slots').item.json.availableSlots }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -8800,
+        -2224
+      ],
+      "id": "a481314a-69aa-48d6-ac96-854f1e7f33ed",
+      "name": "Fetch Pending Customers"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\nreturn items.map(item => {\n  const data = item.json;\n  const summary = data.summary || '';\n  \n  // Handle null or \"null\" string summaries\n  if (summary === 'null' || summary === '' || !summary) {\n    return {\n      json: {\n        callId: data.callId,\n        meetingAccepted: false,\n        childName: 'Not confirmed',\n        parentName: 'Not confirmed',\n        phone: 'Not confirmed',\n        email: 'Not confirmed',\n        timezone: 'Not confirmed',\n        appointmentDateTime: 'Not confirmed',\n        childGrade: 'Not confirmed',\n        subject: 'Not confirmed'\n      }\n    };\n  }\n  \n  // Helper function to extract field value from structured section\n  const extractField = (text, fieldName) => {\n    const regex = new RegExp(`${fieldName}:\\\\s*(.+?)(?:\\\\n|$)`, 'i');\n    const match = text.match(regex);\n    return match ? match[1].trim() : 'Not confirmed';\n  };\n  \n  // Extract structured fields from the formatted sections\n  const appointmentBooked = extractField(summary, 'Booked');\n  const meetingAccepted = appointmentBooked.toLowerCase().includes('yes');\n  \n  // Extract appointment time and date\n  const appointmentTime = extractField(summary, 'Time');\n  const appointmentDate = extractField(summary, 'Date');\n  const appointmentDateTime = (appointmentTime !== 'Not confirmed' || appointmentDate !== 'Not confirmed') \n    ? `${appointmentDate} at ${appointmentTime}`.replace('Not confirmed at ', '').replace(' at Not confirmed', '')\n    : 'Not confirmed';\n  \n  // Extract customer info\n  const parentName = extractField(summary, 'Name');\n  const email = extractField(summary, 'Email');\n  const phone = extractField(summary, 'Phone');\n  const timezone = extractField(summary, 'Timezone');\n  \n  // Extract child info\n  const childName = extractField(summary, 'Child Name');\n  const childGradeRaw = extractField(summary, 'Grade');\n  \n  // Extract only the numeric value from grade\n  let childGrade = null;\n  if (childGradeRaw !== 'Not confirmed') {\n    const gradeMatch = childGradeRaw.match(/\\d+/);\n    if (gradeMatch) {\n      childGrade = parseInt(gradeMatch[0], 10);\n    }\n  }\n  \n  const subject = extractField(summary, 'Subject');\n  \n  return {\n    json: {\n      callId: data.callId,\n      meetingAccepted: meetingAccepted,\n      childName: childName,\n      parentName: parentName,\n      phone: phone,\n      email: email,\n      timezone: timezone,\n      appointmentDateTime: appointmentDateTime,\n      childGrade: childGrade,\n      subject: subject\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -6912,
+        -1696
+      ],
+      "id": "d5bb0250-ef10-4561-a699-54533df9a5fc",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "path": "83f0dbfe-7c60-47f2-b00b-b79cee471528",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -9712,
+        -2224
+      ],
+      "id": "8ffe8043-d444-4a34-8a93-338018f92a6e",
+      "name": "Webhook1",
+      "webhookId": "83f0dbfe-7c60-47f2-b00b-b79cee471528"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://erp.ycsols.com/api/customers/{{ $('Process Customer Data1').item.json.id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"status\": \"invalid\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -8320,
+        -1952
+      ],
+      "id": "e6695c01-08f8-4364-b844-1fcb3a5352ab",
+      "name": "HTTP Request8"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "7b958167-8d45-4ecd-b4ff-2385ed073b70",
+              "leftValue": "={{ $json.phone.startsWith('+1') }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -9120,
+        -1088
+      ],
+      "id": "373b6e23-6067-4d92-98c8-9e7d3b7812f2",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://erp.ycsols.com/api/customers/{{ $json.callId }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "status",
+              "value": "completed"
+            },
+            {
+              "name": "calling_link",
+              "value": "={{ $json.artifact.recordingUrl }}"
+            },
+            {
+              "name": "description",
+              "value": "={{ $json.summary }}"
+            },
+            {
+              "name": "agent_id",
+              "value": "={{ $('Webhook1').item.json.query.agent_id }}"
+            },
+            {
+              "name": "duration",
+              "value": "={{ \n(() => {\n  const start = new Date($('Check Call Status').item.json.startedAt);\n  const end = new Date($('Check Call Status').item.json.endedAt);\n\n  if (!start || !end || isNaN(start) || isNaN(end)) {\n    return '00:00:00';\n  }\n\n  const diffMs = end - start; // difference in milliseconds\n  const totalSeconds = Math.floor(diffMs / 1000);\n\n  const hours = Math.floor(totalSeconds / 3600);\n  const minutes = Math.floor((totalSeconds % 3600) / 60);\n  const seconds = totalSeconds % 60;\n\n  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;\n})()\n}}"
+            },
+            {
+              "name": "transcript",
+              "value": "={{ $('Call Completed?').item.json.transcript || 0  }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -7440,
+        -720
+      ],
+      "id": "186a0133-b223-46d1-bf09-226e043a8580",
+      "name": "HTTP Request",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://erp.ycsols.com/api/customers/{{ $('Process Customer Data1').item.json.id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"status\": \"calling\",\n  \"call_id\": \"{{ $json.id }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -8848,
+        32
+      ],
+      "id": "49df176f-0066-49d7-af7f-04eb88cfbc6d",
+      "name": "HTTP Request5"
+    },
+    {
+      "parameters": {
+        "content": "if namke, email, phone number and meeting date exsist in summary then hit erp end point",
+        "height": 256,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -6928,
+        -816
+      ],
+      "id": "9e1ecf72-0d57-4f62-a297-5619a9092018",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "if no name, email, phone number and meeting date then workflow ends ",
+        "height": 256,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -7184,
+        -464
+      ],
+      "id": "5b03ad34-528e-4837-a265-866069771cfd",
+      "name": "Sticky Note31"
+    },
+    {
+      "parameters": {
+        "content": "this node see if the summary have email, name and phone number ",
+        "height": 208,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -7232,
+        -784
+      ],
+      "id": "251fa235-e5f7-4157-b319-db4a2b675fd2",
+      "name": "Sticky Note32"
+    },
+    {
+      "parameters": {
+        "content": "if call hasnt been ended go back to wait node and wait for another 60 seconds and then check call status again this process is repeated until call ends and status gets updated",
+        "height": 320,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -7840,
+        -1328
+      ],
+      "id": "77de2c26-f450-4bdc-83a8-f440e8dc6fe5",
+      "name": "Sticky Note33"
+    },
+    {
+      "parameters": {
+        "content": "update the status of call from calling to completed",
+        "height": 224,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -7504,
+        -800
+      ],
+      "id": "ef096a19-b275-4674-bb87-4cc835890a59",
+      "name": "Sticky Note34"
+    },
+    {
+      "parameters": {
+        "content": "if call is ended it analyzes call summary and look for whether the meeting have been booked or not and gather full name, email and phone number from call transcribtion",
+        "height": 272,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -7520,
+        -528
+      ],
+      "id": "441ddf6d-8ffa-4921-98ff-a441d5bdeccf",
+      "name": "Sticky Note35"
+    },
+    {
+      "parameters": {
+        "content": "this node decide what to do on basis of call status ",
+        "height": 224,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -7840,
+        -752
+      ],
+      "id": "056e6c56-f3e8-494a-a6c7-8d8d3f7457e5",
+      "name": "Sticky Note36"
+    },
+    {
+      "parameters": {
+        "content": "check the call status to see if call have ended or not",
+        "height": 240,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -8128,
+        -768
+      ],
+      "id": "f8756617-e812-4544-8881-9026dd926802",
+      "name": "Sticky Note37"
+    },
+    {
+      "parameters": {
+        "content": "this node do exactly nothing just make the workflow to wait for 60 seconds",
+        "height": 240,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -8416,
+        -768
+      ],
+      "id": "e8568df9-395f-49aa-ac30-78beaca64731",
+      "name": "Sticky Note38"
+    },
+    {
+      "parameters": {
+        "amount": 90,
+        "unit": "seconds"
+      },
+      "id": "45836afe-2df0-4929-a24c-5cadeebb64a0",
+      "name": "Wait 60 Seconds",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [
+        -8352,
+        -688
+      ],
+      "webhookId": "f4abb3c3-c205-4168-ad1c-e79e6cffed3f",
+      "notes": "Initial wait before checking call status"
+    },
+    {
+      "parameters": {
+        "content": "stores call details such as call id assistant id phone number id etc\n",
+        "height": 256,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -8432,
+        -352
+      ],
+      "id": "4e85534d-fd9c-4e9d-983d-191c3274da6b",
+      "name": "Sticky Note39"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "3599f988-b52e-4fb4-a271-c1eb4395c7b1",
+              "leftValue": "={{ $json.meetingAccepted }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "f5fd2e7a-026e-4306-9a18-0596221d0f38",
+              "leftValue": "={{ $('Initiate VAPI Call').item.json.id }}",
+              "rightValue": "={{ $json.id }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -7152,
+        -704
+      ],
+      "id": "9bbc6458-129a-4cc4-b76f-77e8e99aa3ca",
+      "name": "If3"
+    },
+    {
+      "parameters": {},
+      "id": "5e56df17-589f-4120-8b68-923b6baf685e",
+      "name": "Success - Data Sent to ERP",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        -6608,
+        -720
+      ],
+      "notes": "Log successful completion"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://erp.ycsols.com/api/storeycclead",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"firstname\": \"{{ $json.parentName }}\",\n  \"email\": \"{{ $json.email }}\",\n  \"contactno\": \"{{ $json.phone }}\",\n  \"Subject\": \"{{ $json.subject }}\",\n  \"grade\": \"{{ $json.childGrade }}\",\n  \"demo_datetime\": \"{{ $json.appointmentDateTime }}\"\n}\n",
+        "options": {
+          "proxy": ""
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -6864,
+        -720
+      ],
+      "id": "451f73a9-df7f-4609-9046-88168f1bd835",
+      "name": "HTTP Request6"
+    },
+    {
+      "parameters": {},
+      "id": "b9239098-cc3f-41a2-a459-8c8538fefc06",
+      "name": "Meeting Declined - Process End",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        -7120,
+        -368
+      ],
+      "notes": "Log when meeting is declined and end process"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nreturn items.map(item => {\n  const data = item.json;\n  \n  // Get phone number and remove '+' if it exists\n  let phoneNumber = data.customer?.number || '';\n  if (phoneNumber.startsWith('+')) {\n    phoneNumber = phoneNumber.substring(1);\n  }\n  \n  return {\n    json: {\n      callId: data.id,\n      summary: data.summary || \"null\",\n      phoneNumber: phoneNumber,\n      artifact: {\n        recordingUrl: data.artifact?.recordingUrl || null,\n        stereoRecordingUrl: data.artifact?.stereoRecordingUrl || null\n      },\n      // Add pre-formatted data for HTTP request\n      httpRequestData: {\n        status: \"completed\",\n        calling_link: data.artifact?.recordingUrl || null,\n        description: data.summary || \"null\"\n      }\n    }\n  };\n});\n```\n\nThen in your HTTP Request node, reference the pre-built object:\n```\n{{ $json.httpRequestData }}"
+      },
+      "id": "e972e8f0-777e-4f9b-9da7-3dca4f3204c3",
+      "name": "Analyze Call Summary",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -7440,
+        -384
+      ],
+      "notes": "Analyzes summary and extracts customer info"
+    },
+    {
+      "parameters": {
+        "amount": 1.5,
+        "unit": "minutes"
+      },
+      "id": "8f192158-0e94-40e0-b02b-1933e1d0aa92",
+      "name": "Wait & Retry",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [
+        -7776,
+        -1184
+      ],
+      "webhookId": "480f637b-b8f1-4455-ac6c-c462fbc13b93",
+      "notes": "Wait before checking again"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "condition-1",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "ended",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "id": "6bd30b9f-3f87-442d-ab38-3fe6c7d0a395",
+      "name": "Call Completed?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -7776,
+        -688
+      ],
+      "notes": "Checks if call is completed"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.vapi.ai/call/{{ $('Initiate VAPI Call').item.json.id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "2e2c3d94-2ae0-4930-ae0e-a50e1cf0e645",
+      "name": "Check Call Status",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        -8048,
+        -688
+      ],
+      "onError": "continueErrorOutput",
+      "notes": "Checks if call has completed"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Process ALL VAPI responses instead of just first one\nconst allResponses = $input.all();\nreturn allResponses.map((item, index) => {\n  const vapiResponse = item.json;\n  \n  console.log(`=== VAPI RESPONSE ${index + 1} ===`);\n  console.log(JSON.stringify(vapiResponse, null, 2));\n  \n  let callId = vapiResponse.id || vapiResponse.callId || vapiResponse.call_id;\n  \n  if (!callId) {\n    throw new Error('Failed to get call ID from VAPI response. Full response: ' + JSON.stringify(vapiResponse));\n  }\n  \n  // Validate UUID format\n  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;\n  if (!uuidRegex.test(callId)) {\n    throw new Error('Call ID is not a valid UUID: ' + callId);\n  }\n  \n  console.log('Valid Call ID extracted:', callId);\n  \n  // Get corresponding customer data from \"Process Customer Data1\" node\n  const customerData = $('Process Customer Data1').all()[index].json;\n  \n  return {\n    json: {\n      callId: callId,\n      callStatus: vapiResponse.status || 'initiated',\n      customerName: customerData.name,\n      customerPhone: customerData.phone,\n      customerEmail: customerData.email,\n      customerId: customerData.id,  // Database ID\n      callStartTime: new Date().toISOString()\n    }\n  };\n});"
+      },
+      "id": "6b42e80e-f063-42ea-93ad-ef2fb8bc8150",
+      "name": "Store Call Details",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -8368,
+        -240
+      ],
+      "notes": "Stores call ID and customer details for later use"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.vapi.ai/call",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"assistantId\": \"3c302940-6536-4d59-81b3-1e43a6dabf9f\",\n  \"phoneNumberId\": \"{{ (['491e8845-cfc5-429f-8747-61c5c0f7d75b', 'bbbf33f6-e3ad-47a2-b11b-029febe6b4cf'])[Math.floor(Math.random() * 2)] }}\",\n  \"customer\": {\n    \"number\": \"{{ $json.phone }}\",\n    \"name\": \"{{ $json.name }}\"\n  },\n  \"name\": \"{{ $json.customerName || 'Cold Call' }}\"\n}",
+        "options": {}
+      },
+      "id": "7afd95bf-7f59-43be-84e4-67d078ec0bca",
+      "name": "Initiate VAPI Call",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        -8880,
+        -416
+      ],
+      "retryOnFail": false,
+      "alwaysOutputData": false,
+      "onError": "continueErrorOutput",
+      "notes": "Makes the call using VAPI API"
+    },
+    {
+      "parameters": {
+        "content": "update the roe sheet from pending to calling\n",
+        "height": 224
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -8912,
+        -32
+      ],
+      "id": "00b6f9d5-f010-4cf7-b80b-a51ea9fdb7a5",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://erp.ycsols.com/api/storeycclead ",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"firstname\": \"moez\",\n  \"lastname\": \"moiz\",\n  \"email\": \"jane.smith@example.com\",\n  \"contactno\": \"+92300555779876543\",\n  \"Subject\": \"Math Tutoring\",\n  \"demo_datetime\": \"2025-10-21 15:00:00\",\n  \"status\": 4,\n  \"Parentname\": \"Michael Smith\",\n  \"State\": \"Punjab\",\n  \"grade\": \"10\",\n  \"comment\": \"Interested in online classes\",\n  \"source\": \"Website\",\n  \"timezone\": \"Asia/Karachi\",\n  \"country\": \"Pakistan\"\n}",
+        "options": {
+          "response": {
+            "response": {}
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -6800,
+        -368
+      ],
+      "id": "c20ca9cc-82ce-457e-9821-bf17d2e7011e",
+      "name": "HTTP Request10"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\nreturn items.map(item => {\n  const data = item.json;\n  const summary = data.summary || '';\n  \n  // Handle null or \"null\" string summaries\n  if (summary === 'null' || summary === '' || !summary) {\n    return {\n      json: {\n        callId: data.callId,\n        meetingAccepted: false,\n        childName: 'Not confirmed',\n        parentName: 'Not confirmed',\n        phone: 'Not confirmed',\n        email: 'Not confirmed',\n        timezone: 'Not confirmed',\n        appointmentDateTime: 'Not confirmed',\n        childGrade: 'Not confirmed',\n        subject: 'Not confirmed'\n      }\n    };\n  }\n  \n  // Helper function to extract field value from structured section\n  const extractField = (text, fieldName) => {\n    const regex = new RegExp(`${fieldName}:\\\\s*(.+?)(?:\\\\n|$)`, 'i');\n    const match = text.match(regex);\n    return match ? match[1].trim() : 'Not confirmed';\n  };\n  \n  // Extract structured fields from the formatted sections\n  const appointmentBooked = extractField(summary, 'Booked');\n  const meetingAccepted = appointmentBooked.toLowerCase().includes('yes');\n  \n  // Extract appointment time and date\n  const appointmentTime = extractField(summary, 'Time');\n  const appointmentDate = extractField(summary, 'Date');\n  const appointmentDateTime = (appointmentTime !== 'Not confirmed' || appointmentDate !== 'Not confirmed') \n    ? `${appointmentDate} at ${appointmentTime}`.replace('Not confirmed at ', '').replace(' at Not confirmed', '')\n    : 'Not confirmed';\n  \n  // Extract customer info\n  const parentName = extractField(summary, 'Name');\n  const email = extractField(summary, 'Email');\n  const phone = extractField(summary, 'Phone');\n  const timezone = extractField(summary, 'Timezone');\n  \n  // Extract child info\n  const childName = extractField(summary, 'Child Name');\n  const childGradeRaw = extractField(summary, 'Grade');\n  \n  // Extract only the numeric value from grade\n  let childGrade = null;\n  if (childGradeRaw !== 'Not confirmed') {\n    const gradeMatch = childGradeRaw.match(/\\d+/);\n    if (gradeMatch) {\n      childGrade = parseInt(gradeMatch[0], 10);\n    }\n  }\n  \n  const subject = extractField(summary, 'Subject');\n  \n  return {\n    json: {\n      callId: data.callId,\n      meetingAccepted: meetingAccepted,\n      childName: childName,\n      parentName: parentName,\n      phone: phone,\n      email: email,\n      timezone: timezone,\n      appointmentDateTime: appointmentDateTime,\n      childGrade: childGrade,\n      subject: subject\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -7248,
+        -144
+      ],
+      "id": "c517f5b5-de30-4bd8-ada1-3e618d4a3d33",
+      "name": "Code1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://erp.ycsols.com/api/customers/{{ $('Process Customer Data1').item.json.id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"status\": \"invalid\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -8656,
+        -400
+      ],
+      "id": "fb94eea7-c999-4dd0-96f7-dccb81dad3cd",
+      "name": "HTTP Request11"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://erp.ycsols.com/api/customers/{{ $json.callId }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "status",
+              "value": "completed"
+            },
+            {
+              "name": "calling_link",
+              "value": "={{ $json.artifact.recordingUrl }}"
+            },
+            {
+              "name": "description",
+              "value": "={{ $json.summary }}"
+            },
+            {
+              "name": "status_comment",
+              "value": "={{ $('Check Call Status2').item.json.endedReason }}"
+            },
+            {
+              "name": "agent_id",
+              "value": "={{ $('Webhook3').item.json.query.agent_id }}"
+            },
+            {
+              "name": "duration",
+              "value": "={{ \n(() => {\n  const start = new Date($('Check Call Status2').item.json.startedAt);\n  const end = new Date($('Check Call Status2').item.json.endedAt);\n\n  if (!start || !end || isNaN(start) || isNaN(end)) {\n    return '00:00:00';\n  }\n\n  const diffMs = end - start; // difference in milliseconds\n  const totalSeconds = Math.floor(diffMs / 1000);\n\n  const hours = Math.floor(totalSeconds / 3600);\n  const minutes = Math.floor((totalSeconds % 3600) / 60);\n  const seconds = totalSeconds % 60;\n\n  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;\n})()\n}}"
+            },
+            {
+              "name": "transcript",
+              "value": "={{ $('Call Completed?2').item.json.transcript || 0  }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -7360,
+        768
+      ],
+      "id": "c372b95e-444f-4efd-9083-9e97f9e9612c",
+      "name": "HTTP Request7",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://erp.ycsols.com/api/customers/{{ $('Process Customer Data').item.json.id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"status\": \"calling\",\n  \"call_id\": \"{{ $json.id }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -8768,
+        1520
+      ],
+      "id": "7558b580-ca7f-4bab-8c32-a23d383a48c7",
+      "name": "HTTP Request12"
+    },
+    {
+      "parameters": {
+        "content": "if namke, email, phone number and meeting date exsist in summary then hit erp end point",
+        "height": 256,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -6848,
+        672
+      ],
+      "id": "b870d456-a1ec-43e2-82d4-cd319148c2a0",
+      "name": "Sticky Note40"
+    },
+    {
+      "parameters": {
+        "content": "if no name, email, phone number and meeting date then workflow ends ",
+        "height": 256,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -7104,
+        1024
+      ],
+      "id": "7e3e07d4-6a71-4b5a-a81a-9ddcbd2cf2ad",
+      "name": "Sticky Note41"
+    },
+    {
+      "parameters": {
+        "content": "this node see if the summary have email, name and phone number ",
+        "height": 208,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -7152,
+        704
+      ],
+      "id": "4ce9404a-e785-40d1-a3d4-c5e98075f879",
+      "name": "Sticky Note42"
+    },
+    {
+      "parameters": {
+        "content": "if call hasnt been ended go back to wait node and wait for another 60 seconds and then check call status again this process is repeated until call ends and status gets updated",
+        "height": 320,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -7760,
+        160
+      ],
+      "id": "4ccd49ea-f61f-44b6-a2c5-36499e0abc4a",
+      "name": "Sticky Note43"
+    },
+    {
+      "parameters": {
+        "content": "update the status of call from calling to completed",
+        "height": 224,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -7424,
+        688
+      ],
+      "id": "6a2a5cef-5df9-4c1a-a013-bc754e26da54",
+      "name": "Sticky Note44"
+    },
+    {
+      "parameters": {
+        "content": "if call is ended it analyzes call summary and look for whether the meeting have been booked or not and gather full name, email and phone number from call transcribtion",
+        "height": 272,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -7440,
+        960
+      ],
+      "id": "39f473f2-152a-487e-b40f-3291b6bbf695",
+      "name": "Sticky Note45"
+    },
+    {
+      "parameters": {
+        "content": "this node decide what to do on basis of call status ",
+        "height": 224,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -7760,
+        736
+      ],
+      "id": "ce337113-5fa5-441e-bb07-8d093b41d003",
+      "name": "Sticky Note46"
+    },
+    {
+      "parameters": {
+        "content": "check the call status to see if call have ended or not",
+        "height": 240,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -8048,
+        720
+      ],
+      "id": "b4f67c63-a577-4d4d-968c-c7199db5f1bb",
+      "name": "Sticky Note47"
+    },
+    {
+      "parameters": {
+        "content": "this node do exactly nothing just make the workflow to wait for 60 seconds",
+        "height": 240,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -8336,
+        720
+      ],
+      "id": "0d441048-ccc6-4d4c-9d0b-79bd40390238",
+      "name": "Sticky Note48"
+    },
+    {
+      "parameters": {
+        "amount": 90,
+        "unit": "seconds"
+      },
+      "id": "9f490b8d-be14-4188-bd9c-d4a877f570b2",
+      "name": "Wait 60 Seconds2",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [
+        -8272,
+        800
+      ],
+      "webhookId": "f4abb3c3-c205-4168-ad1c-e79e6cffed3f",
+      "notes": "Initial wait before checking call status"
+    },
+    {
+      "parameters": {
+        "content": "stores call details such as call id assistant id phone number id etc\n",
+        "height": 256,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -8352,
+        1136
+      ],
+      "id": "bc5fb297-37cd-4413-b77f-5533ec08acfb",
+      "name": "Sticky Note49"
+    },
+    {
+      "parameters": {
+        "content": "initiate the vapi by hitting the api\n",
+        "height": 224
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -8864,
+        1008
+      ],
+      "id": "da9eaee9-6329-4183-aedf-37069f9bd6ef",
+      "name": "Sticky Note20"
+    },
+    {
+      "parameters": {
+        "content": "transfer the collected data into format that is supported by vapi\n"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -8880,
+        752
+      ],
+      "id": "20fee224-3da8-4446-b5f1-4ffa13ba6063",
+      "name": "Sticky Note50"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "3599f988-b52e-4fb4-a271-c1eb4395c7b1",
+              "leftValue": "={{ $json.meetingAccepted }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -7072,
+        784
+      ],
+      "id": "ba3fb842-abed-4071-bf6c-e2f9cff7d776",
+      "name": "If2"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://erp.ycsols.com/api/storeycclead",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"firstname\": \"{{ $json.parentName }}\",\n  \"email\": \"{{ $json.email }}\",\n  \"contactno\": \"{{ $json.phone }}\",\n  \"Subject\": \"{{ $json.subject }}\",\n  \"grade\": \"{{ $json.childGrade }}\",\n  \"demo_datetime\": \"{{ $json.appointmentDateTime }}\"\n}\n",
+        "options": {
+          "proxy": ""
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -6784,
+        768
+      ],
+      "id": "1d1c2ede-4315-4e23-98eb-afc450b28ed6",
+      "name": "HTTP Request13"
+    },
+    {
+      "parameters": {},
+      "id": "facbeacd-8f7b-4d1f-8df9-aac14943ba28",
+      "name": "Meeting Declined - Process End2",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        -7040,
+        1120
+      ],
+      "notes": "Log when meeting is declined and end process"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nreturn items.map(item => {\n  const data = item.json;\n  \n  // Get phone number and remove '+' if it exists\n  let phoneNumber = data.customer?.number || '';\n  if (phoneNumber.startsWith('+')) {\n    phoneNumber = phoneNumber.substring(1);\n  }\n  \n  return {\n    json: {\n      callId: data.id,\n      summary: data.summary || \"null\",\n      phoneNumber: phoneNumber,\n      artifact: {\n        recordingUrl: data.artifact?.recordingUrl || null,\n        stereoRecordingUrl: data.artifact?.stereoRecordingUrl || null\n      },\n      // Add pre-formatted data for HTTP request\n      httpRequestData: {\n        status: \"completed\",\n        calling_link: data.artifact?.recordingUrl || null,\n        description: data.summary || \"null\"\n      }\n    }\n  };\n});\n```\n\nThen in your HTTP Request node, reference the pre-built object:\n```\n{{ $json.httpRequestData }}"
+      },
+      "id": "fadc5c9d-299b-4546-9a8e-6479dcc5694c",
+      "name": "Analyze Call Summary2",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -7360,
+        1104
+      ],
+      "notes": "Analyzes summary and extracts customer info"
+    },
+    {
+      "parameters": {
+        "amount": 1.5,
+        "unit": "minutes"
+      },
+      "id": "1766bfe3-0dcc-43cb-bd7a-15dce99b9e4a",
+      "name": "Wait & Retry2",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [
+        -7696,
+        304
+      ],
+      "webhookId": "480f637b-b8f1-4455-ac6c-c462fbc13b93",
+      "notes": "Wait before checking again"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "condition-1",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "ended",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "01cf1445-de8a-4537-896a-007e86d1a411",
+      "name": "Call Completed?2",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -7696,
+        800
+      ],
+      "notes": "Checks if call is completed"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.vapi.ai/call/{{ $('Initiate VAPI Call2').item.json.id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "08b0a14d-5c53-4bde-a1db-71300a3f0368",
+      "name": "Check Call Status2",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        -7968,
+        800
+      ],
+      "onError": "continueErrorOutput",
+      "notes": "Checks if call has completed"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Process ALL VAPI responses instead of just first one\nconst allResponses = $input.all();\nreturn allResponses.map((item, index) => {\n  const vapiResponse = item.json;\n  \n  console.log(`=== VAPI RESPONSE ${index + 1} ===`);\n  console.log(JSON.stringify(vapiResponse, null, 2));\n  \n  let callId = vapiResponse.id || vapiResponse.callId || vapiResponse.call_id;\n  \n  if (!callId) {\n    throw new Error('Failed to get call ID from VAPI response. Full response: ' + JSON.stringify(vapiResponse));\n  }\n  \n  // Validate UUID format\n  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;\n  if (!uuidRegex.test(callId)) {\n    throw new Error('Call ID is not a valid UUID: ' + callId);\n  }\n  \n  console.log('Valid Call ID extracted:', callId);\n  \n  // Get corresponding customer data from \"Process Customer Data1\" node\n  const customerData = $('Process Customer Data').all()[index].json;\n  \n  return {\n    json: {\n      callId: callId,\n      callStatus: vapiResponse.status || 'initiated',\n      customerName: customerData.name,\n      customerPhone: customerData.phone,\n      customerEmail: customerData.email,\n      customerId: customerData.id,  // Database ID\n      callStartTime: new Date().toISOString()\n    }\n  };\n});"
+      },
+      "id": "b6780a8f-fa29-4946-8f0d-130f697d6288",
+      "name": "Store Call Details2",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -8288,
+        1248
+      ],
+      "notes": "Stores call ID and customer details for later use"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.vapi.ai/call",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"assistantId\": \"3c302940-6536-4d59-81b3-1e43a6dabf9f\",\n  \"phoneNumberId\": \"{{ (['5ce9f721-daec-4365-a935-ff96bc5f3079', '06ca1545-5723-4e1a-871b-45071f13e075', '40e4cb9f-2dc1-43c2-8d8d-6b7d13734029', '375930ea-61e6-460c-a7fa-77a64640824e', '6ba1f3df-2a50-400a-92e3-33ebb0ba72c0', '1a8cf881-2755-40c7-989a-bba138cee2cc','ca8f1cbd-afc2-4e32-8516-347cae74db56','6403abcb-5861-4330-bbd9-f446e7c1e3cc','73473096-6e74-4e12-a6c3-decbe2dabd9a','78d18746-1e01-4707-ad11-622238513ad0','175c66c9-7bec-4270-9d7d-b37f0d2fb52b','33b04e7f-ee51-4282-82d9-2adaf1127370','127b60f5-538f-4b22-af92-35e199559145'])[Math.floor(Math.random() * 13)] }}\",\n  \"customer\": {\n    \"number\": \"{{ $json.phone }}\",\n    \"name\": \"{{ $json.name }}\"\n  },\n  \"name\": \"{{ $json.customerName || 'Cold Call' }}\"\n}\n",
+        "options": {}
+      },
+      "id": "c5e4f020-dad2-443f-8413-c66a207c6e07",
+      "name": "Initiate VAPI Call2",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        -8800,
+        1104
+      ],
+      "retryOnFail": false,
+      "alwaysOutputData": false,
+      "onError": "continueErrorOutput",
+      "notes": "Makes the call using VAPI API"
+    },
+    {
+      "parameters": {
+        "jsCode": "const inputData = $input.all();\nconst customers = inputData[0].json.data;\n\nreturn customers\n  .filter(customer => {\n    if (!customer.phone) return false;\n    let phone = customer.phone.trim();\n    return phone.length > 0;\n  })\n  .map(customer => {\n    let phone = customer.phone.trim();\n    \n    if (!phone.startsWith('+')) {\n      phone = '+' + phone;\n    }\n    \n    return {\n      json: {\n        id: customer.id,\n        name: customer.name,\n        phone: phone,\n        email: customer.email,\n        status: customer.status,\n        call_id: customer.call_id,\n        recording: customer.recording\n      }\n    };\n  });"
+      },
+      "id": "ef1ffe8f-d93b-46d7-ae45-c09e219c21a2",
+      "name": "Process Customer Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -8816,
+        816
+      ],
+      "notes": "Validates and formats customer information"
+    },
+    {
+      "parameters": {
+        "content": "update the roe sheet from pending to calling\n",
+        "height": 224
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -8832,
+        1456
+      ],
+      "id": "66f40441-8942-4a6a-988e-7b37fb6fac19",
+      "name": "Sticky Note6"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://erp.ycsols.com/api/storeycclead ",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"firstname\": \"moez\",\n  \"lastname\": \"moiz\",\n  \"email\": \"jane.smith@example.com\",\n  \"contactno\": \"+92300555779876543\",\n  \"Subject\": \"Math Tutoring\",\n  \"demo_datetime\": \"2025-10-21 15:00:00\",\n  \"status\": 4,\n  \"Parentname\": \"Michael Smith\",\n  \"State\": \"Punjab\",\n  \"grade\": \"10\",\n  \"comment\": \"Interested in online classes\",\n  \"source\": \"Website\",\n  \"timezone\": \"Asia/Karachi\",\n  \"country\": \"Pakistan\"\n}",
+        "options": {
+          "response": {
+            "response": {}
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -6720,
+        1120
+      ],
+      "id": "f4ec481b-becf-45c0-876c-65743a619f10",
+      "name": "HTTP Request14"
+    },
+    {
+      "parameters": {
+        "url": "https://erp.ycsols.com/api/customers?status=calling",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -9504,
+        816
+      ],
+      "id": "5d670c7a-4e0d-47be-9069-ee966d8d3e44",
+      "name": "Fetch Calling Customers1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get calling customers from previous node\nconst apiResponse = $input.first().json;\nconst callingCustomers = apiResponse.data || apiResponse || [];\n\nconsole.log('Currently calling:', callingCustomers.length);\n\n// Calculate available slots\nconst MAX_CONCURRENT = 10;\nconst availableSlots = Math.max(0, MAX_CONCURRENT - callingCustomers.length);\n\nconsole.log('Available slots:', availableSlots);\n\n// If no slots available, stop workflow\nif (availableSlots === 0) {\n  console.log('All 10 slots occupied - stopping workflow');\n  return [];\n}\n\n// Pass available slots to next node\nreturn [{\n  json: {\n    availableSlots: availableSlots,\n    currentlyCalling: callingCustomers.length\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -9264,
+        816
+      ],
+      "id": "829dd920-7d05-4d76-9ccb-47c8e85a534f",
+      "name": "Calculate Available Slots1"
+    },
+    {
+      "parameters": {
+        "url": "=https://erp.ycsols.com/api/customers?campain_id={{ $('Webhook3').item.json.query.campaign_id }}&status=pending&limit={{ $('Calculate Available Slots1').item.json.availableSlots }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -9056,
+        816
+      ],
+      "id": "8761c438-b80e-4449-936c-cf69c8d3c457",
+      "name": "Fetch Pending Customers1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\nreturn items.map(item => {\n  const data = item.json;\n  const summary = data.summary || '';\n  \n  // Handle null or \"null\" string summaries\n  if (summary === 'null' || summary === '' || !summary) {\n    return {\n      json: {\n        callId: data.callId,\n        meetingAccepted: false,\n        childName: 'Not confirmed',\n        parentName: 'Not confirmed',\n        phone: 'Not confirmed',\n        email: 'Not confirmed',\n        timezone: 'Not confirmed',\n        appointmentDateTime: 'Not confirmed',\n        childGrade: 'Not confirmed',\n        subject: 'Not confirmed'\n      }\n    };\n  }\n  \n  // Helper function to extract field value from structured section\n  const extractField = (text, fieldName) => {\n    const regex = new RegExp(`${fieldName}:\\\\s*(.+?)(?:\\\\n|$)`, 'i');\n    const match = text.match(regex);\n    return match ? match[1].trim() : 'Not confirmed';\n  };\n  \n  // Extract structured fields from the formatted sections\n  const appointmentBooked = extractField(summary, 'Booked');\n  const meetingAccepted = appointmentBooked.toLowerCase().includes('yes');\n  \n  // Extract appointment time and date\n  const appointmentTime = extractField(summary, 'Time');\n  const appointmentDate = extractField(summary, 'Date');\n  const appointmentDateTime = (appointmentTime !== 'Not confirmed' || appointmentDate !== 'Not confirmed') \n    ? `${appointmentDate} at ${appointmentTime}`.replace('Not confirmed at ', '').replace(' at Not confirmed', '')\n    : 'Not confirmed';\n  \n  // Extract customer info\n  const parentName = extractField(summary, 'Name');\n  const email = extractField(summary, 'Email');\n  const phone = extractField(summary, 'Phone');\n  const timezone = extractField(summary, 'Timezone');\n  \n  // Extract child info\n  const childName = extractField(summary, 'Child Name');\n  const childGradeRaw = extractField(summary, 'Grade');\n  \n  // Extract only the numeric value from grade\n  let childGrade = null;\n  if (childGradeRaw !== 'Not confirmed') {\n    const gradeMatch = childGradeRaw.match(/\\d+/);\n    if (gradeMatch) {\n      childGrade = parseInt(gradeMatch[0], 10);\n    }\n  }\n  \n  const subject = extractField(summary, 'Subject');\n  \n  return {\n    json: {\n      callId: data.callId,\n      meetingAccepted: meetingAccepted,\n      childName: childName,\n      parentName: parentName,\n      phone: phone,\n      email: email,\n      timezone: timezone,\n      appointmentDateTime: appointmentDateTime,\n      childGrade: childGrade,\n      subject: subject\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -7168,
+        1344
+      ],
+      "id": "b5db8e61-2b24-4770-b0aa-65d5a52f6596",
+      "name": "Code2"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://erp.ycsols.com/api/customers/{{ $('Process Customer Data').item.json.id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"status\": \"invalid\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -8576,
+        1088
+      ],
+      "id": "fa1733f6-c805-4798-a709-0a3cf930e84f",
+      "name": "HTTP Request15"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "7b958167-8d45-4ecd-b4ff-2385ed073b70",
+              "leftValue": "={{ $json.phone.startsWith('+1') }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -9376,
+        1952
+      ],
+      "id": "55d142da-ca5e-4ff2-92f2-dce5be73306d",
+      "name": "If4"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://erp.ycsols.com/api/customers/{{ $json.callId }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "status",
+              "value": "completed"
+            },
+            {
+              "name": "calling_link",
+              "value": "={{ $json.artifact.recordingUrl }}"
+            },
+            {
+              "name": "description",
+              "value": "={{ $json.summary }}"
+            },
+            {
+              "name": "agent_id",
+              "value": "={{ $('Webhook3').item.json.query.agent_id }}"
+            },
+            {
+              "name": "duration",
+              "value": "={{ \n(() => {\n  const start = new Date($('Check Call Status3').item.json.startedAt);\n  const end = new Date($('Check Call Status3').item.json.endedAt);\n\n  if (!start || !end || isNaN(start) || isNaN(end)) {\n    return '00:00:00';\n  }\n\n  const diffMs = end - start; // difference in milliseconds\n  const totalSeconds = Math.floor(diffMs / 1000);\n\n  const hours = Math.floor(totalSeconds / 3600);\n  const minutes = Math.floor((totalSeconds % 3600) / 60);\n  const seconds = totalSeconds % 60;\n\n  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;\n})()\n}}"
+            },
+            {
+              "name": "transcript",
+              "value": "={{ $('Call Completed?3').item.json.transcript || 0  }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -7696,
+        2320
+      ],
+      "id": "8642fd3b-d15a-4010-b544-faf6d7b9945f",
+      "name": "HTTP Request1",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://erp.ycsols.com/api/customers/{{ $('Process Customer Data').item.json.id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"status\": \"calling\",\n  \"call_id\": \"{{ $json.id }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -9104,
+        3072
+      ],
+      "id": "13931d31-24a5-4e20-b05b-db8de25ba614",
+      "name": "HTTP Request16"
+    },
+    {
+      "parameters": {
+        "content": "if namke, email, phone number and meeting date exsist in summary then hit erp end point",
+        "height": 256,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -7184,
+        2224
+      ],
+      "id": "fa94d2b8-1608-472d-bba9-c9d3a21825eb",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "if no name, email, phone number and meeting date then workflow ends ",
+        "height": 256,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -7440,
+        2576
+      ],
+      "id": "f2fb2d65-238e-42f8-8d9e-431b30dfceea",
+      "name": "Sticky Note51"
+    },
+    {
+      "parameters": {
+        "content": "this node see if the summary have email, name and phone number ",
+        "height": 208,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -7488,
+        2256
+      ],
+      "id": "40301b29-74fc-4ded-b81d-13fe154acd08",
+      "name": "Sticky Note52"
+    },
+    {
+      "parameters": {
+        "content": "if call hasnt been ended go back to wait node and wait for another 60 seconds and then check call status again this process is repeated until call ends and status gets updated",
+        "height": 320,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -8096,
+        1712
+      ],
+      "id": "3116afd1-a084-436a-9605-0439ddfcb3f2",
+      "name": "Sticky Note53"
+    },
+    {
+      "parameters": {
+        "content": "update the status of call from calling to completed",
+        "height": 224,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -7760,
+        2240
+      ],
+      "id": "ace8a892-587b-4b69-a0f0-1e1fd1d3fcc6",
+      "name": "Sticky Note54"
+    },
+    {
+      "parameters": {
+        "content": "if call is ended it analyzes call summary and look for whether the meeting have been booked or not and gather full name, email and phone number from call transcribtion",
+        "height": 272,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -7776,
+        2512
+      ],
+      "id": "32d991f2-3ed8-4d62-8ee0-7b89dfa717a7",
+      "name": "Sticky Note55"
+    },
+    {
+      "parameters": {
+        "content": "this node decide what to do on basis of call status ",
+        "height": 224,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -8096,
+        2288
+      ],
+      "id": "0be6dfa0-b7e2-4f03-8155-535947c8c7ea",
+      "name": "Sticky Note56"
+    },
+    {
+      "parameters": {
+        "content": "check the call status to see if call have ended or not",
+        "height": 240,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -8384,
+        2272
+      ],
+      "id": "07bc3a0e-b329-458c-b3fc-5c116406c5a1",
+      "name": "Sticky Note57"
+    },
+    {
+      "parameters": {
+        "content": "this node do exactly nothing just make the workflow to wait for 60 seconds",
+        "height": 240,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -8672,
+        2272
+      ],
+      "id": "f3d985e6-f80a-415d-9625-c173440f23cb",
+      "name": "Sticky Note58"
+    },
+    {
+      "parameters": {
+        "amount": 90,
+        "unit": "seconds"
+      },
+      "id": "cb391802-5b30-4cbd-b52f-e772a4936d34",
+      "name": "Wait 60 Seconds3",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [
+        -8608,
+        2352
+      ],
+      "webhookId": "f4abb3c3-c205-4168-ad1c-e79e6cffed3f",
+      "notes": "Initial wait before checking call status"
+    },
+    {
+      "parameters": {
+        "content": "stores call details such as call id assistant id phone number id etc\n",
+        "height": 256,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -8688,
+        2688
+      ],
+      "id": "05686347-a8e0-42fd-b5ed-a27292c6fae8",
+      "name": "Sticky Note59"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "3599f988-b52e-4fb4-a271-c1eb4395c7b1",
+              "leftValue": "={{ $json.meetingAccepted }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "f5fd2e7a-026e-4306-9a18-0596221d0f38",
+              "leftValue": "={{ $('Initiate VAPI Call3').item.json.id }}",
+              "rightValue": "={{ $json.id }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -7408,
+        2336
+      ],
+      "id": "0ae58fa4-160e-4374-adc0-a4e04e98fdb0",
+      "name": "If5"
+    },
+    {
+      "parameters": {},
+      "id": "ca252b70-f991-4700-8fbb-03da2822af2e",
+      "name": "Success - Data Sent to ERP1",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        -6864,
+        2320
+      ],
+      "notes": "Log successful completion"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://erp.ycsols.com/api/storeycclead",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"firstname\": \"{{ $json.parentName }}\",\n  \"email\": \"{{ $json.email }}\",\n  \"contactno\": \"{{ $json.phone }}\",\n  \"Subject\": \"{{ $json.subject }}\",\n  \"grade\": \"{{ $json.childGrade }}\",\n  \"demo_datetime\": \"{{ $json.appointmentDateTime }}\"\n}\n",
+        "options": {
+          "proxy": ""
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -7120,
+        2320
+      ],
+      "id": "4b494996-87fc-404e-bde9-a17d98c82dff",
+      "name": "HTTP Request17"
+    },
+    {
+      "parameters": {},
+      "id": "4fc05fa2-3b8b-46f9-ac17-ba3b3f5bc8d3",
+      "name": "Meeting Declined - Process End3",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        -7376,
+        2672
+      ],
+      "notes": "Log when meeting is declined and end process"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nreturn items.map(item => {\n  const data = item.json;\n  \n  // Get phone number and remove '+' if it exists\n  let phoneNumber = data.customer?.number || '';\n  if (phoneNumber.startsWith('+')) {\n    phoneNumber = phoneNumber.substring(1);\n  }\n  \n  return {\n    json: {\n      callId: data.id,\n      summary: data.summary || \"null\",\n      phoneNumber: phoneNumber,\n      artifact: {\n        recordingUrl: data.artifact?.recordingUrl || null,\n        stereoRecordingUrl: data.artifact?.stereoRecordingUrl || null\n      },\n      // Add pre-formatted data for HTTP request\n      httpRequestData: {\n        status: \"completed\",\n        calling_link: data.artifact?.recordingUrl || null,\n        description: data.summary || \"null\"\n      }\n    }\n  };\n});\n```\n\nThen in your HTTP Request node, reference the pre-built object:\n```\n{{ $json.httpRequestData }}"
+      },
+      "id": "17029efb-04aa-4bfa-b141-17027a8b5360",
+      "name": "Analyze Call Summary3",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -7696,
+        2656
+      ],
+      "notes": "Analyzes summary and extracts customer info"
+    },
+    {
+      "parameters": {
+        "amount": 1.5,
+        "unit": "minutes"
+      },
+      "id": "c47fa8b0-9a32-49ab-bfaa-02dc393ac5e7",
+      "name": "Wait & Retry3",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [
+        -8032,
+        1856
+      ],
+      "webhookId": "480f637b-b8f1-4455-ac6c-c462fbc13b93",
+      "notes": "Wait before checking again"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "condition-1",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "ended",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "id": "974aa7f4-f791-4ca0-88df-a3b03e898454",
+      "name": "Call Completed?3",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -8032,
+        2352
+      ],
+      "notes": "Checks if call is completed"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.vapi.ai/call/{{ $('Initiate VAPI Call3').item.json.id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "f1db7345-545a-48c9-91ab-d994f620f912",
+      "name": "Check Call Status3",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        -8304,
+        2352
+      ],
+      "onError": "continueErrorOutput",
+      "notes": "Checks if call has completed"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Process ALL VAPI responses instead of just first one\nconst allResponses = $input.all();\nreturn allResponses.map((item, index) => {\n  const vapiResponse = item.json;\n  \n  console.log(`=== VAPI RESPONSE ${index + 1} ===`);\n  console.log(JSON.stringify(vapiResponse, null, 2));\n  \n  let callId = vapiResponse.id || vapiResponse.callId || vapiResponse.call_id;\n  \n  if (!callId) {\n    throw new Error('Failed to get call ID from VAPI response. Full response: ' + JSON.stringify(vapiResponse));\n  }\n  \n  // Validate UUID format\n  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;\n  if (!uuidRegex.test(callId)) {\n    throw new Error('Call ID is not a valid UUID: ' + callId);\n  }\n  \n  console.log('Valid Call ID extracted:', callId);\n  \n  // Get corresponding customer data from \"Process Customer Data1\" node\n  const customerData = $('Process Customer Data').all()[index].json;\n  \n  return {\n    json: {\n      callId: callId,\n      callStatus: vapiResponse.status || 'initiated',\n      customerName: customerData.name,\n      customerPhone: customerData.phone,\n      customerEmail: customerData.email,\n      customerId: customerData.id,  // Database ID\n      callStartTime: new Date().toISOString()\n    }\n  };\n});"
+      },
+      "id": "109ad53e-54ae-4b3d-943b-c662944d3983",
+      "name": "Store Call Details3",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -8624,
+        2800
+      ],
+      "notes": "Stores call ID and customer details for later use"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.vapi.ai/call",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"assistantId\": \"3c302940-6536-4d59-81b3-1e43a6dabf9f\",\n  \"phoneNumberId\": \"{{ (['491e8845-cfc5-429f-8747-61c5c0f7d75b', 'bbbf33f6-e3ad-47a2-b11b-029febe6b4cf'])[Math.floor(Math.random() * 2)] }}\",\n  \"customer\": {\n    \"number\": \"{{ $json.phone }}\",\n    \"name\": \"{{ $json.name }}\"\n  },\n  \"name\": \"{{ $json.customerName || 'Cold Call' }}\"\n}",
+        "options": {}
+      },
+      "id": "aff4c84e-790d-45c8-8881-5de48d98e26b",
+      "name": "Initiate VAPI Call3",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        -9136,
+        2624
+      ],
+      "retryOnFail": false,
+      "alwaysOutputData": false,
+      "onError": "continueErrorOutput",
+      "notes": "Makes the call using VAPI API"
+    },
+    {
+      "parameters": {
+        "content": "update the roe sheet from pending to calling\n",
+        "height": 224
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -9168,
+        3008
+      ],
+      "id": "a03d6386-dc23-48ba-a6c4-7211945c88ed",
+      "name": "Sticky Note7"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://erp.ycsols.com/api/storeycclead ",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"firstname\": \"moez\",\n  \"lastname\": \"moiz\",\n  \"email\": \"jane.smith@example.com\",\n  \"contactno\": \"+92300555779876543\",\n  \"Subject\": \"Math Tutoring\",\n  \"demo_datetime\": \"2025-10-21 15:00:00\",\n  \"status\": 4,\n  \"Parentname\": \"Michael Smith\",\n  \"State\": \"Punjab\",\n  \"grade\": \"10\",\n  \"comment\": \"Interested in online classes\",\n  \"source\": \"Website\",\n  \"timezone\": \"Asia/Karachi\",\n  \"country\": \"Pakistan\"\n}",
+        "options": {
+          "response": {
+            "response": {}
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -7056,
+        2672
+      ],
+      "id": "e3cc499f-3f63-4cdd-b09d-4d0018549f47",
+      "name": "HTTP Request18"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\nreturn items.map(item => {\n  const data = item.json;\n  const summary = data.summary || '';\n  \n  // Handle null or \"null\" string summaries\n  if (summary === 'null' || summary === '' || !summary) {\n    return {\n      json: {\n        callId: data.callId,\n        meetingAccepted: false,\n        childName: 'Not confirmed',\n        parentName: 'Not confirmed',\n        phone: 'Not confirmed',\n        email: 'Not confirmed',\n        timezone: 'Not confirmed',\n        appointmentDateTime: 'Not confirmed',\n        childGrade: 'Not confirmed',\n        subject: 'Not confirmed'\n      }\n    };\n  }\n  \n  // Helper function to extract field value from structured section\n  const extractField = (text, fieldName) => {\n    const regex = new RegExp(`${fieldName}:\\\\s*(.+?)(?:\\\\n|$)`, 'i');\n    const match = text.match(regex);\n    return match ? match[1].trim() : 'Not confirmed';\n  };\n  \n  // Extract structured fields from the formatted sections\n  const appointmentBooked = extractField(summary, 'Booked');\n  const meetingAccepted = appointmentBooked.toLowerCase().includes('yes');\n  \n  // Extract appointment time and date\n  const appointmentTime = extractField(summary, 'Time');\n  const appointmentDate = extractField(summary, 'Date');\n  const appointmentDateTime = (appointmentTime !== 'Not confirmed' || appointmentDate !== 'Not confirmed') \n    ? `${appointmentDate} at ${appointmentTime}`.replace('Not confirmed at ', '').replace(' at Not confirmed', '')\n    : 'Not confirmed';\n  \n  // Extract customer info\n  const parentName = extractField(summary, 'Name');\n  const email = extractField(summary, 'Email');\n  const phone = extractField(summary, 'Phone');\n  const timezone = extractField(summary, 'Timezone');\n  \n  // Extract child info\n  const childName = extractField(summary, 'Child Name');\n  const childGradeRaw = extractField(summary, 'Grade');\n  \n  // Extract only the numeric value from grade\n  let childGrade = null;\n  if (childGradeRaw !== 'Not confirmed') {\n    const gradeMatch = childGradeRaw.match(/\\d+/);\n    if (gradeMatch) {\n      childGrade = parseInt(gradeMatch[0], 10);\n    }\n  }\n  \n  const subject = extractField(summary, 'Subject');\n  \n  return {\n    json: {\n      callId: data.callId,\n      meetingAccepted: meetingAccepted,\n      childName: childName,\n      parentName: parentName,\n      phone: phone,\n      email: email,\n      timezone: timezone,\n      appointmentDateTime: appointmentDateTime,\n      childGrade: childGrade,\n      subject: subject\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -7504,
+        2896
+      ],
+      "id": "7d297d41-102b-4bb8-8965-7db3557c9af0",
+      "name": "Code3"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://erp.ycsols.com/api/customers/{{ $('Process Customer Data').item.json.id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"status\": \"invalid\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -8912,
+        2640
+      ],
+      "id": "21071de4-a74a-49ee-a3b5-89ab5118f11a",
+      "name": "HTTP Request19"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://erp.ycsols.com/api/customers/{{ $json.callId }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "status",
+              "value": "completed"
+            },
+            {
+              "name": "calling_link",
+              "value": "={{ $json.artifact.recordingUrl }}"
+            },
+            {
+              "name": "description",
+              "value": "={{ $json.summary }}"
+            },
+            {
+              "name": "status_comment",
+              "value": "={{ $('Check Call Status4').item.json.endedReason }}"
+            },
+            {
+              "name": "agent_id",
+              "value": "={{ $('Webhook4').item.json.query.agent_id }}"
+            },
+            {
+              "name": "duration",
+              "value": "={{ \n(() => {\n  const start = new Date($('Check Call Status4').item.json.startedAt);\n  const end = new Date($('Check Call Status4').item.json.endedAt);\n\n  if (!start || !end || isNaN(start) || isNaN(end)) {\n    return '00:00:00';\n  }\n\n  const diffMs = end - start; // difference in milliseconds\n  const totalSeconds = Math.floor(diffMs / 1000);\n\n  const hours = Math.floor(totalSeconds / 3600);\n  const minutes = Math.floor((totalSeconds % 3600) / 60);\n  const seconds = totalSeconds % 60;\n\n  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;\n})()\n}}"
+            },
+            {
+              "name": "transcript",
+              "value": "={{ $node['Check Call Status4'].json.transcript || null }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -7280,
+        4240
+      ],
+      "id": "f1a1ffbf-d2a3-4116-bcfa-8544b36119f3",
+      "name": "HTTP Request20",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://erp.ycsols.com/api/customers/{{ $('Process Customer Data2').item.json.id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"status\": \"calling\",\n  \"call_id\": \"{{ $json.id }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -8688,
+        4992
+      ],
+      "id": "a330c6d4-5322-4b79-aa11-b39306dc388d",
+      "name": "HTTP Request21"
+    },
+    {
+      "parameters": {
+        "content": "if namke, email, phone number and meeting date exsist in summary then hit erp end point",
+        "height": 256,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -6768,
+        4144
+      ],
+      "id": "5f4fc411-f0e4-4979-929a-81b35f4bb951",
+      "name": "Sticky Note60"
+    },
+    {
+      "parameters": {
+        "content": "if no name, email, phone number and meeting date then workflow ends ",
+        "height": 256,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -7024,
+        4496
+      ],
+      "id": "abfd23d3-7e2a-4e6c-a0fd-0b8e9ce2d177",
+      "name": "Sticky Note61"
+    },
+    {
+      "parameters": {
+        "content": "this node see if the summary have email, name and phone number ",
+        "height": 208,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -7072,
+        4176
+      ],
+      "id": "3350690d-1e46-42d2-92d3-73c2f864fbed",
+      "name": "Sticky Note62"
+    },
+    {
+      "parameters": {
+        "content": "update the status of call from calling to completed",
+        "height": 224,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -7344,
+        4160
+      ],
+      "id": "a50832fa-8bdd-45df-abcf-b5b7e288bf07",
+      "name": "Sticky Note63"
+    },
+    {
+      "parameters": {
+        "content": "if call is ended it analyzes call summary and look for whether the meeting have been booked or not and gather full name, email and phone number from call transcribtion",
+        "height": 272,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -7360,
+        4432
+      ],
+      "id": "7ffd9b07-bd46-4085-b65b-96426aaf3fd5",
+      "name": "Sticky Note64"
+    },
+    {
+      "parameters": {
+        "content": "this node decide what to do on basis of call status ",
+        "height": 224,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -7680,
+        4208
+      ],
+      "id": "19a77864-32f6-4948-8148-4a06d017028d",
+      "name": "Sticky Note65"
+    },
+    {
+      "parameters": {
+        "content": "check the call status to see if call have ended or not",
+        "height": 240,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -7968,
+        4192
+      ],
+      "id": "e7aaf7dc-6cd3-442c-ac5e-a6a2fe99f063",
+      "name": "Sticky Note66"
+    },
+    {
+      "parameters": {
+        "content": "this node do exactly nothing just make the workflow to wait for 60 seconds",
+        "height": 240,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -8256,
+        4192
+      ],
+      "id": "8c6e93f4-1266-4732-80ff-3d3923e0e023",
+      "name": "Sticky Note67"
+    },
+    {
+      "parameters": {
+        "amount": 120,
+        "unit": "seconds"
+      },
+      "id": "57a4f1ca-125e-47ed-8299-cfbe4714bbfd",
+      "name": "Wait 60 Seconds4",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [
+        -8192,
+        4272
+      ],
+      "webhookId": "f4abb3c3-c205-4168-ad1c-e79e6cffed3f",
+      "notes": "Initial wait before checking call status"
+    },
+    {
+      "parameters": {
+        "content": "stores call details such as call id assistant id phone number id etc\n",
+        "height": 256,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -8272,
+        4608
+      ],
+      "id": "a7594ef2-8782-48f1-ba3c-d94d8e76a306",
+      "name": "Sticky Note68"
+    },
+    {
+      "parameters": {
+        "content": "initiate the vapi by hitting the api\n",
+        "height": 224
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -8784,
+        4480
+      ],
+      "id": "ca39485a-e261-44ad-a31d-39f61a1cd3a5",
+      "name": "Sticky Note69"
+    },
+    {
+      "parameters": {
+        "content": "transfer the collected data into format that is supported by vapi\n"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -8800,
+        4224
+      ],
+      "id": "c9e8a1ef-0ca6-4e2e-993e-f856427657ae",
+      "name": "Sticky Note70"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "3599f988-b52e-4fb4-a271-c1eb4395c7b1",
+              "leftValue": "={{ $json.meetingAccepted }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -6992,
+        4256
+      ],
+      "id": "796c9467-66ab-42b2-963a-f498f5a3e691",
+      "name": "If6"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://erp.ycsols.com/api/storeycclead",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"firstname\": \"{{ $json.parentName }}\",\n  \"email\": \"{{ $json.email }}\",\n  \"contactno\": \"{{ $json.phone }}\",\n  \"Subject\": \"{{ $json.subject }}\",\n  \"grade\": \"{{ $json.childGrade }}\",\n  \"demo_datetime\": \"{{ $json.appointmentDateTime }}\"\n}\n",
+        "options": {
+          "proxy": ""
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -6704,
+        4240
+      ],
+      "id": "2de457c7-da5b-4fa5-81ee-ab146665a79a",
+      "name": "HTTP Request22"
+    },
+    {
+      "parameters": {},
+      "id": "f690c0cf-558e-4a11-9e63-d473b8a1c23b",
+      "name": "Meeting Declined - Process End4",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        -6960,
+        4592
+      ],
+      "notes": "Log when meeting is declined and end process"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nreturn items.map(item => {\n  const data = item.json;\n  \n  // Get phone number and remove '+' if it exists\n  let phoneNumber = data.customer?.number || '';\n  if (phoneNumber.startsWith('+')) {\n    phoneNumber = phoneNumber.substring(1);\n  }\n  \n  return {\n    json: {\n      callId: data.id,\n      summary: data.summary || \"null\",\n      phoneNumber: phoneNumber,\n      artifact: {\n        recordingUrl: data.artifact?.recordingUrl || null,\n        stereoRecordingUrl: data.artifact?.stereoRecordingUrl || null\n      },\n      // Add pre-formatted data for HTTP request\n      httpRequestData: {\n        status: \"completed\",\n        calling_link: data.artifact?.recordingUrl || null,\n        description: data.summary || \"null\"\n      }\n    }\n  };\n});\n```\n\nThen in your HTTP Request node, reference the pre-built object:\n```\n{{ $json.httpRequestData }}"
+      },
+      "id": "6639d1aa-5646-402c-880c-944e48c3f028",
+      "name": "Analyze Call Summary4",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -7280,
+        4576
+      ],
+      "notes": "Analyzes summary and extracts customer info"
+    },
+    {
+      "parameters": {
+        "amount": 1.5,
+        "unit": "minutes"
+      },
+      "id": "8f7c0a68-74dd-489b-bd03-77c7515d667c",
+      "name": "Wait & Retry4",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [
+        -7616,
+        3776
+      ],
+      "webhookId": "480f637b-b8f1-4455-ac6c-c462fbc13b93",
+      "notes": "Wait before checking again"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "condition-1",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "ended",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "e6f884c7-a643-4f1b-91fe-12d8d24ed4c8",
+      "name": "Call Completed?4",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -7616,
+        4272
+      ],
+      "notes": "Checks if call is completed"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.vapi.ai/call/{{ $('Initiate VAPI Call4').item.json.id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "ce12b6f6-690d-408d-a22c-4659833e86ff",
+      "name": "Check Call Status4",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        -7888,
+        4272
+      ],
+      "onError": "continueErrorOutput",
+      "notes": "Checks if call has completed"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Process ALL VAPI responses instead of just first one\nconst allResponses = $input.all();\nreturn allResponses.map((item, index) => {\n  const vapiResponse = item.json;\n  \n  console.log(`=== VAPI RESPONSE ${index + 1} ===`);\n  console.log(JSON.stringify(vapiResponse, null, 2));\n  \n  let callId = vapiResponse.id || vapiResponse.callId || vapiResponse.call_id;\n  \n  if (!callId) {\n    throw new Error('Failed to get call ID from VAPI response. Full response: ' + JSON.stringify(vapiResponse));\n  }\n  \n  // Validate UUID format\n  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;\n  if (!uuidRegex.test(callId)) {\n    throw new Error('Call ID is not a valid UUID: ' + callId);\n  }\n  \n  console.log('Valid Call ID extracted:', callId);\n  \n  // Get corresponding customer data from \"Process Customer Data1\" node\n  const customerData = $('Process Customer Data2').all()[index].json;\n  \n  return {\n    json: {\n      callId: callId,\n      callStatus: vapiResponse.status || 'initiated',\n      customerName: customerData.name,\n      customerPhone: customerData.phone,\n      customerEmail: customerData.email,\n      customerId: customerData.id,  // Database ID\n      callStartTime: new Date().toISOString()\n    }\n  };\n});"
+      },
+      "id": "8f57aa57-ebc0-467c-9006-40c10fda9fd5",
+      "name": "Store Call Details4",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -8208,
+        4720
+      ],
+      "notes": "Stores call ID and customer details for later use"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.vapi.ai/call",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"assistantId\": \"3c302940-6536-4d59-81b3-1e43a6dabf9f\",\n  \"phoneNumberId\": \"{{ (['5ce9f721-daec-4365-a935-ff96bc5f3079', '06ca1545-5723-4e1a-871b-45071f13e075', '40e4cb9f-2dc1-43c2-8d8d-6b7d13734029', '375930ea-61e6-460c-a7fa-77a64640824e', '6ba1f3df-2a50-400a-92e3-33ebb0ba72c0', '1a8cf881-2755-40c7-989a-bba138cee2cc','ca8f1cbd-afc2-4e32-8516-347cae74db56','6403abcb-5861-4330-bbd9-f446e7c1e3cc','73473096-6e74-4e12-a6c3-decbe2dabd9a','78d18746-1e01-4707-ad11-622238513ad0','175c66c9-7bec-4270-9d7d-b37f0d2fb52b','33b04e7f-ee51-4282-82d9-2adaf1127370','127b60f5-538f-4b22-af92-35e199559145'])[Math.floor(Math.random() * 13)] }}\",\n  \"customer\": {\n    \"number\": \"{{ $json.phone }}\",\n    \"name\": \"{{ $json.name }}\"\n  },\n  \"name\": \"{{ $json.customerName || 'Cold Call' }}\"\n}\n",
+        "options": {}
+      },
+      "id": "d1c30d85-68bc-44ed-9d2b-5c5112b11dd0",
+      "name": "Initiate VAPI Call4",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        -8720,
+        4576
+      ],
+      "retryOnFail": false,
+      "alwaysOutputData": false,
+      "onError": "continueErrorOutput",
+      "notes": "Makes the call using VAPI API"
+    },
+    {
+      "parameters": {
+        "jsCode": "const inputData = $input.all();\nconst customers = inputData[0].json.data;\n\nreturn customers\n  .filter(customer => {\n    if (!customer.phone) return false;\n    let phone = customer.phone.trim();\n    return phone.length > 0;\n  })\n  .map(customer => {\n    let phone = customer.phone.trim();\n    \n    if (!phone.startsWith('+')) {\n      phone = '+' + phone;\n    }\n    \n    return {\n      json: {\n        id: customer.id,\n        name: customer.name,\n        phone: phone,\n        email: customer.email,\n        status: customer.status,\n        call_id: customer.call_id,\n        recording: customer.recording\n      }\n    };\n  });"
+      },
+      "id": "ec9d7c31-9b24-4910-be9b-f9c8a0b6b354",
+      "name": "Process Customer Data2",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -8720,
+        4304
+      ],
+      "notes": "Validates and formats customer information"
+    },
+    {
+      "parameters": {
+        "content": "update the roe sheet from pending to calling\n",
+        "height": 224
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -8752,
+        4928
+      ],
+      "id": "2a6642b3-f60b-4457-842f-7756217b2241",
+      "name": "Sticky Note8"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://erp.ycsols.com/api/storeycclead ",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"firstname\": \"moez\",\n  \"lastname\": \"moiz\",\n  \"email\": \"jane.smith@example.com\",\n  \"contactno\": \"+92300555779876543\",\n  \"Subject\": \"Math Tutoring\",\n  \"demo_datetime\": \"2025-10-21 15:00:00\",\n  \"status\": 4,\n  \"Parentname\": \"Michael Smith\",\n  \"State\": \"Punjab\",\n  \"grade\": \"10\",\n  \"comment\": \"Interested in online classes\",\n  \"source\": \"Website\",\n  \"timezone\": \"Asia/Karachi\",\n  \"country\": \"Pakistan\"\n}",
+        "options": {
+          "response": {
+            "response": {}
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -6640,
+        4592
+      ],
+      "id": "b57b28b4-3cc3-4854-b809-a3fbeaa0deb7",
+      "name": "HTTP Request23"
+    },
+    {
+      "parameters": {
+        "url": "https://erp.ycsols.com/api/customers?status=calling",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -9424,
+        4288
+      ],
+      "id": "f781513f-2921-4a24-9818-ef2f1d5feacf",
+      "name": "Fetch Calling Customers2"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get calling customers from previous node\nconst apiResponse = $input.first().json;\nconst callingCustomers = apiResponse.data || apiResponse || [];\n\nconsole.log('Currently calling:', callingCustomers.length);\n\n// Calculate available slots\nconst MAX_CONCURRENT = 10;\nconst availableSlots = Math.max(0, MAX_CONCURRENT - callingCustomers.length);\n\nconsole.log('Available slots:', availableSlots);\n\n// If no slots available, stop workflow\nif (availableSlots === 0) {\n  console.log('All 10 slots occupied - stopping workflow');\n  return [];\n}\n\n// Pass available slots to next node\nreturn [{\n  json: {\n    availableSlots: availableSlots,\n    currentlyCalling: callingCustomers.length\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -9184,
+        4288
+      ],
+      "id": "9b1d54b9-fad6-4462-8e08-1adaae868ff3",
+      "name": "Calculate Available Slots2"
+    },
+    {
+      "parameters": {
+        "url": "=https://erp.ycsols.com/api/customers?campain_id={{ $('Webhook4').item.json.query.campaign_id }}&status=pending&limit={{ $('Calculate Available Slots2').item.json.availableSlots }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -8976,
+        4288
+      ],
+      "id": "0a28a52e-f161-4ea2-829d-0d5a76d74766",
+      "name": "Fetch Pending Customers2"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\nreturn items.map(item => {\n  const data = item.json;\n  const summary = data.summary || '';\n  \n  // Handle null or \"null\" string summaries\n  if (summary === 'null' || summary === '' || !summary) {\n    return {\n      json: {\n        callId: data.callId,\n        meetingAccepted: false,\n        childName: 'Not confirmed',\n        parentName: 'Not confirmed',\n        phone: 'Not confirmed',\n        email: 'Not confirmed',\n        timezone: 'Not confirmed',\n        appointmentDateTime: 'Not confirmed',\n        childGrade: 'Not confirmed',\n        subject: 'Not confirmed'\n      }\n    };\n  }\n  \n  // Helper function to extract field value from structured section\n  const extractField = (text, fieldName) => {\n    const regex = new RegExp(`${fieldName}:\\\\s*(.+?)(?:\\\\n|$)`, 'i');\n    const match = text.match(regex);\n    return match ? match[1].trim() : 'Not confirmed';\n  };\n  \n  // Extract structured fields from the formatted sections\n  const appointmentBooked = extractField(summary, 'Booked');\n  const meetingAccepted = appointmentBooked.toLowerCase().includes('yes');\n  \n  // Extract appointment time and date\n  const appointmentTime = extractField(summary, 'Time');\n  const appointmentDate = extractField(summary, 'Date');\n  const appointmentDateTime = (appointmentTime !== 'Not confirmed' || appointmentDate !== 'Not confirmed') \n    ? `${appointmentDate} at ${appointmentTime}`.replace('Not confirmed at ', '').replace(' at Not confirmed', '')\n    : 'Not confirmed';\n  \n  // Extract customer info\n  const parentName = extractField(summary, 'Name');\n  const email = extractField(summary, 'Email');\n  const phone = extractField(summary, 'Phone');\n  const timezone = extractField(summary, 'Timezone');\n  \n  // Extract child info\n  const childName = extractField(summary, 'Child Name');\n  const childGradeRaw = extractField(summary, 'Grade');\n  \n  // Extract only the numeric value from grade\n  let childGrade = null;\n  if (childGradeRaw !== 'Not confirmed') {\n    const gradeMatch = childGradeRaw.match(/\\d+/);\n    if (gradeMatch) {\n      childGrade = parseInt(gradeMatch[0], 10);\n    }\n  }\n  \n  const subject = extractField(summary, 'Subject');\n  \n  return {\n    json: {\n      callId: data.callId,\n      meetingAccepted: meetingAccepted,\n      childName: childName,\n      parentName: parentName,\n      phone: phone,\n      email: email,\n      timezone: timezone,\n      appointmentDateTime: appointmentDateTime,\n      childGrade: childGrade,\n      subject: subject\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -7088,
+        4816
+      ],
+      "id": "f915355e-be98-4226-a8ea-c670129864ad",
+      "name": "Code4"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://erp.ycsols.com/api/customers/{{ $('Process Customer Data2').item.json.id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"status\": \"invalid\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -8496,
+        4560
+      ],
+      "id": "271e3894-6aa6-4597-9026-4c1193400601",
+      "name": "HTTP Request24"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "7b958167-8d45-4ecd-b4ff-2385ed073b70",
+              "leftValue": "={{ $json.phone.startsWith('+1') }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -9296,
+        5424
+      ],
+      "id": "919855a4-f052-44f2-8d40-48578860fa8f",
+      "name": "If7"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://erp.ycsols.com/api/customers/{{ $json.callId }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "status",
+              "value": "completed"
+            },
+            {
+              "name": "calling_link",
+              "value": "={{ $json.artifact.recordingUrl }}"
+            },
+            {
+              "name": "description",
+              "value": "={{ $json.summary }}"
+            },
+            {
+              "name": "agent_id",
+              "value": "={{ $('Webhook4').item.json.query.agent_id }}"
+            },
+            {
+              "name": "transcript",
+              "value": "={{ $('Call Completed?5').item.json.transcript || 0  }}"
+            },
+            {
+              "name": "duration",
+              "value": "={{ \n(() => {\n  const start = new Date($('Check Call Status5').item.json.startedAt);\n  const end = new Date($('Check Call Status5').item.json.endedAt);\n\n  if (!start || !end || isNaN(start) || isNaN(end)) {\n    return '00:00:00';\n  }\n\n  const diffMs = end - start; // difference in milliseconds\n  const totalSeconds = Math.floor(diffMs / 1000);\n\n  const hours = Math.floor(totalSeconds / 3600);\n  const minutes = Math.floor((totalSeconds % 3600) / 60);\n  const seconds = totalSeconds % 60;\n\n  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;\n})()\n}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -7616,
+        5792
+      ],
+      "id": "2b6e0c68-7829-46e0-97f8-301003b9f023",
+      "name": "HTTP Request25",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://erp.ycsols.com/api/customers/{{ $('Process Customer Data2').item.json.id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"status\": \"calling\",\n  \"call_id\": \"{{ $json.id }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -9024,
+        6544
+      ],
+      "id": "312437ff-e314-462b-9dd3-f10e6f6c16fb",
+      "name": "HTTP Request26"
+    },
+    {
+      "parameters": {
+        "content": "if namke, email, phone number and meeting date exsist in summary then hit erp end point",
+        "height": 256,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -7104,
+        5696
+      ],
+      "id": "1525bafa-5e2d-44d2-80c1-67cb6c5f225f",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "if no name, email, phone number and meeting date then workflow ends ",
+        "height": 256,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -7360,
+        6048
+      ],
+      "id": "d0890f0e-d6c6-44ce-b4e9-5f3f0638db56",
+      "name": "Sticky Note71"
+    },
+    {
+      "parameters": {
+        "content": "this node see if the summary have email, name and phone number ",
+        "height": 208,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -7408,
+        5728
+      ],
+      "id": "7eae6dfe-da98-43fc-be31-a9b7b16506ba",
+      "name": "Sticky Note72"
+    },
+    {
+      "parameters": {
+        "content": "if call hasnt been ended go back to wait node and wait for another 60 seconds and then check call status again this process is repeated until call ends and status gets updated",
+        "height": 320,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -8016,
+        5184
+      ],
+      "id": "9eb8cc84-c74e-4796-8367-8f53d47b172e",
+      "name": "Sticky Note73"
+    },
+    {
+      "parameters": {
+        "content": "update the status of call from calling to completed",
+        "height": 224,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -7680,
+        5712
+      ],
+      "id": "b2e150f5-e529-4aee-a4b4-b621478594d3",
+      "name": "Sticky Note74"
+    },
+    {
+      "parameters": {
+        "content": "if call is ended it analyzes call summary and look for whether the meeting have been booked or not and gather full name, email and phone number from call transcribtion",
+        "height": 272,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -7696,
+        5984
+      ],
+      "id": "38d00328-8b5f-4be0-becc-d9732b364d21",
+      "name": "Sticky Note75"
+    },
+    {
+      "parameters": {
+        "content": "this node decide what to do on basis of call status ",
+        "height": 224,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -8016,
+        5760
+      ],
+      "id": "5ff2cde3-1e3c-4824-9b01-c72eacbeda26",
+      "name": "Sticky Note76"
+    },
+    {
+      "parameters": {
+        "content": "check the call status to see if call have ended or not",
+        "height": 240,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -8304,
+        5744
+      ],
+      "id": "d1c5372e-2c23-43cc-be3e-dabf4207b45b",
+      "name": "Sticky Note77"
+    },
+    {
+      "parameters": {
+        "content": "this node do exactly nothing just make the workflow to wait for 60 seconds",
+        "height": 240,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -8592,
+        5744
+      ],
+      "id": "e3eaa914-5f20-4e3f-9a8b-240a4cd92f53",
+      "name": "Sticky Note78"
+    },
+    {
+      "parameters": {
+        "amount": 1.5,
+        "unit": "seconds"
+      },
+      "id": "7924b7d9-48b5-4ff3-be02-3d84626675cb",
+      "name": "Wait 60 Seconds5",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [
+        -8528,
+        5824
+      ],
+      "webhookId": "f4abb3c3-c205-4168-ad1c-e79e6cffed3f",
+      "notes": "Initial wait before checking call status"
+    },
+    {
+      "parameters": {
+        "content": "stores call details such as call id assistant id phone number id etc\n",
+        "height": 256,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -8608,
+        6160
+      ],
+      "id": "903a4893-4e37-4a4a-9faa-6b386b5c2d83",
+      "name": "Sticky Note79"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "3599f988-b52e-4fb4-a271-c1eb4395c7b1",
+              "leftValue": "={{ $json.meetingAccepted }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -7328,
+        5808
+      ],
+      "id": "1515bcae-2308-4cf9-8719-67d95c0e560e",
+      "name": "If8"
+    },
+    {
+      "parameters": {},
+      "id": "049f876a-41f5-4550-b245-64303e3e6d11",
+      "name": "Success - Data Sent to ERP2",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        -6784,
+        5792
+      ],
+      "notes": "Log successful completion"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://erp.ycsols.com/api/storeycclead",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"firstname\": \"{{ $json.parentName }}\",\n  \"email\": \"{{ $json.email }}\",\n  \"contactno\": \"{{ $json.phone }}\",\n  \"Subject\": \"{{ $json.subject }}\",\n  \"grade\": \"{{ $json.childGrade }}\",\n  \"demo_datetime\": \"{{ $json.appointmentDateTime }}\"\n}\n",
+        "options": {
+          "proxy": ""
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -7040,
+        5792
+      ],
+      "id": "232f79d0-9f50-47c9-892e-030727ac9448",
+      "name": "HTTP Request27"
+    },
+    {
+      "parameters": {},
+      "id": "6ce3bcb1-68fc-4052-a435-7489cfd4a436",
+      "name": "Meeting Declined - Process End5",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        -7296,
+        6144
+      ],
+      "notes": "Log when meeting is declined and end process"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nreturn items.map(item => {\n  const data = item.json;\n  \n  // Get phone number and remove '+' if it exists\n  let phoneNumber = data.customer?.number || '';\n  if (phoneNumber.startsWith('+')) {\n    phoneNumber = phoneNumber.substring(1);\n  }\n  \n  return {\n    json: {\n      callId: data.id,\n      summary: data.summary || \"null\",\n      phoneNumber: phoneNumber,\n      artifact: {\n        recordingUrl: data.artifact?.recordingUrl || null,\n        stereoRecordingUrl: data.artifact?.stereoRecordingUrl || null\n      },\n      // Add pre-formatted data for HTTP request\n      httpRequestData: {\n        status: \"completed\",\n        calling_link: data.artifact?.recordingUrl || null,\n        description: data.summary || \"null\"\n      }\n    }\n  };\n});\n```\n\nThen in your HTTP Request node, reference the pre-built object:\n```\n{{ $json.httpRequestData }}"
+      },
+      "id": "41cde34e-6055-4188-b876-6f206cc4273d",
+      "name": "Analyze Call Summary5",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -7616,
+        6128
+      ],
+      "notes": "Analyzes summary and extracts customer info"
+    },
+    {
+      "parameters": {
+        "amount": 1.5,
+        "unit": "minutes"
+      },
+      "id": "85fe4670-bc07-4e48-88c0-9d523fff1591",
+      "name": "Wait & Retry5",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [
+        -7952,
+        5328
+      ],
+      "webhookId": "480f637b-b8f1-4455-ac6c-c462fbc13b93",
+      "notes": "Wait before checking again"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "condition-1",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "ended",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "id": "fcba9f71-82e9-4343-abee-1f31bbb6d569",
+      "name": "Call Completed?5",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -7952,
+        5824
+      ],
+      "notes": "Checks if call is completed"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.vapi.ai/call/{{ $('Initiate VAPI Call5').item.json.id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "c1d16432-14e7-4363-a542-39396738d900",
+      "name": "Check Call Status5",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        -8224,
+        5824
+      ],
+      "onError": "continueErrorOutput",
+      "notes": "Checks if call has completed"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Process ALL VAPI responses instead of just first one\nconst allResponses = $input.all();\nreturn allResponses.map((item, index) => {\n  const vapiResponse = item.json;\n  \n  console.log(`=== VAPI RESPONSE ${index + 1} ===`);\n  console.log(JSON.stringify(vapiResponse, null, 2));\n  \n  let callId = vapiResponse.id || vapiResponse.callId || vapiResponse.call_id;\n  \n  if (!callId) {\n    throw new Error('Failed to get call ID from VAPI response. Full response: ' + JSON.stringify(vapiResponse));\n  }\n  \n  // Validate UUID format\n  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;\n  if (!uuidRegex.test(callId)) {\n    throw new Error('Call ID is not a valid UUID: ' + callId);\n  }\n  \n  console.log('Valid Call ID extracted:', callId);\n  \n  // Get corresponding customer data from \"Process Customer Data1\" node\n  const customerData = $('Process Customer Data2').all()[index].json;\n  \n  return {\n    json: {\n      callId: callId,\n      callStatus: vapiResponse.status || 'initiated',\n      customerName: customerData.name,\n      customerPhone: customerData.phone,\n      customerEmail: customerData.email,\n      customerId: customerData.id,  // Database ID\n      callStartTime: new Date().toISOString()\n    }\n  };\n});"
+      },
+      "id": "ce3f3ba7-eecb-418e-b288-467967898864",
+      "name": "Store Call Details5",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -8544,
+        6272
+      ],
+      "notes": "Stores call ID and customer details for later use"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.vapi.ai/call",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"assistantId\": \"3c302940-6536-4d59-81b3-1e43a6dabf9f\",\n  \"phoneNumberId\": \"{{ (['491e8845-cfc5-429f-8747-61c5c0f7d75b', 'bbbf33f6-e3ad-47a2-b11b-029febe6b4cf'])[Math.floor(Math.random() * 2)] }}\",\n  \"customer\": {\n    \"number\": \"{{ $json.phone }}\",\n    \"name\": \"{{ $json.name }}\"\n  },\n  \"name\": \"{{ $json.customerName || 'Cold Call' }}\"\n}",
+        "options": {}
+      },
+      "id": "7a9d4f35-64a9-4f7d-9152-cb546975dc05",
+      "name": "Initiate VAPI Call5",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        -9056,
+        6096
+      ],
+      "retryOnFail": false,
+      "alwaysOutputData": false,
+      "onError": "continueErrorOutput",
+      "notes": "Makes the call using VAPI API"
+    },
+    {
+      "parameters": {
+        "content": "update the roe sheet from pending to calling\n",
+        "height": 224
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -9088,
+        6480
+      ],
+      "id": "2dca0506-e1d1-417a-9a37-3cb9f2bb97e8",
+      "name": "Sticky Note9"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://erp.ycsols.com/api/storeycclead ",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"firstname\": \"moez\",\n  \"lastname\": \"moiz\",\n  \"email\": \"jane.smith@example.com\",\n  \"contactno\": \"+92300555779876543\",\n  \"Subject\": \"Math Tutoring\",\n  \"demo_datetime\": \"2025-10-21 15:00:00\",\n  \"status\": 4,\n  \"Parentname\": \"Michael Smith\",\n  \"State\": \"Punjab\",\n  \"grade\": \"10\",\n  \"comment\": \"Interested in online classes\",\n  \"source\": \"Website\",\n  \"timezone\": \"Asia/Karachi\",\n  \"country\": \"Pakistan\"\n}",
+        "options": {
+          "response": {
+            "response": {}
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -6976,
+        6144
+      ],
+      "id": "8bf46751-b0f0-4b84-b798-cad3641c0740",
+      "name": "HTTP Request28"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\nreturn items.map(item => {\n  const data = item.json;\n  const summary = data.summary || '';\n  \n  // Handle null or \"null\" string summaries\n  if (summary === 'null' || summary === '' || !summary) {\n    return {\n      json: {\n        callId: data.callId,\n        meetingAccepted: false,\n        childName: 'Not confirmed',\n        parentName: 'Not confirmed',\n        phone: 'Not confirmed',\n        email: 'Not confirmed',\n        timezone: 'Not confirmed',\n        appointmentDateTime: 'Not confirmed',\n        childGrade: 'Not confirmed',\n        subject: 'Not confirmed'\n      }\n    };\n  }\n  \n  // Helper function to extract field value from structured section\n  const extractField = (text, fieldName) => {\n    const regex = new RegExp(`${fieldName}:\\\\s*(.+?)(?:\\\\n|$)`, 'i');\n    const match = text.match(regex);\n    return match ? match[1].trim() : 'Not confirmed';\n  };\n  \n  // Extract structured fields from the formatted sections\n  const appointmentBooked = extractField(summary, 'Booked');\n  const meetingAccepted = appointmentBooked.toLowerCase().includes('yes');\n  \n  // Extract appointment time and date\n  const appointmentTime = extractField(summary, 'Time');\n  const appointmentDate = extractField(summary, 'Date');\n  const appointmentDateTime = (appointmentTime !== 'Not confirmed' || appointmentDate !== 'Not confirmed') \n    ? `${appointmentDate} at ${appointmentTime}`.replace('Not confirmed at ', '').replace(' at Not confirmed', '')\n    : 'Not confirmed';\n  \n  // Extract customer info\n  const parentName = extractField(summary, 'Name');\n  const email = extractField(summary, 'Email');\n  const phone = extractField(summary, 'Phone');\n  const timezone = extractField(summary, 'Timezone');\n  \n  // Extract child info\n  const childName = extractField(summary, 'Child Name');\n  const childGradeRaw = extractField(summary, 'Grade');\n  \n  // Extract only the numeric value from grade\n  let childGrade = null;\n  if (childGradeRaw !== 'Not confirmed') {\n    const gradeMatch = childGradeRaw.match(/\\d+/);\n    if (gradeMatch) {\n      childGrade = parseInt(gradeMatch[0], 10);\n    }\n  }\n  \n  const subject = extractField(summary, 'Subject');\n  \n  return {\n    json: {\n      callId: data.callId,\n      meetingAccepted: meetingAccepted,\n      childName: childName,\n      parentName: parentName,\n      phone: phone,\n      email: email,\n      timezone: timezone,\n      appointmentDateTime: appointmentDateTime,\n      childGrade: childGrade,\n      subject: subject\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -7424,
+        6368
+      ],
+      "id": "84af800c-a092-40c4-85f0-6d55bde14f83",
+      "name": "Code5"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://erp.ycsols.com/api/customers/{{ $('Process Customer Data2').item.json.id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"status\": \"invalid\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -8832,
+        6112
+      ],
+      "id": "95df62fc-5991-471b-ab5f-95d993528456",
+      "name": "HTTP Request29"
+    },
+    {
+      "parameters": {
+        "path": "dbaea9bd-b6cc-486b-ab5c-e558d22f56c0",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -9936,
+        800
+      ],
+      "id": "d99c4309-a3e5-4622-9404-b05cc3f8d429",
+      "name": "Webhook3",
+      "webhookId": "dbaea9bd-b6cc-486b-ab5c-e558d22f56c0"
+    },
+    {
+      "parameters": {
+        "path": "73649a1c-0a37-498d-a9db-e5444028acee",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -9872,
+        4304
+      ],
+      "id": "7e2b3b5a-7992-442f-a78f-cd6b5597b934",
+      "name": "Webhook4",
+      "webhookId": "73649a1c-0a37-498d-a9db-e5444028acee"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -11136,
+        -1184
+      ],
+      "id": "4bd0f9a9-0d9e-468e-957d-9a23316ba63e",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://erp.ycsols.com/api/customers/5726",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"status\": \"pending\",\n  \"call_id\": \"\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -10928,
+        -1184
+      ],
+      "id": "33149d65-ff76-40d1-b283-484be1bd8d44",
+      "name": "HTTP Request30"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://erp.ycsols.com/api/customers/{{ $node['Process Customer Data1'].json.id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"status\": \"failed\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -7568,
+        -1968
+      ],
+      "id": "46c45a8b-1787-4e39-95ef-ffa80a403fd8",
+      "name": "HTTP Request31"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://erp.ycsols.com/api/customers/{{ $node['Process Customer Data1'].json.id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"status\": \"failed\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -6912,
+        -2512
+      ],
+      "id": "cad76d7d-8bdb-40cd-a0d0-b2ca6796ee4f",
+      "name": "HTTP Request32"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://erp.ycsols.com/api/customers/{{ $node['Process Customer Data1'].json.id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"status\": \"failed\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -7920,
+        -368
+      ],
+      "id": "be28784e-135a-4122-8647-fa9089f642e3",
+      "name": "HTTP Request33"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://erp.ycsols.com/api/customers/{{ $node['Process Customer Data1'].json.id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"status\": \"failed\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -7152,
+        -1008
+      ],
+      "id": "5bc51e58-142c-4f9a-b6de-1493219cf19f",
+      "name": "HTTP Request34"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://erp.ycsols.com/api/customers/{{ $node['Process Customer Data'].json.id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"status\": \"failed\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -7808,
+        1104
+      ],
+      "id": "a5767a86-1e7d-459d-975f-359da22906fe",
+      "name": "HTTP Request35"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://erp.ycsols.com/api/customers/{{ $node['Process Customer Data'].json.id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"status\": \"failed\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -7056,
+        464
+      ],
+      "id": "4087ff37-69c3-4071-85a7-ab3569b3a1f0",
+      "name": "HTTP Request36"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://erp.ycsols.com/api/customers/{{ $node['Process Customer Data'].json.id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"status\": \"pending\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -8160,
+        2640
+      ],
+      "id": "6c36021e-77d1-42f2-803f-fb7417c5f42a",
+      "name": "HTTP Request37"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://erp.ycsols.com/api/customers/{{ $node['Process Customer Data'].json.id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"status\": \"pending\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -7360,
+        2064
+      ],
+      "id": "0c026783-50a4-4819-a189-6ff959398c68",
+      "name": "HTTP Request38"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://erp.ycsols.com/api/customers/{{ $node['Process Customer Data2'].json.id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"status\": \"pending\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -7728,
+        3952
+      ],
+      "id": "689ff185-44ca-4ea3-9b36-88abd9f4c891",
+      "name": "HTTP Request39"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://erp.ycsols.com/api/customers/{{ $node['Process Customer Data2'].json.id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"status\": \"pending\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -7040,
+        3968
+      ],
+      "id": "c92a851c-532d-4c48-8781-5d1e37798661",
+      "name": "HTTP Request40"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://erp.ycsols.com/api/customers/{{ $node['Process Customer Data2'].json.id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"status\": \"pending\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -7984,
+        5632
+      ],
+      "id": "f4f99c5e-f7fc-4fe9-b6f3-f31ac599c6d4",
+      "name": "HTTP Request41"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://erp.ycsols.com/api/customers/{{ $node['Process Customer Data2'].json.id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"status\": \"pending\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -7392,
+        5536
+      ],
+      "id": "fc62f141-40af-4f08-8691-1e6871fe7c80",
+      "name": "HTTP Request42"
+    }
+  ],
+  "connections": {
+    "HTTP Request4": {
+      "main": [
+        [],
+        [
+          {
+            "node": "HTTP Request32",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 60 Seconds1": {
+      "main": [
+        [
+          {
+            "node": "Check Call Status1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Meeting Declined - Process End1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request2": {
+      "main": [
+        []
+      ]
+    },
+    "Analyze Call Summary1": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTTP Request4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait & Retry1": {
+      "main": [
+        []
+      ]
+    },
+    "Call Completed?1": {
+      "main": [
+        [
+          {
+            "node": "Analyze Call Summary1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait 60 Seconds1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Call Status1": {
+      "main": [
+        [
+          {
+            "node": "Call Completed?1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HTTP Request31",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store Call Details1": {
+      "main": [
+        []
+      ]
+    },
+    "Initiate VAPI Call1": "[REDACTED]",
+    "Process Customer Data1": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Calling Customers": {
+      "main": [
+        [
+          {
+            "node": "Calculate Available Slots",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculate Available Slots": {
+      "main": [
+        [
+          {
+            "node": "Fetch Pending Customers",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Pending Customers": {
+      "main": [
+        [
+          {
+            "node": "Process Customer Data1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request3": {
+      "main": [
+        [
+          {
+            "node": "Wait 60 Seconds1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook1": {
+      "main": [
+        [
+          {
+            "node": "Fetch Calling Customers",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request8": {
+      "main": [
+        []
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Initiate VAPI Call",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Initiate VAPI Call1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request5": {
+      "main": [
+        [
+          {
+            "node": "Wait 60 Seconds",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 60 Seconds": {
+      "main": [
+        [
+          {
+            "node": "Check Call Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If3": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request6",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Meeting Declined - Process End",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request6": {
+      "main": [
+        [
+          {
+            "node": "Success - Data Sent to ERP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze Call Summary": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait & Retry": {
+      "main": [
+        []
+      ]
+    },
+    "Call Completed?": {
+      "main": [
+        [
+          {
+            "node": "Analyze Call Summary",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait 60 Seconds",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Call Status": {
+      "main": [
+        [
+          {
+            "node": "Call Completed?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HTTP Request33",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Initiate VAPI Call": "[REDACTED]",
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "If3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request12": {
+      "main": [
+        [
+          {
+            "node": "Wait 60 Seconds2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 60 Seconds2": {
+      "main": [
+        [
+          {
+            "node": "Check Call Status2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If2": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request13",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Meeting Declined - Process End2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze Call Summary2": {
+      "main": [
+        [
+          {
+            "node": "Code2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTTP Request7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait & Retry2": {
+      "main": [
+        []
+      ]
+    },
+    "Call Completed?2": {
+      "main": [
+        [
+          {
+            "node": "Analyze Call Summary2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait 60 Seconds2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Call Status2": {
+      "main": [
+        [
+          {
+            "node": "Call Completed?2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HTTP Request35",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Initiate VAPI Call2": "[REDACTED]",
+    "Fetch Calling Customers1": {
+      "main": [
+        [
+          {
+            "node": "Calculate Available Slots1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculate Available Slots1": {
+      "main": [
+        [
+          {
+            "node": "Fetch Pending Customers1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Pending Customers1": {
+      "main": [
+        [
+          {
+            "node": "Process Customer Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code2": {
+      "main": [
+        [
+          {
+            "node": "If2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If4": {
+      "main": [
+        [
+          {
+            "node": "Initiate VAPI Call3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Initiate VAPI Call2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request16": {
+      "main": [
+        [
+          {
+            "node": "Wait 60 Seconds3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 60 Seconds3": {
+      "main": [
+        [
+          {
+            "node": "Check Call Status3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If5": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request17",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Meeting Declined - Process End3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request17": {
+      "main": [
+        [
+          {
+            "node": "Success - Data Sent to ERP1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze Call Summary3": {
+      "main": [
+        [
+          {
+            "node": "Code3",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait & Retry3": {
+      "main": [
+        []
+      ]
+    },
+    "Call Completed?3": {
+      "main": [
+        [
+          {
+            "node": "Analyze Call Summary3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait 60 Seconds3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Call Status3": {
+      "main": [
+        [
+          {
+            "node": "Call Completed?3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HTTP Request37",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Initiate VAPI Call3": "[REDACTED]",
+    "Code3": {
+      "main": [
+        [
+          {
+            "node": "If5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Customer Data": {
+      "main": [
+        [
+          {
+            "node": "If4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request21": {
+      "main": [
+        [
+          {
+            "node": "Wait 60 Seconds4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 60 Seconds4": {
+      "main": [
+        [
+          {
+            "node": "Check Call Status4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If6": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request22",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Meeting Declined - Process End4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze Call Summary4": {
+      "main": [
+        [
+          {
+            "node": "Code4",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTTP Request20",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait & Retry4": {
+      "main": [
+        []
+      ]
+    },
+    "Call Completed?4": {
+      "main": [
+        [
+          {
+            "node": "Analyze Call Summary4",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait 60 Seconds4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Call Status4": {
+      "main": [
+        [
+          {
+            "node": "Call Completed?4",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HTTP Request39",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Initiate VAPI Call4": "[REDACTED]",
+    "Process Customer Data2": {
+      "main": [
+        [
+          {
+            "node": "If7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Calling Customers2": {
+      "main": [
+        [
+          {
+            "node": "Calculate Available Slots2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculate Available Slots2": {
+      "main": [
+        [
+          {
+            "node": "Fetch Pending Customers2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Pending Customers2": {
+      "main": [
+        [
+          {
+            "node": "Process Customer Data2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code4": {
+      "main": [
+        [
+          {
+            "node": "If6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If7": {
+      "main": [
+        [
+          {
+            "node": "Initiate VAPI Call5",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Initiate VAPI Call4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request26": {
+      "main": [
+        [
+          {
+            "node": "Wait 60 Seconds5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 60 Seconds5": {
+      "main": [
+        [
+          {
+            "node": "Check Call Status5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If8": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request27",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Meeting Declined - Process End5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request27": {
+      "main": [
+        [
+          {
+            "node": "Success - Data Sent to ERP2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze Call Summary5": {
+      "main": [
+        [
+          {
+            "node": "Code5",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTTP Request25",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait & Retry5": {
+      "main": [
+        []
+      ]
+    },
+    "Call Completed?5": {
+      "main": [
+        [
+          {
+            "node": "Analyze Call Summary5",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait 60 Seconds5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Call Status5": {
+      "main": [
+        [
+          {
+            "node": "Call Completed?5",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HTTP Request41",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Initiate VAPI Call5": "[REDACTED]",
+    "Code5": {
+      "main": [
+        [
+          {
+            "node": "If8",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook3": {
+      "main": [
+        [
+          {
+            "node": "Fetch Calling Customers1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook4": {
+      "main": [
+        [
+          {
+            "node": "Fetch Calling Customers2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request30",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "If3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HTTP Request34",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request7": {
+      "main": [
+        [],
+        [
+          {
+            "node": "HTTP Request36",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [],
+        [
+          {
+            "node": "HTTP Request38",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request20": {
+      "main": [
+        [],
+        [
+          {
+            "node": "HTTP Request40",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request25": {
+      "main": [
+        [],
+        [
+          {
+            "node": "HTTP Request42",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateId": "self-building-ai-agent",
+    "templateCredsSetupCompleted": true
+  },
+  "triggerCount": 3,
+  "tags": []
+}

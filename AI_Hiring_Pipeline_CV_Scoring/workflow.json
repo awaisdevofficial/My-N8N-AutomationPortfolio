@@ -1,0 +1,2350 @@
+{
+  "updatedAt": "2026-01-12T14:35:37.919Z",
+  "createdAt": "2025-12-25T11:01:41.142Z",
+  "id": "6bo1pWbInvXV955I",
+  "name": "Main Hiring",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={\n  \"candidate\": {\n    \"first_name\": \"{{ $('Create a row3').item.json.first_name }}\",\n    \"last_name\": \"{{ $('Create a row3').item.json.last_name }}\",\n    \"email\": \"{{ $('Create a row3').item.json.email }}\",\n    \"phone\": \"{{ $('Create a row3').item.json.phone }}\",\n    \"city\": \"{{ $json.city }}\",\n    \"country\": \"{{ $json.country }}\",\n    \"summary\": \"{{ $('Create a row3').item.json.summary }}\",\n    \"skills\": \"{{ $('Create a row3').item.json.skills }}\",\n    \"experience_years\": \"{{ $('Create a row3').item.json.experience_years }}\",\n    \"total_experience_months\": \"{{ $('Create a row3').item.json.total_experience_months }}\",\n    \"work_experience\": \"{{ JSON.stringify($('Merge2').item.json.data.work_experience)}}\",\n    \"projects\": \"{{ JSON.stringify($('Merge2').item.json.data.projects) }}\",\n    \"education\": \"{{ JSON.stringify($('Merge2').item.json.data.education) }}\",\n    \"languages\": \"{{ JSON.stringify($('Merge2').item.json.data.languages) }}\",\n    \"certifications\": \"{{ $json.job_requirements.certifications }}\",\n    \"linkedin_url\": \"{{ $('Merge2').item.json.data.linkedin_url }}\",\n    \"github_url\": \"{{ $('Create a row3').item.json.github_url }}\",\n    \"portfolio_url\": \"{{ $('Create a row3').item.json.portfolio_url }}\"\n  },\n\n  \"job_description\": {\n    \"title\": \"{{ $json.title }}\",\n    \"description\": \"{{ $json.description }}\",\n    \"job_type\": \"{{ $json.location_type }}\",\n    \"job_level\": \"{{ $json.job_level }}\",\n    \"city\": \"{{ $json.city }}\",\n    \"country\": \"{{ $json.country }}\",\n    \"experience_required\": \"{{ $json.job_requirements.years_required }}\",\n    \"required_skills\": \"{{ $json.job_requirements.required_skills }}\",\n    \"preferred_skills\": \"{{ $json.job_requirements.preferred_skills }}\",\n    \"education_required\": \"{{ $json.job_requirements.education_required }}\",\n    \"languages\": \"{{ $json.job_requirements.languages }}\",\n    \"certifications\": \"{{ $json.job_requirements.certifications }}\",\n    \"other_requirements\": \"{{ $json.job_requirements.other_requirements }}\"\n  },\n\n  \"ats_criteria\": {\n    \"skills_importance\": \"{{ $json.ats_criteria.skills_importance }}\",\n    \"experience_importance\": \"{{ $json.ats_criteria.experience_importance }}\",\n    \"projects_importance\": \"{{ $json.ats_criteria.projects_importance }}\",\n    \"education_importance\": \"{{ $json.ats_criteria.education_importance }}\",\n    \"languages_importance\": \"{{ $json.ats_criteria.languages_importance }}\",\n    \"certifications_importance\": \"{{ $json.ats_criteria.certifications_importance }}\",\n    \"overall_strictness\": \"{{ $json.ats_criteria.overall_strictness }}\"\n  },\n\n  \"job_requirements\": {\n    \"years_required\": \"{{ $json.job_requirements.years_required }}\",\n    \"required_skills\": \"{{ $json.job_requirements.required_skills }}\",\n    \"preferred_skills\": \"{{ $json.job_requirements.preferred_skills }}\",\n    \"languages\": \"{{ $json.job_requirements.languages }}\",\n    \"certifications\": \"{{ $json.job_requirements.certifications }}\",\n    \"education_required\": \"{{ $json.job_requirements.education_required }}\",\n    \"other_requirements\": \"{{ $json.job_requirements.other_requirements }}\"\n  }\n}\n",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=You are an ATS-style screening AI. Your task is to evaluate a candidate’s profile against a specific job description using structured, weighted ATS criteria and produce a standardized evaluation report. Evaluate the candidate’s profile against a specific job description using ATS-style screening. Produce a detailed score, highlighting strengths, weaknesses, and overall fit based on the candidate’s data, the job requirements, and user-defined importance weights.\n\nInstructions for the AI Agent:\n\nData Sources:\n\nCandidate data: Use the provided user JSON (personal info, skills, experience, education, projects, certifications, languages, URLs).\n\nJob data: Use the provided job JSON (title, description, location, required and preferred skills, education, certifications, experience).\n\nATS criteria: Use the user-defined importance weights (skills_importance, projects_importance, etc.) to weight the evaluation.\n\nEvaluation Steps:\n\na. Skills Match:\n\nCompare candidate’s skills with required_skills and preferred_skills.\n\nScore based on exact matches and relevance. Weight according to skills_importance.\n\nb. Experience:\n\nCompare candidate’s experience_years or total_experience_months with years_required.\n\nScore proportionally, considering experience_importance.\n\nc. Education:\n\nCheck if candidate’s education meets education_required.\n\nWeight using education_importance.\n\nd. Projects & Portfolio:\n\nAnalyze Projects, portfolio_url, or website_url for relevance to the role.\n\nWeight by projects_importance.\n\ne. Certifications:\n\nCheck certifications for required certifications.\n\nWeight by certifications_importance.\n\nf. Languages:\n\nVerify if candidate meets languages requirements.\n\nWeight by languages_importance.\n\nScoring:\n\nCalculate a weighted score (0–100) reflecting overall fit.\n\nUse overall_strictness to adjust thresholds for pass/fail or weak/strong fit.\n\nProvide an overall fit rating (e.g., Excellent, Strong, Moderate, Weak, Not Fit).\n\nOutput Requirements:\n\nOverall Fit Score (0–100)\n\nStrengths: Highlight top skills, projects, or experiences that match job requirements.\n\nGaps/Weaknesses: Highlight missing skills, certifications, or other mismatches.\n\nRecommendations: Suggest areas for improvement or additional certifications/projects.\n\nMatch Summary Table: Optionally, provide a table showing required vs. candidate data for each ATS criterion.\n\nTone & Detail:\n\nProvide actionable insights for recruiters or candidates.\n\nBe precise, structured, and concise.\n\nEmphasize quantifiable matches (skills, experience, education).\n\n\n\n\n\n\nYou must stickly follow this : \nAts requirment : \n\nskills_importance: {{ $json.ats_criteria.skills_importance }}\n\noverall_strictness: {{ $json.ats_criteria.overall_strictness }}\n\nprojects_importance: {{ $json.ats_criteria.projects_importance }}\n\neducation_importance: {{ $json.ats_criteria.education_importance }}\n\nlanguages_importance: {{ $json.ats_criteria.languages_importance }}\n\nexperience_importance: {{ $json.ats_criteria.experience_importance }}\n\ncertifications_importance: {{ $json.ats_criteria.certifications_importance }}\n\n\njob_requirements: \n\nlanguages : {{ $json.job_requirements.languages }}\n\nCertifications : {{ $json.job_requirements.certifications }}\n\nyears_required: {{ $json.job_requirements.years_required }}\n\nrequired_skill\": {{ $json.job_requirements.required_skills }}\n\npreferred_skills : {{ $json.job_requirements.preferred_skills }}\n\neducation_required: {{ $json.job_requirements.education_required }}\n\nother_requirements: {{ $json.job_requirements.other_requirements }}\n\n\n\n\noutput:\nyou will give output report in this format:  \n1: Overall ATS Fit Score:\n2: Fit_rating:\n3: Strengths: \n4: Experience:\n5: Gaps_weaknesses:\n6: Recommendations:\n7: Match_summary_table:\n\ndo not add any suggestions in end"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -624,
+        464
+      ],
+      "id": "ab91878b-c32b-47be-ba45-03c27523dc84",
+      "name": "AI Agent",
+      "retryOnFail": false
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -656,
+        864
+      ],
+      "id": "dd58b1c2-8422-409d-ade6-33b783a1ea30",
+      "name": "OpenAI Chat Model",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"$schema\": \"http://json-schema.org/draft-07/schema#\",\n  \"title\": \"ATS CV Screening Output Schema\",\n  \"type\": \"object\",\n  \"required\": [\n    \"overall_fit_score\",\n    \"fit_rating\",\n    \"strengths\",\n    \"gaps_weaknesses\",\n    \"recommendations\",\n    \"match_summary_table\"\n  ],\n  \"properties\": {\n    \"overall_fit_score\": {\n      \"type\": \"number\",\n      \"minimum\": 0,\n      \"maximum\": 100,\n      \"description\": \"Weighted overall fit score of the candidate (0-100) calculated using ATS criteria weights and overall_strictness.\"\n    },\n    \"fit_rating\": {\n      \"type\": \"string\",\n      \"enum\": [\"Excellent\", \"Strong\", \"Moderate\", \"Weak\", \"Not Fit\"],\n      \"description\": \"Categorical rating based on overall_fit_score.\"\n    },\n    \"strengths\": {\n      \"type\": \"array\",\n      \"items\": { \"type\": \"string\" },\n      \"description\": \"List of candidate strengths or matched skills/projects relevant to the job.\"\n    },\n    \"gaps_weaknesses\": {\n      \"type\": \"array\",\n      \"items\": { \"type\": \"string\" },\n      \"description\": \"List of missing skills, certifications, experience gaps, or other mismatches.\"\n    },\n    \"recommendations\": {\n      \"type\": \"array\",\n      \"items\": { \"type\": \"string\" },\n      \"description\": \"Suggested improvements or steps for the candidate to better meet job requirements.\"\n    },\n    \"match_summary_table\": {\n      \"type\": \"object\",\n      \"required\": [\"skills\", \"experience\", \"education\", \"certifications\", \"languages\", \"projects\"],\n      \"properties\": {\n        \"skills\": {\n          \"type\": \"object\",\n          \"required\": [\"required\", \"candidate\", \"match_score\"],\n          \"properties\": {\n            \"required\": { \"type\": \"array\", \"items\": { \"type\": \"string\" } },\n            \"candidate\": { \"type\": \"array\", \"items\": { \"type\": \"string\" } },\n            \"match_score\": { \"type\": \"number\", \"minimum\": 0, \"maximum\": 100 }\n          }\n        },\n        \"experience\": {\n          \"type\": \"object\",\n          \"required\": [\"required_years\", \"candidate_years\", \"match_score\"],\n          \"properties\": {\n            \"required_years\": { \"type\": \"number\", \"minimum\": 0 },\n            \"candidate_years\": { \"type\": \"number\", \"minimum\": 0 },\n            \"match_score\": { \"type\": \"number\", \"minimum\": 0, \"maximum\": 100 }\n          }\n        },\n        \"education\": {\n          \"type\": \"object\",\n          \"required\": [\"required\", \"candidate\", \"match_score\"],\n          \"properties\": {\n            \"required\": { \"type\": \"string\" },\n            \"candidate\": { \"type\": \"string\" },\n            \"match_score\": { \"type\": \"number\", \"minimum\": 0, \"maximum\": 100 }\n          }\n        },\n        \"certifications\": {\n          \"type\": \"object\",\n          \"required\": [\"required\", \"candidate\", \"match_score\"],\n          \"properties\": {\n            \"required\": { \"type\": \"array\", \"items\": { \"type\": \"string\" } },\n            \"candidate\": { \"type\": \"array\", \"items\": { \"type\": \"string\" } },\n            \"match_score\": { \"type\": \"number\", \"minimum\": 0, \"maximum\": 100 }\n          }\n        },\n        \"languages\": {\n          \"type\": \"object\",\n          \"required\": [\"required\", \"candidate\", \"match_score\"],\n          \"properties\": {\n            \"required\": { \"type\": \"array\", \"items\": { \"type\": \"string\" } },\n            \"candidate\": { \"type\": \"array\", \"items\": { \"type\": \"string\" } },\n            \"match_score\": { \"type\": \"number\", \"minimum\": 0, \"maximum\": 100 }\n          }\n        },\n        \"projects\": {\n          \"type\": \"object\",\n          \"required\": [\"required\", \"candidate\", \"match_score\"],\n          \"properties\": {\n            \"required\": { \"type\": \"array\", \"items\": { \"type\": \"string\" } },\n            \"candidate\": { \"type\": \"array\", \"items\": { \"type\": \"string\" } },\n            \"match_score\": { \"type\": \"number\", \"minimum\": 0, \"maximum\": 100 }\n          }\n        }\n      }\n    }\n  }\n}\n"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -528,
+        864
+      ],
+      "id": "333dc61e-51c7-423e-9eef-5cca096f3def",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=This Is Will be the JD data :\n  \n    \"title\": \"{{ $('Get Job Data1').item.json.title }}\",\n    \"description\": \"{{ $('Get Job Data1').item.json.description }}\",\n    \"preferred_skills\": \"{{ $('Get Job Data1').item.json.job_requirements.preferred_skills }}\",\n \"required_skills\": \"{{ $('Get Job Data1').item.json.job_requirements.required_skills }}\",\n\n\n.\n.\n.\n.\n\n   \nThis is Candidtae Data: \n\n  \"summary\": \"{{ $json.summary }}\",\n  \"skills\": \"{{ $json.skills }}\",\n  \"experience_years\": \"{{ $json.experience_years }}\",\n  \"total_experience_months\": \"{{ $json.total_experience_months }}\",\n  \"education\": \"{{ $json.education }}\",\n  \"work_experience\": \"{{ $json.work_experience }}\",\n  \"projects\": \"{{ $json.projects }}\",\n  \"ats_weakness\": \"}{{ $json.ats_weekness }}\",\n  \"ats_strength\": \"{{ $json.ats_strength }}\",\n  \"matching_summary\": \"{{ $json.matching_summary }}\",\n}\n",
+        "options": {
+          "systemMessage": "=You are an expert recruiter. Based on the provided job description and the applicant's CV:\n\nGenerate 5 to 10 interview questions tailored to the job description, focusing on relevant skills, experiences, and responsibilities required for the role.\n\nThen generate 5 general interview questions based on the applicant's CV. These should refer to specific projects, experiences, or skills mentioned in the CV. Use phrases like:\n\n\"In your CV, you mentioned...\"\n\n\"You stated that you worked on...\"\n\n\"Tell me more about your experience with...\"\n\nThese CV-based questions should probe the candidate’s depth of knowledge, decision-making process, and real-world application of their skills.\n\nFormat the output as:\n\nJob-Specific Questions:\n\n...\n\n...\n(up to 10 questions)\n\nCV-Based General Questions:\n\n...\n\n...\n(5 questions\n\n\nFirst Qive General question then Job specific \n   \nThis is Candidtae Data: \n\n  \"summary\": \"{{ $json.summary }}\",\n  \"skills\": \"{{ $json.skills }}\",\n  \"experience_years\": \"{{ $json.experience_years }}\",\n  \"total_experience_months\": \"{{ $json.total_experience_months }}\",\n  \"education\": \"{{ JSON.stringify ($json.education) }}\",\n  \"work_experience\": \"{{ JSON.stringify ($json.work_experience)}}\",\n  \"projects\": \"{{ JSON.stringify( $json.projects )}}\",\n  \"ats_weakness\": \"{{ JSON.stringify ( $json.ats_weekness ) }}\",\n  \"ats_strength\": \"{{ $json.ats_strength }}\",\n  \"matching_summary\": \"{{ $json.matching_summary }}\",\n}\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -624,
+        -1040
+      ],
+      "id": "f9317f9a-305d-4d49-b7f0-452a02f8a254",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -544,
+        -816
+      ],
+      "id": "8647c9ea-a46d-4475-9a3b-727f4c8d7011",
+      "name": "OpenAI Chat Model2",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "candidates",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $('Create a row3').item.json.id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "interview_status",
+              "fieldValue": "ATS DONE "
+            },
+            {
+              "fieldId": "status",
+              "fieldValue": "Scheduled For MCQS "
+            },
+            {
+              "fieldId": "ats_score",
+              "fieldValue": "={{ $json.output.overall_fit_score }}"
+            },
+            {
+              "fieldId": "ats_breakdown",
+              "fieldValue": "={{ $json.output.fit_rating }}"
+            },
+            {
+              "fieldId": "ats_recommendation",
+              "fieldValue": "={{ $json.output.recommendations }}"
+            },
+            {
+              "fieldId": "ats_Weekness",
+              "fieldValue": "={{ $json.output.gaps_weaknesses }}"
+            },
+            {
+              "fieldId": "ats_strength",
+              "fieldValue": "={{ $json.output.strengths }}"
+            },
+            {
+              "fieldId": "matching_summary",
+              "fieldValue": "={{ $json.output.match_summary_table }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -48,
+        464
+      ],
+      "id": "ad786c6b-3ca7-4cb4-9fc3-d3ace96c858b",
+      "name": "Update a row",
+      "retryOnFail": true,
+      "maxTries": 2,
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "scheduled-meetings",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -2448,
+        160
+      ],
+      "id": "b05501e8-43c2-4ad5-b7c1-24a6b15fd691",
+      "name": "Webhook1",
+      "webhookId": "d7429157-f09c-4335-9bc4-ff7d972fd1ea"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "8c7a165c-3463-4cc4-aacd-5c5aea421869",
+              "leftValue": "={{ $json.ats_score }}",
+              "rightValue": 60,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        176,
+        464
+      ],
+      "id": "d668576b-843e-4a5b-bc19-ddb51006fb48",
+      "name": "If3"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "maincvs",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -2192,
+        464
+      ],
+      "id": "a00ecdac-2804-4fc6-b079-37426236291d",
+      "name": "Webhook2",
+      "webhookId": "3ab1824d-5976-414f-933d-88b33148e66f"
+    },
+    {
+      "parameters": {
+        "tableId": "candidates",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "first_name",
+              "fieldValue": "={{ $json.data.first_name }}"
+            },
+            {
+              "fieldId": "last_name",
+              "fieldValue": "={{ $json.data.last_name }}"
+            },
+            {
+              "fieldId": "email",
+              "fieldValue": "={{ $json.data.email }}"
+            },
+            {
+              "fieldId": "phone",
+              "fieldValue": "={{ $json.data.phone }}"
+            },
+            {
+              "fieldId": "location",
+              "fieldValue": "={{ $json.data.location }}"
+            },
+            {
+              "fieldId": "city",
+              "fieldValue": "={{ $json.data.city }}"
+            },
+            {
+              "fieldId": "state",
+              "fieldValue": "={{ $json.data.state }}"
+            },
+            {
+              "fieldId": "country",
+              "fieldValue": "={{ $json.data.country }}"
+            },
+            {
+              "fieldId": "summary",
+              "fieldValue": "={{ $json.data.summary }}"
+            },
+            {
+              "fieldId": "skills",
+              "fieldValue": "={{ $json.data.skills }}"
+            },
+            {
+              "fieldId": "experience_years",
+              "fieldValue": "={{ $json.data.experience_years }}"
+            },
+            {
+              "fieldId": "total_experience_months",
+              "fieldValue": "={{ $json.data.total_experience_months }}"
+            },
+            {
+              "fieldId": "education",
+              "fieldValue": "={{ $json.data.education }}"
+            },
+            {
+              "fieldId": "linkedin_url",
+              "fieldValue": "={{ $json.data.linkedin_url }}"
+            },
+            {
+              "fieldId": "github_url",
+              "fieldValue": "={{ $json.data.github_url }}"
+            },
+            {
+              "fieldId": "website_url",
+              "fieldValue": "={{ $json.data.website_url }}"
+            },
+            {
+              "fieldId": "portfolio_url",
+              "fieldValue": "={{ $json.data.portfolio_url }}"
+            },
+            {
+              "fieldId": "Work_Experience",
+              "fieldValue": "={{ $json.data.work_experience[1] }}"
+            },
+            {
+              "fieldId": "Projects",
+              "fieldValue": "={{ $json.data.projects }}"
+            },
+            {
+              "fieldId": "job_id",
+              "fieldValue": "={{ $('Webhook2').item.json.body.job.id }}"
+            },
+            {
+              "fieldId": "user_id",
+              "fieldValue": "={{ $('Webhook2').item.json.body.user_id }}"
+            },
+            {
+              "fieldId": "cv_file_url",
+              "fieldValue": "={{ $('Webhook2').item.json.body.file.url }}"
+            },
+            {
+              "fieldId": "cv_file_name",
+              "fieldValue": "={{ $('Webhook2').item.json.body.file.name }}"
+            },
+            {
+              "fieldId": "cv_file_size",
+              "fieldValue": "={{ $('Webhook2').item.json.body.file.size }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -1072,
+        464
+      ],
+      "id": "3fa2935c-9154-44ed-b04d-efab7603c4da",
+      "name": "Create a row3",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "jobs",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "keyValue": "={{ $('Webhook2').item.json.body.job.id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -848,
+        464
+      ],
+      "id": "dd712453-c9eb-4056-a065-f3e839581579",
+      "name": "Get a row",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "7f01bc50-97d3-40a6-bc08-9c4520fb13b0",
+              "leftValue": "={{ $json.output.overall_fit_score }}",
+              "rightValue": 35,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        -272,
+        464
+      ],
+      "id": "758710ca-79ff-4407-a10f-a8c194897e32",
+      "name": "Filter3"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.compression",
+      "typeVersion": 1.1,
+      "position": [
+        -1744,
+        560
+      ],
+      "id": "80e7c55c-b748-491d-97e3-bfe6730237b3",
+      "name": "Compression2"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -1296,
+        464
+      ],
+      "id": "30b7302f-885b-43fb-bb10-e44691d256a7",
+      "name": "Merge2"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "3c624958-1cd9-43c2-8fe9-fedff3a4525b",
+              "leftValue": "={{ $json.body.file.url }}",
+              "rightValue": ".pdf",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1968,
+        464
+      ],
+      "id": "73f8617e-c16c-4f77-9fbe-7c880ed19b8d",
+      "name": "If5"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "mcqs",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -3424,
+        1056
+      ],
+      "id": "1c4b70d3-c7c7-436a-a67a-96b10947eeea",
+      "name": "Webhook3",
+      "webhookId": "091c5489-8ea7-488a-847e-5ee9a2fc5dd9"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "jobs",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "keyValue": "={{ $json.job_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -2528,
+        960
+      ],
+      "id": "bda5294f-30e7-4e4f-a290-4856d64cf025",
+      "name": "Get a row1",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=\nJOB TITLE: {{ $json.title }}\nJOB Description : {{ $json.description }}\nREQUIRED SKILLS: {{ $json.job_requirements.required_skills }}\nEXPERIENCE LEVEL: {{ $json.job_requirements.years_required }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=You are an expert technical interviewer. Generate 1 practical coding task based on the job description.\n\n\nJOB TITLE: {{ $json.title }}\nJOB Description : {{ $json.description }}\nREQUIRED SKILLS: {{ $json.job_requirements.required_skills }}\nEXPERIENCE LEVEL: {{ $json.job_requirements.years_required }}\n\nGenerate a SINGLE practical task that:\n1. Tests core skills needed for the role\n2. Can be completed in the suggested time\n3. Has clear requirements and success criteria\n4. Tests both technical ability AND problem-solving approach\n\nReturn ONLY valid JSON with NO markdown (no ```json blocks):\n\n{\n  \"task_title\": \"Clear, concise task title\",\n  \"ta[REDACTED_SK]\": \"Detailed description of what to build/solve (2-3 paragraphs)\",\n  \"ta[REDACTED_SK]\": [\n    \"Requirement 1: Must do X\",\n    \"Requirement 2: Must handle Y\",\n    \"Requirement 3: Must implement Z\",\n    \"Requirement 4: Code must be clean and documented\"\n  ],\n  \"difficulty\": \"easy|medium|hard\",\n  \"time_limit_minutes\": 30|45|60|90,\n  \"programming_language\": \"javascript|typescript|python|java|csharp\",\n  \"tools_allowed\": [\"VSCode\", \"Terminal\", \"Browser\", \"StackOverflow\"],\n  \"starter_code\": \"Optional code template or 'None'\",\n  \"expected_output_example\": \"What the solution should produce\",\n  \"success_criteria\": [\n    \"Criteria 1: Works without errors\",\n    \"Criteria 2: Handles edge cases\",\n    \"Criteria 3: Code is readable and documented\"\n  ],\n  \"bonus_features\": [\n    \"Optional bonus 1: If time permits\",\n    \"Optional bonus 2: Advanced implementation\"\n  ],\n  \"disqualifying_factors\": [\n    \"Factor 1: Doesn't run at all\",\n    \"Factor 2: No explanation provided\",\n    \"Factor 3: Completely wrong approach\"\n  ],\n  \"evaluation_focus\": {\n    \"approach\": \"How they break down the problem (25%)\",\n    \"code_quality\": \"Code cleanliness and best practices (35%)\",\n    \"correctness\": \"Does it work? Edge cases? (30%)\",\n    \"communication\": \"Explanation and thinking aloud (10%)\"\n  },\n  \"notes\": \"Any special instructions or context\"\n}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -2304,
+        960
+      ],
+      "id": "bedc400a-1309-4664-9953-4fe50654fd26",
+      "name": "AI Agent4"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -2304,
+        1184
+      ],
+      "id": "280b7914-a77a-44c3-b277-f8e22c14b6d3",
+      "name": "OpenAI Chat Model5",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"$schema\": \"http://json-schema.org/draft-07/schema#\",\n  \"title\": \"Technical Practical Task\",\n  \"type\": \"object\",\n  \"additionalProperties\": false,\n  \"required\": [\n    \"task_title\",\n    \"ta[REDACTED_SK]\",\n    \"ta[REDACTED_SK]\",\n    \"difficulty\",\n    \"time_limit_minutes\",\n    \"programming_language\"\n  ],\n  \"properties\": {\n    \"task_title\": {\n      \"type\": \"string\",\n      \"minLength\": 5,\n      \"maxLength\": 100,\n      \"description\": \"Clear title of the task\"\n    },\n    \"ta[REDACTED_SK]\": {\n      \"type\": \"string\",\n      \"minLength\": 50,\n      \"maxLength\": 1500,\n      \"description\": \"Detailed description of what to build\"\n    },\n    \"ta[REDACTED_SK]\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"string\",\n        \"minLength\": 10,\n        \"maxLength\": 300\n      },\n      \"minItems\": 3,\n      \"maxItems\": 10,\n      \"description\": \"Must-have requirements\"\n    },\n    \"difficulty\": {\n      \"type\": \"string\",\n      \"enum\": [\"easy\", \"medium\", \"hard\"],\n      \"description\": \"Task difficulty level\"\n    },\n    \"time_limit_minutes\": {\n      \"type\": \"integer\",\n      \"enum\": [30, 45, 60, 90, 120],\n      \"description\": \"Time allowed to complete task\"\n    },\n    \"programming_language\": {\n      \"type\": \"string\",\n      \"enum\": [\n        \"javascript\",\n        \"typescript\",\n        \"python\",\n        \"java\",\n        \"csharp\",\n        \"cpp\",\n        \"go\",\n        \"rust\"\n      ],\n      \"description\": \"Primary programming language\"\n    },\n    \"tools_allowed\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"string\"\n      },\n      \"description\": \"Tools candidate can use (VSCode, Chrome, etc)\"\n    },\n    \"starter_code\": {\n      \"type\": [\"string\", \"null\"],\n      \"description\": \"Optional code template to start with\"\n    },\n    \"expected_output_example\": {\n      \"type\": \"string\",\n      \"description\": \"Example of what solution should produce\"\n    },\n    \"success_criteria\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"string\",\n        \"minLength\": 10,\n        \"maxLength\": 200\n      },\n      \"minItems\": 2,\n      \"maxItems\": 6,\n      \"description\": \"How to judge if solution is correct\"\n    },\n    \"bonus_features\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"string\"\n      },\n      \"description\": \"Optional enhancements for bonus points\"\n    },\n    \"disqualifying_factors\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"string\"\n      },\n      \"description\": \"Reasons to reject immediately\"\n    },\n    \"evaluation_focus\": {\n      \"type\": \"object\",\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"approach\": {\n          \"type\": \"string\",\n          \"description\": \"Weight and focus for approach (percentage)\"\n        },\n        \"code_quality\": {\n          \"type\": \"string\",\n          \"description\": \"Weight and focus for code quality (percentage)\"\n        },\n        \"correctness\": {\n          \"type\": \"string\",\n          \"description\": \"Weight and focus for correctness (percentage)\"\n        },\n        \"communication\": {\n          \"type\": \"string\",\n          \"description\": \"Weight and focus for communication (percentage)\"\n        }\n      }\n    },\n    \"notes\": {\n      \"type\": [\"string\", \"null\"],\n      \"description\": \"Additional instructions or context\"\n    }\n  }\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -2176,
+        1184
+      ],
+      "id": "06e5bdef-0e5a-48b1-92d1-5a329393ad18",
+      "name": "Structured Output Parser3"
+    },
+    {
+      "parameters": {
+        "tableId": "technical_practicals",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "candidate_id",
+              "fieldValue": "={{ $('Webhook3').item.json.body.record.candidate_id }}"
+            },
+            {
+              "fieldId": "job_id",
+              "fieldValue": "={{ $('Get a row1').item.json.id }}"
+            },
+            {
+              "fieldId": "candidate_email",
+              "fieldValue": "={{ $('Webhook3').item.json.body.record.candidate_email }}"
+            },
+            {
+              "fieldId": "candidate_name",
+              "fieldValue": "={{ $('Webhook3').item.json.body.record.candidate_name }}"
+            },
+            {
+              "fieldId": "job_title",
+              "fieldValue": "={{ $('Get a row1').item.json.title }}"
+            },
+            {
+              "fieldId": "task_title",
+              "fieldValue": "={{ $json.output.task_title }}"
+            },
+            {
+              "fieldId": "ta[REDACTED_SK]",
+              "fieldValue": "={{ $json.output.ta[REDACTED_SK] }}"
+            },
+            {
+              "fieldId": "ta[REDACTED_SK]",
+              "fieldValue": "={{ $json.output.ta[REDACTED_SK] }}"
+            },
+            {
+              "fieldId": "difficulty",
+              "fieldValue": "={{ $json.output.difficulty }}"
+            },
+            {
+              "fieldId": "time_limit_minutes",
+              "fieldValue": "={{ $json.output.time_limit_minutes }}"
+            },
+            {
+              "fieldId": "programming_language",
+              "fieldValue": "={{ $json.output.programming_language }}"
+            },
+            {
+              "fieldId": "tools_allowed",
+              "fieldValue": "={{ $json.output.tools_allowed }}"
+            },
+            {
+              "fieldId": "starter_code",
+              "fieldValue": "={{ $json.output.starter_code }}"
+            },
+            {
+              "fieldId": "expected_output_example",
+              "fieldValue": "={{ $json.output.expected_output_example }}"
+            },
+            {
+              "fieldId": "success_criteria",
+              "fieldValue": "={{ $json.output.success_criteria }}"
+            },
+            {
+              "fieldId": "bonus_features",
+              "fieldValue": "={{ $json.output.bonus_features }}"
+            },
+            {
+              "fieldId": "disqualifying_factors",
+              "fieldValue": "={{ $json.output.disqualifying_factors }}"
+            },
+            {
+              "fieldId": "evaluation_focus",
+              "fieldValue": "={{ $json.output.evaluation_focus }}"
+            },
+            {
+              "fieldId": "task_notes",
+              "fieldValue": "={{ $json.output.notes }}"
+            },
+            {
+              "fieldId": "status",
+              "fieldValue": "scheduled"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -1952,
+        960
+      ],
+      "id": "e1644c85-41b5-40e9-9fde-1debeb6912aa",
+      "name": "Create a row2",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "candidates",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $json.body.record.candidate_id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "status",
+              "fieldValue": "Scheduled For Practical Interview"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -2752,
+        960
+      ],
+      "id": "f539dcd5-f2cb-4195-8879-fb21ad3d6a7f",
+      "name": "Update a row2",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "a765eb25-ac34-482b-bb06-54fe29ab2da0",
+              "leftValue": "={{ $json.body.record.percentage }}",
+              "rightValue": 10,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -2976,
+        1056
+      ],
+      "id": "9a84fe03-3ae6-4ab5-b650-df3ecf78d39a",
+      "name": "If6"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "techinical",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -2768,
+        -1136
+      ],
+      "id": "4a5c0fb1-3647-4988-bc65-444ca18b9cb1",
+      "name": "Webhook4",
+      "webhookId": "69e58cba-c24c-475e-9725-9646cdc2aa41"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "e4bde02d-2c67-49b3-8fad-a8b78529161d",
+              "leftValue": "={{ $json.body.record.status }}",
+              "rightValue": "completed",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "a2218c00-fc50-4a10-b430-fa7ee0e0960c",
+              "leftValue": "={{ $json.body.record.status }}",
+              "rightValue": "submitted",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        -2544,
+        -1136
+      ],
+      "id": "2521e02b-2b12-4efc-8090-159db5b5d164",
+      "name": "Filter4"
+    },
+    {
+      "parameters": {
+        "resource": "video",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.0-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.0-flash"
+        },
+        "text": "what is the video about each and every details",
+        "videoUrls": "={{ $json.body.record.submission_url }}",
+        "simplify": false,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        -2096,
+        -1136
+      ],
+      "id": "555cc194-b8c4-40c5-b7aa-91ba9866eb5a",
+      "name": "Analyze video",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are given extracted video-analysis text:\n{{ $json.candidates[0].content.parts[0].text }}\n",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=You are an evaluation agent.\n\nYou are given two inputs:\n\n1. **Webhook event payload** containing detailed information about a candidate's technical submission for an n8n workflow automation challenge, including requirements, success criteria, task description, evaluation focus, disqualifying factors, bonus features, and expected output examples.\n\n2. **Human-written video analysis** describing what appears in the candidate’s screen recording of their workflow demonstration.\n\n**Your task:**\n\n* Determine whether the video analysis correctly reflects what the candidate’s video should show, based on the context provided in the webhook payload.\n* Evaluate:\n\n  * Whether the analysis accurately aligns with the submission requirements (creating and demonstrating an n8n workflow).\n  * Whether it misses critical elements.\n  * Whether it mistakenly describes irrelevant content.\n  * Overall correctness and completeness.\n\n**Provide the following evaluation:**\n\n* `accuracy_rating`: A number from 0 to 100 representing the accuracy of the analysis.\n* `classification`: One of `\"correct\"`, `\"partially_correct\"`, or `\"incorrect\"`.\n* `errors`: A list of mismatches, missing points, or inaccuracies (empty list if none).\n* `explanation`: A short summary of your reasoning.\n\n**Important:**\n\n* Use only the information contained in the webhook payload.\n* Your final output **must strictly follow the JSON format** defined in the provided JSON Schema.\n\n**Payload variables available for reference:**\n\n```\n{{ $('Webhook4').item.json.body.record.bonus_features }}\n{{ $('Webhook4').item.json.body.record.evaluation_focus.approach }}\n{{ $('Webhook4').item.json.body.record.evaluation_focus.correctness }}\n{{ $('Webhook4').item.json.body.record.evaluation_focus.code_quality }}\n{{ $('Webhook4').item.json.body.record.evaluation_focus.communication }}\n{{ $('Webhook4').item.json.body.record.success_criteria }}\n{{ $('Webhook4').item.json.body.record.ta[REDACTED_SK] }}\n{{ $('Webhook4').item.json.body.record.ta[REDACTED_SK] }}\n{{ $('Webhook4').item.json.body.record.disqualifying_factors }}\n{{ $('Webhook4').item.json.body.record.expected_output_example }}\n```\n\n```\nVideo Analysis:\n{{ $json.candidates[0].content.parts[0].text }}\n\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -1872,
+        -1136
+      ],
+      "id": "03ff55a3-7c2a-420b-90e9-1ab4c44f5212",
+      "name": "AI Agent5",
+      "retryOnFail": true,
+      "maxTries": 2
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"$schema\": \"http://json-schema.org/draft-07/schema#\",\n  \"title\": \"AI Evaluation Schema\",\n  \"type\": \"object\",\n  \"required\": [\n    \"approach_score\",\n    \"code_quality_score\",\n    \"correctness_score\",\n    \"communication_score\",\n    \"overall_score\",\n    \"ai_analysis\",\n    \"code_review\",\n    \"recommendation\"\n  ],\n  \"properties\": {\n    \"approach_score\": {\n      \"type\": \"number\",\n      \"minimum\": 0,\n      \"maximum\": 100,\n      \"description\": \"Score for the candidate's approach/design of the workflow.\"\n    },\n    \"code_quality_score\": {\n      \"type\": \"number\",\n      \"minimum\": 0,\n      \"maximum\": 100,\n      \"description\": \"Score for code and workflow quality, organization, and readability.\"\n    },\n    \"correctness_score\": {\n      \"type\": \"number\",\n      \"minimum\": 0,\n      \"maximum\": 100,\n      \"description\": \"Score for correctness and successful execution of the workflow.\"\n    },\n    \"communication_score\": {\n      \"type\": \"number\",\n      \"minimum\": 0,\n      \"maximum\": 100,\n      \"description\": \"Score for clarity in explaining workflow design and reasoning.\"\n    },\n    \"overall_score\": {\n      \"type\": \"number\",\n      \"minimum\": 0,\n      \"maximum\": 100,\n      \"description\": \"Weighted overall score calculated from other criteria.\"\n    },\n    \"ai_analysis\": {\n      \"type\": \"object\",\n      \"required\": [\"accuracy_rating\", \"classification\", \"errors\", \"explanation\"],\n      \"properties\": {\n        \"accuracy_rating\": {\n          \"type\": \"number\",\n          \"minimum\": 0,\n          \"maximum\": 100,\n          \"description\": \"Numeric rating of the video analysis accuracy.\"\n        },\n        \"classification\": {\n          \"type\": \"string\",\n          \"enum\": [\"correct\", \"partially_correct\", \"incorrect\"],\n          \"description\": \"Overall classification of the video analysis.\"\n        },\n        \"errors\": {\n          \"type\": \"array\",\n          \"items\": { \"type\": \"string\" },\n          \"description\": \"List of mismatches, missing points, or inaccuracies.\"\n        },\n        \"explanation\": {\n          \"type\": \"string\",\n          \"description\": \"Summary of reasoning behind the evaluation.\"\n        }\n      }\n    },\n    \"code_review\": {\n      \"type\": \"string\",\n      \"description\": \"Comments on the candidate's workflow code quality, correctness, and improvements.\"\n    },\n    \"recommendation\": {\n      \"type\": \"string\",\n      \"description\": \", e.g., 'pass','fail'.\"\n    }\n  },\n  \"additionalProperties\": false\n}\n"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -1728,
+        -912
+      ],
+      "id": "472f0458-b686-41ac-861a-9fa867981196",
+      "name": "Structured Output Parser4"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -1856,
+        -912
+      ],
+      "id": "847d79b7-6483-4cf2-a68a-b87c78ca8520",
+      "name": "OpenAI Chat Model6",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "technical_practicals",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $('Webhook4').item.json.body.record.id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "correctness_score",
+              "fieldValue": "={{ $json.output.correctness_score }}"
+            },
+            {
+              "fieldId": "approach_score",
+              "fieldValue": "={{ $json.output.approach_score }}"
+            },
+            {
+              "fieldId": "code_quality_score",
+              "fieldValue": "={{ $json.output.code_quality_score }}"
+            },
+            {
+              "fieldId": "communication_score",
+              "fieldValue": "={{ $json.output.communication_score }}"
+            },
+            {
+              "fieldId": "overall_score",
+              "fieldValue": "={{ $json.output.overall_score }}"
+            },
+            {
+              "fieldId": "code_review",
+              "fieldValue": "={{ $json.output.code_review }}"
+            },
+            {
+              "fieldId": "recommendation",
+              "fieldValue": "={{ $json.output.recommendation }}"
+            },
+            {
+              "fieldId": "ai_analysis",
+              "fieldValue": "={{ $json.output.ai_analysis }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -1520,
+        -1136
+      ],
+      "id": "8fa89ea6-35ba-4d6a-8a3c-e30cd9ff2b03",
+      "name": "Update a row3",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('AI Agent5').item.json.output.recommendation }}",
+                    "rightValue": "fail",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "954251af-13b4-4ce4-b070-bd02aa60050f"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "1928e1ee-1d28-4df3-a496-033593cec3cd",
+                    "leftValue": "={{ $('AI Agent5').item.json.output.recommendation }}",
+                    "rightValue": "pass",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -1296,
+        -1136
+      ],
+      "id": "7bd43c0f-97d1-42d2-8278-efadb8c41ffb",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "tableId": "qualified_for_final_interview",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "candidate_id",
+              "fieldValue": "={{ $('Get a row2').item.json.id }}"
+            },
+            {
+              "fieldId": "job_id",
+              "fieldValue": "={{ $('Get a row2').item.json.job_id }}"
+            },
+            {
+              "fieldId": "name",
+              "fieldValue": "={{ $('Get a row2').item.json.first_name }}"
+            },
+            {
+              "fieldId": "email",
+              "fieldValue": "={{ $('Get a row2').item.json.email }}"
+            },
+            {
+              "fieldId": "phone",
+              "fieldValue": "={{ $('Get a row2').item.json.phone }}"
+            },
+            {
+              "fieldId": "cv_file_url",
+              "fieldValue": "={{ $('Get a row2').item.json.cv_file_url }}"
+            },
+            {
+              "fieldId": "mcq_score",
+              "fieldValue": "={{ $json.score }}"
+            },
+            {
+              "fieldId": "technical_score",
+              "fieldValue": "={{ $('Webhook4').item.json.body.record.overall_score }}"
+            },
+            {
+              "fieldId": "client_custom_questions",
+              "fieldValue": "={{ $('Get Job Data1').item.json.questions }}"
+            },
+            {
+              "fieldId": "ai_generated_questions",
+              "fieldValue": "={{ $('AI Agent1').item.json.output }}"
+            },
+            {
+              "fieldId": "user_id",
+              "fieldValue": "={{ $('Get a row2').item.json.user_id }}"
+            },
+            {
+              "fieldId": "location",
+              "fieldValue": "={{ $('Get a row2').item.json.location }}"
+            },
+            {
+              "fieldId": "city",
+              "fieldValue": "={{ $('Get a row2').item.json.city }}"
+            },
+            {
+              "fieldId": "state",
+              "fieldValue": "={{ $('Get a row2').item.json.state }}"
+            },
+            {
+              "fieldId": "country",
+              "fieldValue": "={{ $('Get a row2').item.json.country }}"
+            },
+            {
+              "fieldId": "summary",
+              "fieldValue": "={{ $('Get a row2').item.json.summary }}"
+            },
+            {
+              "fieldId": "skills",
+              "fieldValue": "={{ $('Get a row2').item.json.skills }}"
+            },
+            {
+              "fieldId": "experience_years",
+              "fieldValue": "={{ $('Get a row2').item.json.experience_years }}"
+            },
+            {
+              "fieldId": "education",
+              "fieldValue": "={{ $('Get a row2').item.json.education }}"
+            },
+            {
+              "fieldId": "interview_status",
+              "fieldValue": "scheduled"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -48,
+        -1040
+      ],
+      "id": "5d829f05-2ed0-4965-b320-45b8a9d36cd1",
+      "name": "Create a row1",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "jobs",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "keyValue": "={{ $('Webhook4').item.json.body.record.job_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -1072,
+        -1040
+      ],
+      "id": "07f3521b-6c7f-4d7f-996a-fad75e897597",
+      "name": "Get Job Data1",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "candidates",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "keyValue": "={{ $('Webhook4').item.json.body.record.candidate_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -848,
+        -1040
+      ],
+      "id": "6a815551-2ea6-4179-9e0a-efe6cdd0b9b8",
+      "name": "Get a row2",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "b2b1f9e0-4da5-469b-bc2f-84fcdacc326b",
+              "leftValue": "={{ $json.body.record.status }}",
+              "rightValue": "in_progress",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        -3200,
+        1056
+      ],
+      "id": "11f29aad-595d-4ea8-b6fe-ccabc9236ac7",
+      "name": "Filter5"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "technical_practicals",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $('Update a row3').item.json.id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "Email_1",
+              "fieldValue": "=SENT"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -848,
+        -1232
+      ],
+      "id": "4792907d-8aeb-4388-8295-a19f43a0b86c",
+      "name": "Update a row4",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "technical_practicals",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $('Update a row3').item.json.id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "Email_2",
+              "fieldValue": "=SENT"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        400,
+        -1040
+      ],
+      "id": "7c635908-ba06-4358-83dd-51147cb211f8",
+      "name": "Update a row5",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "ce04646e-b71f-4793-9f98-573a2702aad9",
+              "leftValue": "={{ $('Webhook4').item.json.body.record.Email_1 }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "2ff23844-4d3f-414c-98ce-cd225e34681c",
+              "leftValue": "={{ $('Webhook4').item.json.body.old_record.Email_2 }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        -2320,
+        -1136
+      ],
+      "id": "dcea622a-d0c3-4238-b58d-9754e0698f3e",
+      "name": "Filter6"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "mcqs_test",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "candidate_id",
+              "keyValue": "={{ $('Get a row2').item.json.id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -272,
+        -1040
+      ],
+      "id": "56e0a15b-df40-4902-8c89-0df54859f8b4",
+      "name": "Get a row5",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Interview Transcript: {{ $json.interview_transcript }}\nAI Genearted Question these was the total Question : {{ $json.ai_generated_questions }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=You are an Expert Interview Analyst AI. Your task is to analyze interview transcripts and provide structured evaluation strictly based on the AI Generated Questions provided.\n\nRULES:\n\n1. Base your analysis strictly on the candidate’s responses in the transcript.\n   - Input:\n     - Interview Transcript: {{ $json.interview_transcript }}\n     - AI Generated Questions: {{ $json.ai_generated_questions }}\n   - If a candidate did not respond to a question, mark it as \"Not Answered\".\n   - Do NOT fabricate answers or assume content.\n   - Do NOT give partial credit for placeholder responses such as \"sure\" or \"okay\" without substantive content.\n\n2. For each AI Generated Question:\n   a) Extract the exact question text.\n   b) Check transcript for a valid response:\n      - If response is empty or irrelevant → mark as \"Not Answered\".\n      - If response fully answers the question → count as \"Answered Correctly\".\n   \n3. Aggregate metrics:\n   - total_questions = total number of AI Generated Questions.\n   - questions_answered = number of questions with valid transcript responses.\n   - questions_answered_correctly = number of questions answered correctly.\n\n4. Final Evaluation:\n   - interview_result: \"Pending\", \"Pass\", or \"Fail\".\n   - interview_feedback: brief textual summary of candidate performance.\n   - interviewer_notes: qualitative observations from the AI.\n   - hire_recommendation: \"Strong Hire\", \"Hire\", \"Maybe\", \"Don't Hire\", or \"Strong Don't Hire\".\n   - hire_confidence: numeric score 0–10 representing AI confidence in recommendation.\n   - internal_notes: optional internal remarks, risks, or critical gaps.\n\n5. Output:\n   - Must strictly follow this JSON schema:\n     {   \n       \"ai_score\": \"\",\n       \"interview_result\": \"\",\n       \"interview_feedback\": \"\",\n       \"interviewer_notes\": \"\",\n       \"hire_recommendation\": \"\",\n       \"hire_confidence\": 0,\n       \"internal_notes\": \"\",\n       \"questions_summary\": {\n         \"total_questions\": 0,\n         \"questions_answered\": 0,\n         \"questions_answered_correctly\": 0\n       }\n     }\n   - Numeric values must reflect only actual responses.\n   - If transcript is empty, all questions = Not Answered and scores = 0.\n   - Do NOT fabricate answers or content.\n\nBegin analysis now using the AI Generated Questions as the source of truth.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -1328,
+        -160
+      ],
+      "id": "b6a7f77d-fbbd-45bb-8d3d-cf81808507af",
+      "name": "AI Agent6"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -1312,
+        64
+      ],
+      "id": "ff65aab5-99d8-4f48-99b3-2fd9b256635a",
+      "name": "OpenAI Chat Model7",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n   \"ai_score\": \"\",\n  \"interview_result\": \"Pending | Pass | Fail\",\n  \"interview_feedback\": \"string\",\n  \"interviewer_notes\": \"string\",\n  \"hire_recommendation\": \"Strong Hire | Hire | Maybe | Don't Hire | Strong Don't Hire\",\n  \"hire_confidence\": 0,\n  \"internal_notes\": \"string\",\n  \"questions_summary\": {\n    \"total_questions\": 0,\n    \"questions_answered\": 0,\n    \"questions_answered_correctly\": 0\n  }\n}\n"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -1184,
+        64
+      ],
+      "id": "46a0f1c8-279c-4f1c-a379-cfdb06bfb88a",
+      "name": "Structured Output Parser5"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "final-interview",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -2448,
+        -160
+      ],
+      "id": "1b683f01-c2da-4044-9a7e-bfb42fd8d4f4",
+      "name": "Webhook5",
+      "webhookId": "691b9a3b-d449-41b8-9e08-bf784818b5d5"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "7a59a403-37dc-48f0-a2cb-66322ea8e6b4",
+              "leftValue": "={{ $json.body.record.interview_status }}",
+              "rightValue": "Completed",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        -2224,
+        -160
+      ],
+      "id": "8f4d47b6-25ad-4ef6-ba9a-5a796b5310d0",
+      "name": "Filter7"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "candidates",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "keyValue": "={{ $('Webhook5').item.json.body.record.candidate_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -1776,
+        -160
+      ],
+      "id": "2dae6e6d-85a3-4240-8c80-874d952dcbd7",
+      "name": "candidate",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "qualified_for_final_interview",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "keyValue": "={{ $('Webhook5').item.json.body.record.id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -1552,
+        -160
+      ],
+      "id": "21e8d476-332a-4e5e-8085-155d602aee46",
+      "name": "qualified-section",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "jobs",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "keyValue": "={{ $json.body.record.job_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -2000,
+        -160
+      ],
+      "id": "95a348c6-78e6-4eb1-ab00-fd92846f75d7",
+      "name": "Jobs",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "qualified_for_final_interview",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $('Webhook5').item.json.body.record.id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "interview_result",
+              "fieldValue": "={{ $json.output.interview_result }}"
+            },
+            {
+              "fieldId": "interview_feedback",
+              "fieldValue": "={{ $json.output.interview_feedback }}"
+            },
+            {
+              "fieldId": "interviewer_notes",
+              "fieldValue": "={{ $json.output.interviewer_notes }}"
+            },
+            {
+              "fieldId": "hire_recommendation",
+              "fieldValue": "={{ $json.output.hire_recommendation }}"
+            },
+            {
+              "fieldId": "hire_confidence",
+              "fieldValue": "={{ $json.output.hire_confidence }}"
+            },
+            {
+              "fieldId": "Question answered",
+              "fieldValue": "={{ $json.output.questions_summary.questions_answered }}"
+            },
+            {
+              "fieldId": "Question answered correctly",
+              "fieldValue": "={{ $json.output.questions_summary.questions_answered_correctly }}"
+            },
+            {
+              "fieldId": "internal_notes",
+              "fieldValue": "={{ $json.output.internal_notes }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -976,
+        -160
+      ],
+      "id": "7cf4dbc6-d50a-4c40-91e9-829592ce68b6",
+      "name": "Update a row6",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.interview_result }}",
+                    "rightValue": "Pass",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "4a1e1157-2533-490b-8b24-383e4aff35c1"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "5cba7939-131c-45ed-a865-5c6d7ba5b5b1",
+                    "leftValue": "={{ $json.interview_result }}",
+                    "rightValue": "Fail",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -752,
+        -160
+      ],
+      "id": "6f138680-4526-4b60-ab61-8680f585f24e",
+      "name": "Switch1"
+    },
+    {
+      "parameters": {
+        "resource": "document",
+        "operation": "extract",
+        "url": "={{ $json.body.file.url }}",
+        "prompt": "=VALIDATION\n\nConfirm if document is a CV. If not, return:\n{\"is_cv\": false, \"validation_error\": \"This document does not appear to be a resume or CV\", \"extracted_data\": null}\n\nExtract only data explicitly present. Use null or empty arrays when missing.\n\nEmail is required. If absent, set is_cv to false.\n\nAt least one contact method must exist.\n\nEXTRACTION\n5. Extract all skills: technical, soft, domain, and relevant certifications.\n6. Calculate total experience from job dates. Round to nearest 0.5 year. Use today's date for current roles.\n7. Education: extract highest or most recent degree with degree, field, school, year.\n8. Extract all valid URLs starting with http:// or https:// (LinkedIn, GitHub, portfolio, etc.).\n\nRULES\n\nDo not infer or fabricate data.\n\nUse first listed name as primary.\n\nUse first/most professional email if multiple.\n\nMonth-year dates start on the first of that month.\n\nNote employment gaps in summary only.\n\nTranslate non-English content.\n\nClean special characters while keeping essential info.\n\nOUTPUT\nReturn only valid JSON matching the required schema, with no extra text.",
+        "schema": "{\n  \"$schema\": \"http://json-schema.org/draft-07/schema#\",\n  \"title\": \"CV Extraction Result\",\n  \"type\": \"object\",\n  \"additionalProperties\": false,\n  \"required\": [\"is_cv\", \"first_name\", \"last_name\", \"email\"],\n  \"properties\": {\n    \"is_cv\": {\n      \"type\": \"boolean\",\n      \"description\": \"Whether document is a valid CV\"\n    },\n    \"validation_error\": {\n      \"type\": [\"string\", \"null\"],\n      \"description\": \"Error if not a CV\"\n    },\n    \"first_name\": {\n      \"type\": \"string\",\n      \"minLength\": 1,\n      \"maxLength\": 100,\n      \"description\": \"Candidate first name\"\n    },\n    \"last_name\": {\n      \"type\": \"string\",\n      \"minLength\": 1,\n      \"maxLength\": 100,\n      \"description\": \"Candidate last name\"\n    },\n    \"email\": {\n      \"type\": \"string\",\n      \"format\": \"email\",\n      \"description\": \"Primary email\"\n    },\n    \"phone\": {\n      \"type\": [\"string\", \"null\"],\n      \"maxLength\": 20,\n      \"description\": \"Phone number\"\n    },\n    \"location\": {\n      \"type\": [\"string\", \"null\"],\n      \"maxLength\": 200,\n      \"description\": \"Full location\"\n    },\n    \"city\": {\n      \"type\": [\"string\", \"null\"],\n      \"maxLength\": 100\n    },\n    \"state\": {\n      \"type\": [\"string\", \"null\"],\n      \"maxLength\": 100\n    },\n    \"country\": {\n      \"type\": [\"string\", \"null\"],\n      \"maxLength\": 100\n    },\n    \"summary\": {\n      \"type\": [\"string\", \"null\"],\n      \"maxLength\": 1000,\n      \"description\": \"Professional summary\"\n    },\n    \"skills\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"string\",\n        \"minLength\": 1,\n        \"maxLength\": 100\n      },\n      \"maxItems\": 100,\n      \"description\": \"All skills\"\n    },\n    \"experience_years\": {\n      \"type\": [\"number\", \"null\"],\n      \"minimum\": 0,\n      \"maximum\": 70,\n      \"description\": \"Years of experience\"\n    },\n    \"total_experience_months\": {\n      \"type\": [\"integer\", \"null\"],\n      \"minimum\": 0,\n      \"maximum\": 840\n    },\n    \"education\": {\n      \"type\": [\"object\", \"null\"],\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"degree\": {\n          \"type\": \"string\",\n          \"enum\": [\n            \"High School\",\n            \"Associate\",\n            \"Bachelor\",\n            \"Master\",\n            \"MBA\",\n            \"PhD\",\n            \"Diploma\",\n            \"Certificate\",\n            \"Bootcamp\",\n            \"Other\"\n          ]\n        },\n        \"field\": {\n          \"type\": \"string\",\n          \"maxLength\": 200\n        },\n        \"school\": {\n          \"type\": [\"string\", \"null\"],\n          \"maxLength\": 300\n        },\n        \"year\": {\n          \"type\": [\"integer\", \"null\"],\n          \"minimum\": 1950,\n          \"maximum\": 2100\n        }\n      }\n    },\n    \"languages\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"additionalProperties\": false,\n        \"required\": [\"language\"],\n        \"properties\": {\n          \"language\": {\n            \"type\": \"string\",\n            \"minLength\": 1,\n            \"maxLength\": 50\n          },\n          \"proficiency\": {\n            \"type\": [\"string\", \"null\"],\n            \"enum\": [\"Beginner\", \"Intermediate\", \"Advanced\", \"Fluent\", \"Native\", null]\n          }\n        }\n      },\n      \"maxItems\": 20\n    },\n    \"certifications\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"additionalProperties\": false,\n        \"required\": [\"name\"],\n        \"properties\": {\n          \"name\": {\n            \"type\": \"string\",\n            \"minLength\": 1,\n            \"maxLength\": 300\n          },\n          \"issuer\": {\n            \"type\": [\"string\", \"null\"],\n            \"maxLength\": 200\n          },\n          \"year\": {\n            \"type\": [\"integer\", \"null\"],\n            \"minimum\": 1950,\n            \"maximum\": 2100\n          }\n        }\n      },\n      \"maxItems\": 50\n    },\n    \"work_experience\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"additionalProperties\": false,\n        \"required\": [\"job_title\", \"company\"],\n        \"properties\": {\n          \"job_title\": {\n            \"type\": \"string\",\n            \"minLength\": 1,\n            \"maxLength\": 200\n          },\n          \"company\": {\n            \"type\": \"string\",\n            \"minLength\": 1,\n            \"maxLength\": 300\n          },\n          \"start_date\": {\n            \"type\": [\"string\", \"null\"],\n            \"format\": \"date\"\n          },\n          \"end_date\": {\n            \"type\": [\"string\", \"null\"],\n            \"format\": \"date\"\n          },\n          \"duration_months\": {\n            \"type\": [\"integer\", \"null\"],\n            \"minimum\": 0\n          },\n          \"location\": {\n            \"type\": [\"string\", \"null\"],\n            \"maxLength\": 200\n          },\n          \"description\": {\n            \"type\": [\"string\", \"null\"],\n            \"maxLength\": 1000\n          }\n        }\n      },\n      \"maxItems\": 50\n    },\n    \"projects\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"additionalProperties\": false,\n        \"required\": [\"name\"],\n        \"properties\": {\n          \"name\": {\n            \"type\": \"string\",\n            \"minLength\": 1,\n            \"maxLength\": 300\n          },\n          \"description\": {\n            \"type\": [\"string\", \"null\"],\n            \"maxLength\": 1000\n          },\n          \"technologies\": {\n            \"type\": \"array\",\n            \"items\": {\n              \"type\": \"string\"\n            },\n            \"maxItems\": 50\n          },\n          \"url\": {\n            \"type\": [\"string\", \"null\"],\n            \"format\": \"uri\"\n          }\n        }\n      },\n      \"maxItems\": 30\n    },\n    \"linkedin_url\": {\n      \"type\": [\"string\", \"null\"],\n      \"maxLength\": 500\n    },\n    \"github_url\": {\n      \"type\": [\"string\", \"null\"],\n      \"maxLength\": 500\n    },\n    \"portfolio_url\": {\n      \"type\": [\"string\", \"null\"],\n      \"maxLength\": 500\n    },\n    \"website_url\": {\n      \"type\": [\"string\", \"null\"],\n      \"maxLength\": 500\n    },\n    \"twitter_url\": {\n      \"type\": [\"string\", \"null\"],\n      \"maxLength\": 500\n    },\n    \"additional_info\": {\n      \"type\": [\"object\", \"null\"],\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"publications\": {\n          \"type\": \"array\",\n          \"items\": {\n            \"type\": \"string\"\n          }\n        },\n        \"awards\": {\n          \"type\": \"array\",\n          \"items\": {\n            \"type\": \"string\"\n          }\n        },\n        \"volunteer_work\": {\n          \"type\": \"array\",\n          \"items\": {\n            \"type\": \"string\"\n          }\n        },\n        \"hobbies\": {\n          \"type\": \"array\",\n          \"items\": {\n            \"type\": \"string\"\n          }\n        }\n      }\n    }\n  }\n}"
+      },
+      "type": "n8n-nodes-pdfvector.pdfVector",
+      "typeVersion": 1,
+      "position": [
+        -1520,
+        368
+      ],
+      "id": "77626e96-fd6b-49f7-854b-7434fc4b6f4c",
+      "name": "Extract structured data from a document2",
+      "retryOnFail": true,
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "resource": "document",
+        "operation": "extract",
+        "url": "={{ $json.cv_file_url }}",
+        "prompt": "=VALIDATION\n\nConfirm if document is a CV. If not, return:\n{\"is_cv\": false, \"validation_error\": \"This document does not appear to be a resume or CV\", \"extracted_data\": null}\n\nExtract only data explicitly present. Use null or empty arrays when missing.\n\nEmail is required. If absent, set is_cv to false.\n\nAt least one contact method must exist.\n\nEXTRACTION\n5. Extract all skills: technical, soft, domain, and relevant certifications.\n6. Calculate total experience from job dates. Round to nearest 0.5 year. Use today's date for current roles.\n7. Education: extract highest or most recent degree with degree, field, school, year.\n8. Extract all valid URLs starting with http:// or https:// (LinkedIn, GitHub, portfolio, etc.).\n\nRULES\n\nDo not infer or fabricate data.\n\nUse first listed name as primary.\n\nUse first/most professional email if multiple.\n\nMonth-year dates start on the first of that month.\n\nNote employment gaps in summary only.\n\nTranslate non-English content.\n\nClean special characters while keeping essential info.\n\nOUTPUT\nReturn only valid JSON matching the required schema, with no extra text.",
+        "schema": "{\n  \"$schema\": \"http://json-schema.org/draft-07/schema#\",\n  \"title\": \"CV Extraction Result\",\n  \"type\": \"object\",\n  \"additionalProperties\": false,\n  \"required\": [\"is_cv\", \"first_name\", \"last_name\", \"email\"],\n  \"properties\": {\n    \"is_cv\": {\n      \"type\": \"boolean\",\n      \"description\": \"Whether document is a valid CV\"\n    },\n    \"validation_error\": {\n      \"type\": [\"string\", \"null\"],\n      \"description\": \"Error if not a CV\"\n    },\n    \"first_name\": {\n      \"type\": \"string\",\n      \"minLength\": 1,\n      \"maxLength\": 100,\n      \"description\": \"Candidate first name\"\n    },\n    \"last_name\": {\n      \"type\": \"string\",\n      \"minLength\": 1,\n      \"maxLength\": 100,\n      \"description\": \"Candidate last name\"\n    },\n    \"email\": {\n      \"type\": \"string\",\n      \"format\": \"email\",\n      \"description\": \"Primary email\"\n    },\n    \"phone\": {\n      \"type\": [\"string\", \"null\"],\n      \"maxLength\": 20,\n      \"description\": \"Phone number\"\n    },\n    \"location\": {\n      \"type\": [\"string\", \"null\"],\n      \"maxLength\": 200,\n      \"description\": \"Full location\"\n    },\n    \"city\": {\n      \"type\": [\"string\", \"null\"],\n      \"maxLength\": 100\n    },\n    \"state\": {\n      \"type\": [\"string\", \"null\"],\n      \"maxLength\": 100\n    },\n    \"country\": {\n      \"type\": [\"string\", \"null\"],\n      \"maxLength\": 100\n    },\n    \"summary\": {\n      \"type\": [\"string\", \"null\"],\n      \"maxLength\": 1000,\n      \"description\": \"Professional summary\"\n    },\n    \"skills\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"string\",\n        \"minLength\": 1,\n        \"maxLength\": 100\n      },\n      \"maxItems\": 100,\n      \"description\": \"All skills\"\n    },\n    \"experience_years\": {\n      \"type\": [\"number\", \"null\"],\n      \"minimum\": 0,\n      \"maximum\": 70,\n      \"description\": \"Years of experience\"\n    },\n    \"total_experience_months\": {\n      \"type\": [\"integer\", \"null\"],\n      \"minimum\": 0,\n      \"maximum\": 840\n    },\n    \"education\": {\n      \"type\": [\"object\", \"null\"],\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"degree\": {\n          \"type\": \"string\",\n          \"enum\": [\n            \"High School\",\n            \"Associate\",\n            \"Bachelor\",\n            \"Master\",\n            \"MBA\",\n            \"PhD\",\n            \"Diploma\",\n            \"Certificate\",\n            \"Bootcamp\",\n            \"Other\"\n          ]\n        },\n        \"field\": {\n          \"type\": \"string\",\n          \"maxLength\": 200\n        },\n        \"school\": {\n          \"type\": [\"string\", \"null\"],\n          \"maxLength\": 300\n        },\n        \"year\": {\n          \"type\": [\"integer\", \"null\"],\n          \"minimum\": 1950,\n          \"maximum\": 2100\n        }\n      }\n    },\n    \"languages\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"additionalProperties\": false,\n        \"required\": [\"language\"],\n        \"properties\": {\n          \"language\": {\n            \"type\": \"string\",\n            \"minLength\": 1,\n            \"maxLength\": 50\n          },\n          \"proficiency\": {\n            \"type\": [\"string\", \"null\"],\n            \"enum\": [\"Beginner\", \"Intermediate\", \"Advanced\", \"Fluent\", \"Native\", null]\n          }\n        }\n      },\n      \"maxItems\": 20\n    },\n    \"certifications\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"additionalProperties\": false,\n        \"required\": [\"name\"],\n        \"properties\": {\n          \"name\": {\n            \"type\": \"string\",\n            \"minLength\": 1,\n            \"maxLength\": 300\n          },\n          \"issuer\": {\n            \"type\": [\"string\", \"null\"],\n            \"maxLength\": 200\n          },\n          \"year\": {\n            \"type\": [\"integer\", \"null\"],\n            \"minimum\": 1950,\n            \"maximum\": 2100\n          }\n        }\n      },\n      \"maxItems\": 50\n    },\n    \"work_experience\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"additionalProperties\": false,\n        \"required\": [\"job_title\", \"company\"],\n        \"properties\": {\n          \"job_title\": {\n            \"type\": \"string\",\n            \"minLength\": 1,\n            \"maxLength\": 200\n          },\n          \"company\": {\n            \"type\": \"string\",\n            \"minLength\": 1,\n            \"maxLength\": 300\n          },\n          \"start_date\": {\n            \"type\": [\"string\", \"null\"],\n            \"format\": \"date\"\n          },\n          \"end_date\": {\n            \"type\": [\"string\", \"null\"],\n            \"format\": \"date\"\n          },\n          \"duration_months\": {\n            \"type\": [\"integer\", \"null\"],\n            \"minimum\": 0\n          },\n          \"location\": {\n            \"type\": [\"string\", \"null\"],\n            \"maxLength\": 200\n          },\n          \"description\": {\n            \"type\": [\"string\", \"null\"],\n            \"maxLength\": 1000\n          }\n        }\n      },\n      \"maxItems\": 50\n    },\n    \"projects\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"additionalProperties\": false,\n        \"required\": [\"name\"],\n        \"properties\": {\n          \"name\": {\n            \"type\": \"string\",\n            \"minLength\": 1,\n            \"maxLength\": 300\n          },\n          \"description\": {\n            \"type\": [\"string\", \"null\"],\n            \"maxLength\": 1000\n          },\n          \"technologies\": {\n            \"type\": \"array\",\n            \"items\": {\n              \"type\": \"string\"\n            },\n            \"maxItems\": 50\n          },\n          \"url\": {\n            \"type\": [\"string\", \"null\"],\n            \"format\": \"uri\"\n          }\n        }\n      },\n      \"maxItems\": 30\n    },\n    \"linkedin_url\": {\n      \"type\": [\"string\", \"null\"],\n      \"maxLength\": 500\n    },\n    \"github_url\": {\n      \"type\": [\"string\", \"null\"],\n      \"maxLength\": 500\n    },\n    \"portfolio_url\": {\n      \"type\": [\"string\", \"null\"],\n      \"maxLength\": 500\n    },\n    \"website_url\": {\n      \"type\": [\"string\", \"null\"],\n      \"maxLength\": 500\n    },\n    \"twitter_url\": {\n      \"type\": [\"string\", \"null\"],\n      \"maxLength\": 500\n    },\n    \"additional_info\": {\n      \"type\": [\"object\", \"null\"],\n      \"additionalProperties\": false,\n      \"properties\": {\n        \"publications\": {\n          \"type\": \"array\",\n          \"items\": {\n            \"type\": \"string\"\n          }\n        },\n        \"awards\": {\n          \"type\": \"array\",\n          \"items\": {\n            \"type\": \"string\"\n          }\n        },\n        \"volunteer_work\": {\n          \"type\": \"array\",\n          \"items\": {\n            \"type\": \"string\"\n          }\n        },\n        \"hobbies\": {\n          \"type\": \"array\",\n          \"items\": {\n            \"type\": \"string\"\n          }\n        }\n      }\n    }\n  }\n}"
+      },
+      "type": "n8n-nodes-pdfvector.pdfVector",
+      "typeVersion": 1,
+      "position": [
+        -1520,
+        560
+      ],
+      "id": "0af0594a-5267-435f-aeb0-e4c0a1d564e8",
+      "name": "Extract structured data from a document3",
+      "retryOnFail": true,
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "fromEmail": "no-reply@duhanashrah.ai",
+        "toEmail": "={{ $json.body.record.candidate_email }}",
+        "subject": "Meeting Secheduled",
+        "html": "=<!DOCTYPE html>\n<html>\n<head>\n    <meta charset=\"UTF-8\">\n    <title>Interview Details</title>\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <style>\n        body {\n            font-family: Arial, sans-serif;\n            background-color: #f4f6f8;\n            margin: 0;\n            padding: 0;\n            color: #333333;\n        }\n        .container {\n            max-width: 650px;\n            margin: 40px auto;\n            background-color: #ffffff;\n            padding: 30px;\n            border-radius: 8px;\n            box-shadow: 0 2px 8px rgba(0,0,0,0.1);\n        }\n        h1 {\n            color: #16a34a;\n            font-size: 24px;\n            text-align: center;\n            margin-bottom: 25px;\n        }\n        .details {\n            margin: 20px 0;\n        }\n        .detail-row {\n            display: flex;\n            justify-content: space-between;\n            background-color: #f1f5f9;\n            padding: 12px 15px;\n            border-radius: 5px;\n            margin-bottom: 12px;\n        }\n        .label {\n            font-weight: bold;\n            color: #0f172a;\n        }\n        .value {\n            color: #334155;\n        }\n        .instructions {\n            background-color: #e0f2fe;\n            padding: 15px;\n            border-left: 4px solid #3b82f6;\n            border-radius: 5px;\n            margin-bottom: 20px;\n            line-height: 1.6;\n        }\n        .zoom-button {\n            display: inline-block;\n            background-color: #3b82f6;\n            color: white;\n            text-decoration: none;\n            padding: 12px 25px;\n            border-radius: 5px;\n            font-weight: bold;\n            text-align: center;\n        }\n        .zoom-button:hover {\n            background-color: #1e40af;\n        }\n        .footer {\n            text-align: center;\n            margin-top: 30px;\n            font-size: 13px;\n            color: #6b7280;\n        }\n    </style>\n</head>\n<body>\n    <div class=\"container\">\n        <h1>Interview Scheduled</h1>\n\n        <div class=\"details\">\n            <div class=\"detail-row\">\n                <span class=\"label\">Candidate Name:</span>\n                <span class=\"value\">{{ $json.body.record.candidate_name }}</span>\n            </div>\n            <div class=\"detail-row\">\n                <span class=\"label\">Meeting Date & Time:</span>\n                <span class=\"value\">{{ $json.body.record.meeting_date }}</span>\n            </div>\n            <div class=\"detail-row\">\n                <span class=\"label\">Meeting Duration:</span>\n                <span class=\"value\">{{ $json.body.record.meeting_duration }}</span>\n            </div>\n            <div class=\"detail-row\">\n                <span class=\"label\">Zoom ID:</span>\n                <span class=\"value\">{{ $json.body.record.zoom_link }}</span>\n            </div>\n        </div>\n\n        <div class=\"instructions\">\n            <strong>Meeting Instructions:</strong>\n            <p>{{ $json.body.record.meeting_instructions }}</p>\n        </div>\n\n        <div style=\"text-align: center;\">\n            <a href=\"https://app.zoom.us/wc/my/nsolbpo.usa?fromPWA=1\" class=\"zoom-button\">Join Zoom Meeting</a>\n        </div>\n\n        <div class=\"footer\">\n            © 2025 All Rights Reserved\n        </div>\n    </div>\n</body>\n</html>\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        -2224,
+        160
+      ],
+      "id": "5f910bc9-d06f-42d4-9473-face099949ab",
+      "name": "Send email",
+      "webhookId": "2131cb82-c5d9-4500-b15b-ea24d84dc820",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "fromEmail": "no-replay@duhanashrah.ai",
+        "toEmail": "={{ $json.email }}",
+        "subject": "=Your MCQ Test is Scheduled! - {{ $('Get a row').item.json.title }} Position",
+        "html": "=<!DOCTYPE html>\n<html>\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <style>\n        body {\n            font-family: Arial, sans-serif;\n            line-height: 1.6;\n            color: #333;\n            background-color: #f5f5f5;\n        }\n        .container {\n            max-width: 600px;\n            margin: 0 auto;\n            background-color: white;\n            padding: 30px;\n            border-radius: 8px;\n        }\n        .header {\n            background-color: #3b82f6;\n            color: white;\n            padding: 20px;\n            text-align: center;\n            border-radius: 5px;\n            margin-bottom: 20px;\n        }\n        .header h1 {\n            margin: 0;\n            font-size: 24px;\n        }\n        .content {\n            margin-bottom: 20px;\n        }\n        .box {\n            background-color: #f0f4ff;\n            border-left: 4px solid #3b82f6;\n            padding: 15px;\n            margin: 15px 0;\n            border-radius: 4px;\n        }\n        .id-box {\n            background-color: #dbeafe;\n            border-left: 4px solid #0284c7;\n            padding: 15px;\n            margin: 15px 0;\n            border-radius: 4px;\n            text-align: center;\n        }\n        .candidate-id {\n            font-family: 'Courier New', monospace;\n            font-size: 18px;\n            font-weight: bold;\n            color: #0284c7;\n            margin: 10px 0;\n            padding: 10px;\n            background-color: white;\n            border: 2px solid #0284c7;\n            border-radius: 4px;\n        }\n        .button {\n            display: inline-block;\n            background-color: #3b82f6;\n            color: white;\n            padding: 12px 30px;\n            text-decoration: none;\n            border-radius: 5px;\n            font-weight: bold;\n            text-align: center;\n        }\n        .button:hover {\n            background-color: #1d4ed8;\n        }\n        .button-container {\n            text-align: center;\n            margin: 25px 0;\n        }\n        .link {\n            color: #3b82f6;\n            text-decoration: none;\n            font-weight: bold;\n        }\n        .warning {\n            background-color: #fef3c7;\n            border-left: 4px solid #f59e0b;\n            padding: 15px;\n            margin: 15px 0;\n            border-radius: 4px;\n            color: #92400e;\n            font-weight: bold;\n        }\n        .footer {\n            background-color: #f5f5f5;\n            text-align: center;\n            padding: 20px;\n            border-top: 1px solid #e5e7eb;\n            margin-top: 20px;\n            font-size: 12px;\n            color: #6b7280;\n        }\n    </style>\n</head>\n<body>\n    <div class=\"container\">\n        <div class=\"header\">\n            <h1>📋 Your MCQ Test is Scheduled</h1>\n        </div>\n\n        <div class=\"content\">\n            <p>Hi,</p>\n            <p>Your MCQ assessment is ready! You have <strong>24 hours</strong> to complete it.</p>\n\n            <div class=\"warning\">\n                ⏰ Complete this test within 24 hours or the link will expire!\n            </div>\n\n            <div class=\"box\">\n                <p><strong>Test Details:</strong></p>\n                <p>Time Limit: 30 minutes<br>\n                Questions: 30<br>\n                Passing Score: 60%</p>\n            </div>\n\n            <div class=\"id-box\">\n                <p><strong>Your Candidate ID:</strong></p>\n                <div class=\"candidate-id\">{{ $json.id }}</div>\n                <p style=\"font-size: 12px; margin-top: 10px;\">Keep this ID safe - you'll need it to access the test</p>\n            </div>\n\n            <div class=\"button-container\">\n                <a href=\"http://localhost:8080/mcqs-landing\" class=\"button\">→ Start MCQ Test</a>\n            </div>\n\n            <p>Test Link: <a href=\"http://localhost:8080/mcqs-landing\" class=\"link\">http://hiring.duhanashrah.ai/mcqs-landing</a></p>\n\n            <p style=\"margin-top: 25px;\">Instructions:</p>\n            <ol>\n                <li>Go to the test link above</li>\n                <li>Enter your Candidate ID and email</li>\n                <li>Read the instructions</li>\n                <li>Click \"Start Test\"</li>\n                <li>Answer all 30 questions in 30 minutes</li>\n                <li>Submit when done</li>\n            </ol>\n\n            <p style=\"margin-top: 20px;\">Good luck! 🚀</p>\n        </div>\n\n        <div class=\"footer\">\n            <p>© 2025 All Rights Reserved</p>\n        </div>\n    </div>\n</body>\n</html>",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        400,
+        368
+      ],
+      "id": "00d6027f-3427-4853-b44a-0cd32a7f7d55",
+      "name": "Send email1",
+      "webhookId": "2131cb82-c5d9-4500-b15b-ea24d84dc820",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "fromEmail": "no-replay@duhanashrah.ai",
+        "toEmail": "={{ $json.email }}",
+        "subject": "=Your Didnt Qualified! - {{ $('Get a row').item.json.title }} Position",
+        "html": "=<!DOCTYPE html>\n<html>\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <style>\n        body {\n            font-family: Arial, sans-serif;\n            line-height: 1.6;\n            color: #333;\n            background-color: #f5f5f5;\n        }\n        .container {\n            max-width: 600px;\n            margin: 0 auto;\n            background-color: white;\n            padding: 30px;\n            border-radius: 8px;\n        }\n        .header {\n            background-color: #ef4444;\n            color: white;\n            padding: 20px;\n            text-align: center;\n            border-radius: 5px;\n            margin-bottom: 20px;\n        }\n        .header h1 {\n            margin: 0;\n            font-size: 24px;\n        }\n        .content {\n            margin-bottom: 20px;\n        }\n        .box {\n            background-color: #fee2e2;\n            border-left: 4px solid #ef4444;\n            padding: 15px;\n            margin: 15px 0;\n            border-radius: 4px;\n        }\n        .score-box {\n            background-color: #fecaca;\n            border-left: 4px solid #dc2626;\n            padding: 15px;\n            margin: 15px 0;\n            border-radius: 4px;\n            text-align: center;\n        }\n        .score-value {\n            font-size: 28px;\n            font-weight: bold;\n            color: #991b1b;\n            margin: 10px 0;\n        }\n        .feedback {\n            background-color: #fef2f2;\n            border-left: 4px solid #ef4444;\n            padding: 15px;\n            margin: 15px 0;\n            border-radius: 4px;\n        }\n        .feedback ul {\n            margin: 10px 0;\n            padding-left: 20px;\n        }\n        .feedback li {\n            margin: 8px 0;\n        }\n        .reapply {\n            background-color: #fef3c7;\n            border-left: 4px solid #f59e0b;\n            padding: 15px;\n            margin: 15px 0;\n            border-radius: 4px;\n            color: #92400e;\n        }\n        .reapply ul {\n            margin: 10px 0;\n            padding-left: 20px;\n        }\n        .reapply li {\n            margin: 8px 0;\n        }\n        .footer {\n            background-color: #f5f5f5;\n            text-align: center;\n            padding: 20px;\n            border-top: 1px solid #e5e7eb;\n            margin-top: 20px;\n            font-size: 12px;\n            color: #6b7280;\n        }\n    </style>\n</head>\n<body>\n    <div class=\"container\">\n        <div class=\"header\">\n            <h1>📋 Application Status Update</h1>\n        </div>\n\n        <div class=\"content\">\n            <p>Hi ,{{ $json.full_name }}</p>\n            <p>Thank you for applying for the <strong>{{ $('Get a row').item.json.title }}</strong> position. We appreciate your interest in our company.</p>\n\n            <div class=\"box\">\n                <p><strong>Unfortunately, we will not be moving forward with your application at this time.</strong></p>\n            </div>\n\n            <div class=\"score-box\">\n                <p style=\"margin: 0; color: #991b1b; font-weight: bold;\">Your CV Screening Score</p>\n                <div class=\"score-value\">{{ $json.ats_score }}%</div>\n                <p style=\"margin: 0; font-size: 14px; color: #7f1d1d;\">Required: 70% | Your Score: {{ $json.ats_score }}%</p>\n            </div>\n\n            <div class=\"box\">\n                <p><strong>Reason:</strong></p>\n                <p>Your CV doesn't match the required qualifications for this position. We look for specific skills and experience that align with our needs.</p>\n            </div>\n\n            <div class=\"feedback\">\n                <p><strong>Areas to Improve:</strong></p>\n                <ul>\n                    <li>{{ $('Filter3').item.json.output.gaps_weaknesses[0] }}</li>\n                    <li>{{ $('Filter3').item.json.output.gaps_weaknesses[1] }}</li>\n                    <li>{{ $('Filter3').item.json.output.gaps_weaknesses[2] }}</li>\n                </ul>\n            </div>\n\n            <div class=\"reapply\">\n                <p><strong>Don't Give Up!</strong></p>\n                <ul>\n                    <li>Gain more experience in the required areas</li>\n                    <li>Update your CV with new skills and achievements</li>\n                    <li>Reapply after 6 months with improved qualifications</li>\n                </ul>\n            </div>\n\n            <p style=\"margin-top: 20px; font-size: 14px;\">We keep your profile and may contact you for future opportunities. Best wishes for your career! 🚀</p>\n\n            <p style=\"margin-top: 20px; font-size: 14px;\">Questions? Email us: support@company.com</p>\n        </div>\n\n        <div class=\"footer\">\n            <p>© 2025 All Rights Reserved</p>\n        </div>\n    </div>\n</body>\n</html>",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        400,
+        560
+      ],
+      "id": "f5a7d642-73b7-466f-9359-f1bbe43ca72f",
+      "name": "Send email2",
+      "webhookId": "2131cb82-c5d9-4500-b15b-ea24d84dc820",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "fromEmail": "no-replay@duhanashrah.ai",
+        "toEmail": "={{ $json.candidate_email }}",
+        "subject": "=Your MCQ Test is Scheduled! - {{ $json.job_title }} Position",
+        "html": "=<!DOCTYPE html>\n<html>\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <style>\n        body {\n            font-family: Arial, sans-serif;\n            line-height: 1.6;\n            color: #333;\n            background-color: #f5f5f5;\n        }\n        .container {\n            max-width: 600px;\n            margin: 0 auto;\n            background-color: white;\n            padding: 30px;\n            border-radius: 8px;\n        }\n        .header {\n            background-color: #10b981;\n            color: white;\n            padding: 20px;\n            text-align: center;\n            border-radius: 5px;\n            margin-bottom: 20px;\n        }\n        .header h1 {\n            margin: 0;\n            font-size: 24px;\n        }\n        .content {\n            margin-bottom: 20px;\n        }\n        .box {\n            background-color: #dcfce7;\n            border-left: 4px solid #10b981;\n            padding: 15px;\n            margin: 15px 0;\n            border-radius: 4px;\n        }\n        .score-box {\n            background-color: #d1fae5;\n            border-left: 4px solid #059669;\n            padding: 15px;\n            margin: 15px 0;\n            border-radius: 4px;\n        }\n        .score-value {\n            font-size: 28px;\n            font-weight: bold;\n            color: #059669;\n            text-align: center;\n            margin: 10px 0;\n        }\n        .id-box {\n            background-color: #dbeafe;\n            border-left: 4px solid #0284c7;\n            padding: 15px;\n            margin: 15px 0;\n            border-radius: 4px;\n            text-align: center;\n        }\n        .candidate-id {\n            font-family: 'Courier New', monospace;\n            font-size: 18px;\n            font-weight: bold;\n            color: #0284c7;\n            margin: 10px 0;\n            padding: 10px;\n            background-color: white;\n            border: 2px solid #0284c7;\n            border-radius: 4px;\n        }\n        .warning {\n            background-color: #fef3c7;\n            border-left: 4px solid #f59e0b;\n            padding: 15px;\n            margin: 15px 0;\n            border-radius: 4px;\n            color: #92400e;\n            font-weight: bold;\n        }\n        .button {\n            display: inline-block;\n            background-color: #10b981;\n            color: white;\n            padding: 12px 30px;\n            text-decoration: none;\n            border-radius: 5px;\n            font-weight: bold;\n            text-align: center;\n        }\n        .button:hover {\n            background-color: #059669;\n        }\n        .button-container {\n            text-align: center;\n            margin: 25px 0;\n        }\n        .link {\n            color: #10b981;\n            text-decoration: none;\n            font-weight: bold;\n        }\n        .next-steps {\n            background-color: #f0f9ff;\n            border-left: 4px solid #0284c7;\n            padding: 15px;\n            margin: 15px 0;\n            border-radius: 4px;\n        }\n        .next-steps ol {\n            margin: 10px 0;\n            padding-left: 20px;\n        }\n        .next-steps li {\n            margin: 8px 0;\n        }\n        .footer {\n            background-color: #f5f5f5;\n            text-align: center;\n            padding: 20px;\n            border-top: 1px solid #e5e7eb;\n            margin-top: 20px;\n            font-size: 12px;\n            color: #6b7280;\n        }\n    </style>\n</head>\n<body>\n    <div class=\"container\">\n        <div class=\"header\">\n            <h1>🎉 Congratulations! You Qualified</h1>\n        </div>\n\n        <div class=\"content\">\n            <p>Hi ,{{ $json.candidate_name }}</p>\n            <p>Great news! You have successfully passed the MCQ assessment for the <strong>{{ $json.job_title }}</strong> position! 🚀</p>\n\n            <div class=\"score-box\">\n                <p style=\"margin: 0; text-align: center; color: #059669; font-weight: bold;\">You've qualified for the next round</p>\n                <div class=\"score-value\">{{ $('Webhook3').item.json.body.record.score }}%</div>\n                <p style=\"margin: 0; text-align: center; font-size: 14px; color: #666;\">Required: 15 | Your Score: {{ $('Webhook3').item.json.body.record.score }}%</p>\n            </div>\n\n            <div class=\"box\">\n                <p><strong>MCQ Test Summary:</strong></p>\n                <p>Date: {{ $('Webhook3').item.json.body.old_record.updated_at }}<br>\n                Your Score: {{ $('Webhook3').item.json.body.record.score }} %<br>\n                Status: ✅ Qualified</p>\n            </div>\n\n            <div class=\"warning\">\n                ⏰ Your practical interview is scheduled! Complete it within 24 hours.\n            </div>\n\n            <div class=\"id-box\">\n                <p><strong>Your Candidate ID:</strong></p>\n                <div class=\"candidate-id\">{{ $json.candidate_id }}</div>\n                <p style=\"font-size: 12px; margin-top: 10px;\">Keep this ID safe - you'll need it for the practical test</p>\n            </div>\n\n            <div class=\"button-container\">\n                <a href=\"http://localhost:8080/practical-test-landing\" class=\"button\">→ Start Practical Test</a>\n            </div>\n\n            <p>Test Link: <a href=\"http://localhost:8080/practical-test-landing\" class=\"link\">https://hiring.duhanashrah.ai/practical-test-landing</a></p>\n\n            <div class=\"next-steps\">\n                <p><strong>What's Next?</strong></p>\n                <ol>\n                    <li>Go to the link above</li>\n                    <li>Enter your Candidate ID and email</li>\n                    <li>Read the task description carefully</li>\n                    <li>Start your screen recording tool (OBS, ShareX, etc.)</li>\n                    <li>Solve the coding problem while explaining your approach</li>\n                    <li>Upload your screen recording</li>\n                    <li>Submit your solution</li>\n                </ol>\n            </div>\n\n            <p style=\"margin-top: 20px;\"><strong>Important Tips:</strong></p>\n            <ul>\n                <li>Record your screen while solving the problem</li>\n                <li>Think aloud - explain your approach and reasoning</li>\n                <li>Test your solution thoroughly</li>\n                <li>Make sure audio quality is good for clear explanation</li>\n                <li>Internet connection must be stable</li>\n            </ul>\n\n            <p style=\"margin-top: 20px; font-size: 14px;\">Questions? Contact us: support@company.com</p>\n\n            <p>Show us your best coding skills! 💻</p>\n        </div>\n\n        <div class=\"footer\">\n            <p>© 2025 All Rights Reserved</p>\n        </div>\n    </div>\n</body>\n</html>",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        -1728,
+        960
+      ],
+      "id": "2d6429f8-9e8b-4dcf-afcb-e498d4970a08",
+      "name": "Send email3",
+      "webhookId": "2131cb82-c5d9-4500-b15b-ea24d84dc820",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "fromEmail": "no-replay@duhanashrah.ai",
+        "toEmail": "={{ $json.candidate_email }}",
+        "subject": "=Your Didnt Qualify! - {{ $json.job_title }} Position",
+        "html": "=<!DOCTYPE html>\n<html>\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <style>\n        body {\n            font-family: Arial, sans-serif;\n            line-height: 1.6;\n            color: #333;\n            background-color: #f5f5f5;\n        }\n        .container {\n            max-width: 600px;\n            margin: 0 auto;\n            background-color: white;\n            padding: 30px;\n            border-radius: 8px;\n        }\n        .header {\n            background-color: #ef4444;\n            color: white;\n            padding: 20px;\n            text-align: center;\n            border-radius: 5px;\n            margin-bottom: 20px;\n        }\n        .header h1 {\n            margin: 0;\n            font-size: 24px;\n        }\n        .content {\n            margin-bottom: 20px;\n        }\n        .box {\n            background-color: #fef2f2;\n            border-left: 4px solid #ef4444;\n            padding: 15px;\n            margin: 15px 0;\n            border-radius: 4px;\n        }\n        .score-box {\n            background-color: #fef2f2;\n            border-left: 4px solid #dc2626;\n            padding: 15px;\n            margin: 15px 0;\n            border-radius: 4px;\n        }\n        .score-value {\n            font-size: 28px;\n            font-weight: bold;\n            color: #dc2626;\n            text-align: center;\n            margin: 10px 0;\n        }\n        .link {\n            color: #3b82f6;\n            text-decoration: none;\n            font-weight: bold;\n        }\n        .button {\n            display: inline-block;\n            background-color: #6b7280;\n            color: white;\n            padding: 12px 30px;\n            text-decoration: none;\n            border-radius: 5px;\n            font-weight: bold;\n            text-align: center;\n        }\n        .button:hover {\n            background-color: #4b5563;\n        }\n        .button-container {\n            text-align: center;\n            margin: 25px 0;\n        }\n        .footer {\n            background-color: #f5f5f5;\n            text-align: center;\n            padding: 20px;\n            border-top: 1px solid #e5e7eb;\n            margin-top: 20px;\n            font-size: 12px;\n            color: #6b7280;\n        }\n        .encouragement {\n            background-color: #fefce8;\n            border-left: 4px solid #eab308;\n            padding: 15px;\n            margin: 15px 0;\n            border-radius: 4px;\n        }\n        .encouragement ul {\n            margin: 10px 0;\n            padding-left: 20px;\n        }\n        .encouragement li {\n            margin: 8px 0;\n        }\n        .scores-grid {\n            display: grid;\n            grid-template-columns: 1fr 1fr;\n            gap: 10px;\n            margin: 15px 0;\n        }\n        .score-item {\n            background-color: #f9fafb;\n            padding: 10px;\n            border-radius: 4px;\n            text-align: center;\n        }\n        .score-label {\n            font-size: 12px;\n            color: #6b7280;\n            margin-bottom: 5px;\n        }\n        .score-number {\n            font-size: 18px;\n            font-weight: bold;\n            color: #dc2626;\n        }\n        .feedback-box {\n            background-color: #fef2f2;\n            border-left: 4px solid #ef4444;\n            padding: 15px;\n            margin: 15px 0;\n            border-radius: 4px;\n        }\n        .feedback-box ul {\n            margin: 10px 0;\n            padding-left: 20px;\n        }\n        .feedback-box li {\n            margin: 8px 0;\n            font-size: 14px;\n            color: #666;\n        }\n    </style>\n</head>\n<body>\n    <div class=\"container\">\n        <div class=\"header\">\n            <h1>Technical Assessment Results</h1>\n        </div>\n\n        <div class=\"content\">\n            <p>Hi {{ $('Update a row3').item.json.candidate_name }},</p>\n            <p>Thank you for completing the <strong>Technical/Practical Assessment</strong> for the <strong>{{ $('Update a row3').item.json.job_title }}</strong> position. We appreciate the time and effort you invested in this process.</p>\n\n            <div class=\"score-box\">\n                <p style=\"margin: 0; text-align: center; color: #dc2626; font-weight: bold;\">Unfortunately, you did not qualify for the Technical/Practical Test</p>\n                <div class=\"score-value\">{{ $('AI Agent5').item.json.output.overall_score }}%</div>\n                <p style=\"margin: 0; text-align: center; font-size: 14px; color: #666;\">Recommendation: ❌ {{ $('AI Agent5').item.json.output.recommendation }}</p>\n            </div>\n\n            <div class=\"box\">\n                <p><strong>Assessment Breakdown:</strong></p>\n                <div class=\"scores-grid\">\n                    <div class=\"score-item\">\n                        <div class=\"score-label\">Approach</div>\n                        <div class=\"score-number\">{{ $('AI Agent5').item.json.output.approach_score }}%</div>\n                    </div>\n                    <div class=\"score-item\">\n                        <div class=\"score-label\">Code Quality</div>\n                        <div class=\"score-number\">{{ $('AI Agent5').item.json.output.code_quality_score }}%</div>\n                    </div>\n                    <div class=\"score-item\">\n                        <div class=\"score-label\">Correctness</div>\n                        <div class=\"score-number\">{{ $('AI Agent5').item.json.output.correctness_score }}%</div>\n                    </div>\n                    <div class=\"score-item\">\n                        <div class=\"score-label\">Communication</div>\n                        <div class=\"score-number\">{{ $('AI Agent5').item.json.output.communication_score }}%</div>\n                    </div>\n                </div>\n                <p style=\"margin: 5px 0 0 0; font-size: 13px;\">\n                    Date: {{ $('Webhook4').item.json.body.record.updated_at }}<br>\n                    Status: ❌ Did Not Qualify\n                </p>\n            </div>\n\n            <div class=\"feedback-box\">\n                <p><strong>📋 AI Analysis Feedback:</strong></p>\n                <p style=\"font-size: 14px; color: #666; margin-bottom: 10px;\">{{ $('AI Agent5').item.json.output.ai_analysis.explanation }}</p>\n                <p style=\"font-size: 13px; margin-bottom: 5px;\"><strong>Areas for Improvement:</strong></p>\n                <ul>\n                    \n                    <li>{{ $('AI Agent5').item.json.output.ai_analysis.errors }}</li>\n                    \n                </ul>\n            </div>\n\n            <div class=\"encouragement\">\n                <p><strong>💪 Better Luck Next Time!</strong></p>\n                <p style=\"font-size: 14px; margin-bottom: 10px;\">This result doesn't define your abilities or potential. Here's how you can improve:</p>\n                <ul>\n                    <li>Review the task requirements thoroughly before starting</li>\n                    <li>Practice creating complete workflow demonstrations with proper documentation</li>\n                    <li>Focus on integrating external APIs and implementing AI-driven logic</li>\n                    <li>Ensure your submission includes error handling and successful execution</li>\n                    <li>You may be eligible to reapply after 30 days</li>\n                    <li>Keep an eye on our careers page for future opportunities</li>\n                </ul>\n            </div>\n\n            <p style=\"margin-top: 20px;\">We encourage you to continue developing your technical skills. Many successful candidates didn't pass on their first attempt but succeeded after further preparation and practice.</p>\n\n            <div class=\"button-container\">\n                <a href=\"http://localhost:8080/candidate-dashboard?email={{ $json.candidate_email }}&candidate_id={{ $json.candidate_id }}\" class=\"button\">→ View Your Full Results</a>\n            </div>\n\n            <p style=\"margin-top: 20px; font-size: 14px;\">Questions? Contact us at support@company.com</p>\n\n            <p>We wish you the best in your career journey! 🌟</p>\n        </div>\n\n        <div class=\"footer\">\n            <p>© 2025 All Rights Reserved</p>\n        </div>\n    </div>\n</body>\n</html>",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        -1072,
+        -1232
+      ],
+      "id": "d874b8bd-c8ee-4e91-b88b-2050aec81ced",
+      "name": "Send email4",
+      "webhookId": "2131cb82-c5d9-4500-b15b-ea24d84dc820",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "fromEmail": "no-replay@duhanashrah.ai",
+        "toEmail": "={{ $json.email }}",
+        "subject": "=Your Have Qualified The Techinical Interview And Your Final interview is scheduled ! - {{ $('Get a row5').item.json.job_title }} Position",
+        "html": "=<!DOCTYPE html>\n<html>\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <style>\n        body {\n            font-family: Arial, sans-serif;\n            line-height: 1.6;\n            color: #333;\n            background-color: #f5f5f5;\n        }\n        .container {\n            max-width: 600px;\n            margin: 0 auto;\n            background-color: white;\n            padding: 30px;\n            border-radius: 8px;\n        }\n        .header {\n            background-color: #10b981;\n            color: white;\n            padding: 20px;\n            text-align: center;\n            border-radius: 5px;\n            margin-bottom: 20px;\n        }\n        .header h1 {\n            margin: 0;\n            font-size: 24px;\n        }\n        .content {\n            margin-bottom: 20px;\n        }\n        .success-box {\n            background-color: #ecfdf5;\n            border-left: 4px solid #10b981;\n            padding: 15px;\n            margin: 15px 0;\n            border-radius: 4px;\n        }\n        .interview-details {\n            background-color: #f0f4ff;\n            border-left: 4px solid #3b82f6;\n            padding: 15px;\n            margin: 15px 0;\n            border-radius: 4px;\n        }\n        .detail-row {\n            margin: 10px 0;\n            padding: 8px 0;\n            border-bottom: 1px solid #e5e7eb;\n        }\n        .detail-row:last-child {\n            border-bottom: none;\n        }\n        .detail-label {\n            font-weight: bold;\n            color: #3b82f6;\n            display: inline-block;\n            width: 120px;\n        }\n        .detail-value {\n            color: #333;\n        }\n        .button {\n            display: inline-block;\n            background-color: #3b82f6;\n            color: white;\n            padding: 12px 30px;\n            text-decoration: none;\n            border-radius: 5px;\n            font-weight: bold;\n            text-align: center;\n        }\n        .button:hover {\n            background-color: #1d4ed8;\n        }\n        .button-container {\n            text-align: center;\n            margin: 25px 0;\n        }\n        .link {\n            color: #3b82f6;\n            text-decoration: none;\n            font-weight: bold;\n        }\n        .next-steps {\n            background-color: #fef3c7;\n            border-left: 4px solid #f59e0b;\n            padding: 15px;\n            margin: 15px 0;\n            border-radius: 4px;\n            color: #92400e;\n        }\n        .next-steps strong {\n            display: block;\n            margin-bottom: 10px;\n        }\n        .footer {\n            background-color: #f5f5f5;\n            text-align: center;\n            padding: 20px;\n            border-top: 1px solid #e5e7eb;\n            margin-top: 20px;\n            font-size: 12px;\n            color: #6b7280;\n        }\n    </style>\n</head>\n<body>\n    <div class=\"container\">\n        <div class=\"header\">\n            <h1>🎉 Congratulations! You've Qualified</h1>\n        </div>\n\n        <div class=\"content\">\n            <p>Hi {{ $json.name }},</p>\n            \n            <p>We're thrilled to inform you that you have <strong>successfully qualified</strong> the technical interview round! Your performance impressed us, and we're excited to move forward with you.</p>\n\n            <div class=\"success-box\">\n                <p style=\"margin: 0; color: #047857;\">\n                    ✅ <strong>Technical Interview: PASSED</strong>\n                </p>\n            </div>\n\n            <p style=\"margin-top: 20px;\">Your final interview has been scheduled:</p>\n\n            <div class=\"interview-details\">\n                <div class=\"detail-row\">\n                    <span class=\"detail-label\">Candidate ID:</span>\n                    <span class=\"detail-value\"><strong style=\"color: #0284c7; font-family: 'Courier New', monospace;\">{{ $json.candidate_id }}</strong></span>\n                </div>\n                <div class=\"detail-row\">\n                    <span class=\"detail-label\">Interview Type:</span>\n                    <span class=\"detail-value\">Final Round (HR/Management)</span>\n                </div>\n                <div class=\"detail-row\">\n                    <span class=\"detail-label\">Date:</span>\n                    <span class=\"detail-value\"> JOIN IN 24 HOURS</span>\n                </div>\n                <div class=\"detail-row\">\n                    <span class=\"detail-label\">Time:</span>\n                    <span class=\"detail-value\">24</span>\n                </div>\n                <div class=\"detail-row\">\n                    <span class=\"detail-label\">Duration:</span>\n                    <span class=\"detail-value\">45 minutes</span>\n                </div>\n            </div>\n\n            <div class=\"next-steps\">\n                <strong>📝 Before Your Interview:</strong>\n                <ul style=\"margin: 10px 0; padding-left: 20px;\">\n                    <li>Ensure you have a stable internet connection</li>\n                    <li>Test your camera and microphone</li>\n                    <li>Choose a quiet, professional background</li>\n                    <li>Arrive 5 minutes early</li>\n                    <li>Prepare to discuss your technical project and experience</li>\n                </ul>\n            </div>\n\n            <div class=\"button-container\">\n                <a href=\"https://hiring.duhanashrah.ai/interview-landing\" class=\"button\">→ Join Interview</a>\n            </div>\n\n            <p><strong>Questions?</strong> Reply to this email or contact our recruitment team at {{ $json.contactEmail }}</p>\n\n            <p style=\"margin-top: 25px;\">Looking forward to speaking with you!</p>\n            <p style=\"margin: 0;\">Best regards,<br><strong>{{ $json.companyName }} Recruitment Team</strong> 🚀</p>\n        </div>\n\n        <div class=\"footer\">\n            <p>© 2025 All Rights Reserved | {{ $json.companyName }}</p>\n        </div>\n    </div>\n</body>\n</html>",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        176,
+        -1040
+      ],
+      "id": "2e5b08fe-1ef7-4d6a-a8ac-64e79e70b95f",
+      "name": "Send email5",
+      "webhookId": "2131cb82-c5d9-4500-b15b-ea24d84dc820",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "fromEmail": "no-replay@duhanashrah.ai",
+        "toEmail": "={{ $json.email }}",
+        "subject": "={{ $json.name }} , You’ve Cleared the Final Interview – Next Steps Soon",
+        "html": "<!DOCTYPE html>\n<html>\n<head>\n    <meta charset=\"UTF-8\">\n    <title>Final Interview Qualification</title>\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <style>\n        body {\n            font-family: Arial, sans-serif;\n            background-color: #f4f6f8;\n            margin: 0;\n            padding: 0;\n            color: #333333;\n        }\n        .container {\n            max-width: 600px;\n            margin: 40px auto;\n            background-color: #ffffff;\n            padding: 30px;\n            border-radius: 6px;\n        }\n        h1 {\n            color: #16a34a;\n            font-size: 22px;\n            margin-bottom: 20px;\n            text-align: center;\n        }\n        p {\n            font-size: 15px;\n            line-height: 1.6;\n            margin-bottom: 15px;\n        }\n        .footer {\n            margin-top: 30px;\n            font-size: 13px;\n            color: #6b7280;\n            text-align: center;\n        }\n    </style>\n</head>\n<body>\n    <div class=\"container\">\n        <h1>Final Interview Qualified</h1>\n\n        <p>\n            We are pleased to inform you that you have successfully qualified for the final interview.\n        </p>\n\n        <p>\n            Our team is currently in the process of preparing your offer letter. We will contact you shortly via email with further details.\n        </p>\n\n        <p>\n            Kindly be patient and wait for our official communication.\n        </p>\n\n        <p>\n            Thank you for your interest and cooperation.\n        </p>\n\n        <div class=\"footer\">\n            © 2025 All Rights Reserved\n        </div>\n    </div>\n</body>\n</html>\n",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        -528,
+        -256
+      ],
+      "id": "9d5f3868-9c95-4b80-a08a-6828f885d70c",
+      "name": "Send email6",
+      "webhookId": "1113296c-2804-4cf6-9fe5-d0c5052963ec",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "fromEmail": "no-replay@duhanashrah.ai",
+        "toEmail": "={{ $json.email }}",
+        "subject": "=Interview Update for  – Thank You for Your Time {{ $json.name }}",
+        "html": "<!DOCTYPE html>\n<html>\n<head>\n    <meta charset=\"UTF-8\">\n    <title>Interview Update</title>\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <style>\n        body {\n            font-family: Arial, sans-serif;\n            background-color: #f4f6f8;\n            margin: 0;\n            padding: 0;\n            color: #333333;\n        }\n        .container {\n            max-width: 600px;\n            margin: 40px auto;\n            background-color: #ffffff;\n            padding: 30px;\n            border-radius: 6px;\n        }\n        h1 {\n            color: #dc2626;\n            font-size: 22px;\n            margin-bottom: 20px;\n            text-align: center;\n        }\n        p {\n            font-size: 15px;\n            line-height: 1.6;\n            margin-bottom: 15px;\n        }\n        .footer {\n            margin-top: 30px;\n            font-size: 13px;\n            color: #6b7280;\n            text-align: center;\n        }\n    </style>\n</head>\n<body>\n    <div class=\"container\">\n        <h1>Interview Outcome</h1>\n\n        <p>\n            Thank you for taking the time to interview with us and for your interest in joining our organization.\n        </p>\n\n        <p>\n            After careful consideration, we regret to inform you that you have not been selected for this position at this time.\n        </p>\n\n        <p>\n            However, we appreciate your skills and experience, and we would like to keep your profile on record. Should there be any future opportunities or roles that match your background, we will reach out to you.\n        </p>\n\n        <p>\n            We wish you every success in your future endeavors and thank you again for your interest.\n        </p>\n\n        <div class=\"footer\">\n            © 2025 All Rights Reserved\n        </div>\n    </div>\n</body>\n</html>\n",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        -528,
+        -64
+      ],
+      "id": "0c702210-365c-4ec2-b824-8a204955d7e1",
+      "name": "Send email7",
+      "webhookId": "1113296c-2804-4cf6-9fe5-d0c5052963ec",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "fromEmail": "no-replay@duhanashrah.ai",
+        "toEmail": "={{ $('Webhook3').item.json.body.record.candidate_email }}",
+        "subject": "=Your Didnt Qualified! {{ $('Webhook3').item.json.body.record.job_title }}-  Position",
+        "html": "=<!DOCTYPE html>\n<html>\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <style>\n        body {\n            font-family: Arial, sans-serif;\n            line-height: 1.6;\n            color: #333;\n            background-color: #f5f5f5;\n        }\n        .container {\n            max-width: 600px;\n            margin: 0 auto;\n            background-color: white;\n            padding: 30px;\n            border-radius: 8px;\n        }\n        .header {\n            background-color: #f59e0b;\n            color: white;\n            padding: 20px;\n            text-align: center;\n            border-radius: 5px;\n            margin-bottom: 20px;\n        }\n        .header h1 {\n            margin: 0;\n            font-size: 24px;\n        }\n        .content {\n            margin-bottom: 20px;\n        }\n        .box {\n            background-color: #fef3c7;\n            border-left: 4px solid #f59e0b;\n            padding: 15px;\n            margin: 15px 0;\n            border-radius: 4px;\n        }\n        .score-box {\n            background-color: #fee2e2;\n            border-left: 4px solid #ef4444;\n            padding: 15px;\n            margin: 15px 0;\n            border-radius: 4px;\n        }\n        .score-value {\n            font-size: 28px;\n            font-weight: bold;\n            color: #ef4444;\n            text-align: center;\n            margin: 10px 0;\n        }\n        .link {\n            color: #3b82f6;\n            text-decoration: none;\n            font-weight: bold;\n        }\n        .button {\n            display: inline-block;\n            background-color: #3b82f6;\n            color: white;\n            padding: 12px 30px;\n            text-decoration: none;\n            border-radius: 5px;\n            font-weight: bold;\n            text-align: center;\n        }\n        .button:hover {\n            background-color: #1d4ed8;\n        }\n        .button-container {\n            text-align: center;\n            margin: 25px 0;\n        }\n        .footer {\n            background-color: #f5f5f5;\n            text-align: center;\n            padding: 20px;\n            border-top: 1px solid #e5e7eb;\n            margin-top: 20px;\n            font-size: 12px;\n            color: #6b7280;\n        }\n        .feedback-list {\n            background-color: #f0f9ff;\n            border-left: 4px solid #0284c7;\n            padding: 15px;\n            margin: 15px 0;\n            border-radius: 4px;\n        }\n        .feedback-list ul {\n            margin: 10px 0;\n            padding-left: 20px;\n        }\n        .feedback-list li {\n            margin: 8px 0;\n        }\n        .reapply {\n            background-color: #f0fdf4;\n            border-left: 4px solid #10b981;\n            padding: 15px;\n            margin: 15px 0;\n            border-radius: 4px;\n        }\n    </style>\n</head>\n<body>\n    <div class=\"container\">\n        <div class=\"header\">\n            <h1>📊 MCQ Test Results</h1>\n        </div>\n\n        <div class=\"content\">\n            <p>Hi {{ $json.body.record.candidate_name }},</p>\n            <p>Thank you for completing the MCQ assessment for the <strong>{{ $json.body.record.job_title }}</strong> position. We've reviewed your performance.</p>\n\n            <div class=\"score-box\">\n                <p style=\"margin: 0; text-align: center; color: #ef4444; font-weight: bold;\">Unfortunately, you did not meet the required score</p>\n                <div class=\"score-value\">{{ $json.body.record.score }}%</div>\n                <p style=\"margin: 0; text-align: center; font-size: 14px; color: #666;\">Required: 15 | Your Score: {{ $json.body.record.score }}</p>\n            </div>\n\n            <div class=\"box\">\n                <p><strong>Test Details:</strong></p>\n                <p>Date: {{ $json.body.record.updated_at }}<br>\n                Your Score: {{ $json.body.record.score }}%<br>\n                Total Questions: 30<br>\n                Status: Did Not Pass</p>\n            </div>\n\n            <div class=\"feedback-list\">\n                <p><strong>Areas to Improve:</strong></p>\n                <ul>\n                    <li>Practice more on fundamental concepts</li>\n                    <li>Work on time management during tests</li>\n                    <li>Review weak areas through online resources</li>\n                </ul>\n            </div>\n\n            <p style=\"margin-top: 20px;\"><strong>Learning Resources:</strong></p>\n            <ul>\n                <li>Practice on coding platforms like LeetCode or HackerRank</li>\n                <li>Review the topics you struggled with</li>\n                <li>Take online courses related to your weak areas</li>\n                <li>Practice regularly and improve your skills</li>\n            </ul>\n\n            <div class=\"reapply\">\n                <p><strong>Good News!</strong></p>\n                <p>You're welcome to <strong>reapply after 3 months</strong>. Use this time to strengthen your skills in the areas identified above. Many candidates succeed on their second attempt!</p>\n            </div>\n\n            <div class=\"button-container\">\n                <a href=\"http://localhost:8080/candidate-dashboard?email={{ $json.body.record.candidate_email }}&candidate_id={{ $json.body.record.candidate_id }}\" class=\"button\">→ View Your Results</a>\n            </div>\n\n            <p style=\"margin-top: 20px; font-size: 14px;\">If you have any questions, contact us at support@company.com</p>\n\n            <p>Keep learning and stay motivated! 💪</p>\n        </div>\n\n        <div class=\"footer\">\n            <p>© 2025 All Rights Reserved</p>\n        </div>\n    </div>\n</body>\n</html>",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        -2752,
+        1152
+      ],
+      "id": "3f340497-7b99-4a2c-b550-347d55b10e70",
+      "name": "Send email8",
+      "webhookId": "2131cb82-c5d9-4500-b15b-ea24d84dc820",
+      "credentials": "[REDACTED]"
+    }
+  ],
+  "connections": {
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Filter3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": "[REDACTED]",
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Get a row5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model2": "[REDACTED]",
+    "Webhook1": {
+      "main": [
+        [
+          {
+            "node": "Send email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If3": {
+      "main": [
+        [
+          {
+            "node": "Send email1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send email2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook2": {
+      "main": [
+        [
+          {
+            "node": "If5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a row3": {
+      "main": [
+        [
+          {
+            "node": "Get a row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a row": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter3": {
+      "main": [
+        [
+          {
+            "node": "Update a row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compression2": {
+      "main": [
+        [
+          {
+            "node": "Extract structured data from a document3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge2": {
+      "main": [
+        [
+          {
+            "node": "Create a row3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If5": {
+      "main": [
+        [
+          {
+            "node": "Extract structured data from a document2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Compression2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update a row": {
+      "main": [
+        [
+          {
+            "node": "If3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook3": {
+      "main": [
+        [
+          {
+            "node": "Filter5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a row1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent4": {
+      "main": [
+        [
+          {
+            "node": "Create a row2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model5": "[REDACTED]",
+    "Structured Output Parser3": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent4",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update a row2": {
+      "main": [
+        [
+          {
+            "node": "Get a row1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If6": {
+      "main": [
+        [
+          {
+            "node": "Update a row2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send email8",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a row2": {
+      "main": [
+        [
+          {
+            "node": "Send email3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook4": {
+      "main": [
+        [
+          {
+            "node": "Filter4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter4": {
+      "main": [
+        [
+          {
+            "node": "Filter6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze video": {
+      "main": [
+        [
+          {
+            "node": "AI Agent5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser4": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent5",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model6": "[REDACTED]",
+    "AI Agent5": {
+      "main": [
+        [
+          {
+            "node": "Update a row3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update a row3": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Send email4",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get Job Data1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Job Data1": {
+      "main": [
+        [
+          {
+            "node": "Get a row2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a row2": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter5": {
+      "main": [
+        [
+          {
+            "node": "If6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a row1": {
+      "main": [
+        [
+          {
+            "node": "Send email5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter6": {
+      "main": [
+        [
+          {
+            "node": "Analyze video",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a row5": {
+      "main": [
+        [
+          {
+            "node": "Create a row1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model7": "[REDACTED]",
+    "Structured Output Parser5": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent6",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook5": {
+      "main": [
+        [
+          {
+            "node": "Filter7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter7": {
+      "main": [
+        [
+          {
+            "node": "Jobs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "candidate": {
+      "main": [
+        [
+          {
+            "node": "qualified-section",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "qualified-section": {
+      "main": [
+        [
+          {
+            "node": "AI Agent6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Jobs": {
+      "main": [
+        [
+          {
+            "node": "candidate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent6": {
+      "main": [
+        [
+          {
+            "node": "Update a row6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update a row6": {
+      "main": [
+        [
+          {
+            "node": "Switch1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch1": {
+      "main": [
+        [
+          {
+            "node": "Send email6",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send email7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract structured data from a document3": {
+      "main": [
+        [
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Extract structured data from a document2": {
+      "main": [
+        [
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send email4": {
+      "main": [
+        [
+          {
+            "node": "Update a row4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send email5": {
+      "main": [
+        [
+          {
+            "node": "Update a row5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "triggerCount": 5,
+  "tags": [
+    {
+      "updatedAt": "2025-10-15T12:01:49.775Z",
+      "createdAt": "2025-10-15T12:01:49.775Z",
+      "id": "vqPjQ1pPoVp3pFKR",
+      "name": "Mark Edward"
+    }
+  ]
+}

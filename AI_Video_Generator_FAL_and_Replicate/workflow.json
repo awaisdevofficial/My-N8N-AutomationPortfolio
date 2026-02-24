@@ -1,0 +1,872 @@
+{
+  "updatedAt": "2025-11-11T07:34:13.000Z",
+  "createdAt": "2025-11-11T04:55:53.014Z",
+  "id": "9lJooGbj5gdJzmy1",
+  "name": "Custom model video gen",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "prompt-input",
+              "name": "prompt",
+              "value": "A majestic dragon flying over mountains at sunset, cinematic lighting, 4k quality",
+              "type": "string"
+            },
+            {
+              "id": "replicate-token",
+              "name": "replicateToken",
+              "value": "YOUR_REPLICATE_API_TOKEN",
+              "type": "string"
+            },
+            {
+              "id": "max-retries",
+              "name": "maxRetries",
+              "value": 30,
+              "type": "number"
+            },
+            {
+              "id": "retry-count",
+              "name": "retryCount",
+              "value": 0,
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "fd6ad64d-2188-4680-9ca1-c461e0e0320c",
+      "name": "Set Prompt & Config1",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.3,
+      "position": [
+        -1936,
+        2384
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.replicate.com/v1/predictions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Token {{ $json.replicateToken }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"version\": \"wavespeedai/wan-2.1-i2v-480p\",\n  \"input\": {\n    \"prompt\": \"{{ $json.prompt }}\",\n    \"num_inference_steps\": 50,\n    \"guidance_scale\": 7.5\n  }\n}",
+        "options": {}
+      },
+      "id": "c6739d01-820e-4238-955d-36a6b05e97a9",
+      "name": "Submit to Replicate (Wan2.1)1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1728,
+        2384
+      ]
+    },
+    {
+      "parameters": {
+        "amount": 10
+      },
+      "id": "54014e19-d8f1-4936-92b6-735d40dd90cb",
+      "name": "Wait 10 Seconds1",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -1536,
+        2384
+      ],
+      "webhookId": "wait-webhook-1"
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Submit to Replicate (Wan2.1)1').item.json.urls.get }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Token {{ $('Set Prompt & Config1').item.json.replicateToken }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "e4df6db0-bb0d-441b-8e64-a4f3ad137c4a",
+      "name": "Check Prediction Status1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1328,
+        2384
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "status-succeeded",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "succeeded",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "abfb2443-2df3-4c19-b089-03332ccf1cd6",
+      "name": "Is Completed?1",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -1136,
+        2384
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract video URL from Replicate response\nconst output = $input.item.json.output;\nconst status = $input.item.json.status;\n\n// Replicate returns video as URL or array of URLs\nlet videoUrl = '';\n\nif (Array.isArray(output)) {\n  videoUrl = output[0];\n} else if (typeof output === 'string') {\n  videoUrl = output;\n} else if (output && typeof output === 'object') {\n  videoUrl = output.video || output.url || '';\n}\n\nreturn {\n  json: {\n    success: true,\n    status: status,\n    video_url: videoUrl,\n    output: videoUrl,\n    prediction_id: $('Submit to Replicate (Wan2.1)1').item.json.id,\n    prompt: $('Set Prompt & Config1').item.json.prompt\n  }\n};"
+      },
+      "id": "4ef25b16-330c-4e63-a561-e74d9c5f7f23",
+      "name": "Extract Video URL1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -928,
+        2272
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Increment retry count\nconst currentRetry = $('Set Prompt & Config1').item.json.retryCount || 0;\nconst maxRetries = $('Set Prompt & Config1').item.json.maxRetries || 30;\nconst status = $input.item.json.status;\n\nreturn {\n  json: {\n    ...($input.item.json),\n    retryCount: currentRetry + 1,\n    maxRetries: maxRetries,\n    shouldContinue: currentRetry < maxRetries,\n    currentStatus: status\n  }\n};"
+      },
+      "id": "3a8810d0-4504-45eb-a19d-a04f8ab7d089",
+      "name": "Increment Retry Counter2",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -928,
+        2480
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "should-retry",
+              "leftValue": "={{ $json.shouldContinue }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              }
+            },
+            {
+              "id": "not-failed",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "failed",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "fd093295-bd34-41b7-bd96-b7f5e0d4c4c3",
+      "name": "Should Continue Retrying?2",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -736,
+        2480
+      ]
+    },
+    {
+      "parameters": {
+        "amount": 15
+      },
+      "id": "bf7dbe3f-a67a-4d3d-ab28-f202f4be5cb5",
+      "name": "Wait 15 Seconds (Loop)1",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -528,
+        2464
+      ],
+      "webhookId": "wait-webhook-2"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.video_url }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "video_file"
+            }
+          }
+        }
+      },
+      "id": "40fa2c07-5c1c-45c0-984e-77130344e390",
+      "name": "Download Video File1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -736,
+        2272
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Format final success response\nconst videoUrl = $input.item.json.video_url;\nconst prompt = $('Set Prompt & Config1').item.json.prompt;\nconst predictionId = $('Submit to Replicate (Wan2.1)1').item.json.id;\n\nreturn {\n  json: {\n    success: true,\n    message: \"Video generated successfully with Wan2.1!\",\n    video_url: videoUrl,\n    prediction_id: predictionId,\n    prompt: prompt,\n    model: \"Wan2.1\",\n    timestamp: new Date().toISOString()\n  }\n};"
+      },
+      "id": "36f9ac3f-0a28-46d4-aec9-c889f47bdf8b",
+      "name": "Format Success Response2",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -528,
+        2272
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Format error/timeout response\nconst status = $input.item.json.status || $input.item.json.currentStatus || 'unknown';\nconst retryCount = $input.item.json.retryCount || 0;\nconst predictionId = $('Submit to Replicate (Wan2.1)1').item.json.id;\n\nreturn {\n  json: {\n    success: false,\n    message: status === 'failed' ? 'Video generation failed' : 'Video generation timed out',\n    status: status,\n    retries_attempted: retryCount,\n    prediction_id: predictionId,\n    timestamp: new Date().toISOString()\n  }\n};"
+      },
+      "id": "16d3e9a4-ead9-43e5-a44f-eb15e329ba07",
+      "name": "Format Error Response2",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -560,
+        2656
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "8284ca84-9087-45bd-b511-ebbc7f6f6f55",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -2272,
+        2400
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "prompt-input",
+              "name": "prompt",
+              "value": "A majestic dragon flying over mountains at sunset, cinematic lighting, 4k quality",
+              "type": "string"
+            },
+            {
+              "id": "fal-token",
+              "name": "falToken",
+              "value": "487d0bd9-8b96-4af1-8f51-06a6fafd86da:[REDACTED_HASH]",
+              "type": "string"
+            },
+            {
+              "id": "max-retries",
+              "name": "maxRetries",
+              "value": 40,
+              "type": "number"
+            },
+            {
+              "id": "retry-count",
+              "name": "retryCount",
+              "value": 0,
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "7f028c8a-0690-46cb-9d3c-840486af9230",
+      "name": "Set Prompt & Config",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.3,
+      "position": [
+        -2288,
+        1904
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://queue.fal.run/fal-ai/wan-t2v",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Key {{ $json.falToken }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"prompt\": \"{{ $json.prompt }}\",\n  \"resolution\": \"480p\",\n  \"aspect_ratio\": \"16:9\"\n}",
+        "options": {}
+      },
+      "id": "b976b58c-ad56-4c8e-ba2b-70db5824dec4",
+      "name": "Submit to FAL (Wan2.1)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -2080,
+        1904
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "fddde7f8-8e12-4cab-8ddc-ddfa3770a5c7",
+      "name": "Wait 5 Seconds",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -1888,
+        1904
+      ],
+      "webhookId": "wait-webhook-1"
+    },
+    {
+      "parameters": {
+        "url": "=https://queue.fal.run/fal-ai/wan-t2v/requests/{{ $('Submit to FAL (Wan2.1)').item.json.request_id }}/status",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Key {{ $('Set Prompt & Config').item.json.falToken }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "ddd0b853-fa8e-465c-8654-cdf27ae36ae2",
+      "name": "Check Status",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1680,
+        1904
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "status-completed",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "COMPLETED",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "ab092edb-edad-4a71-83fb-4271e00f9ce3",
+      "name": "Is Completed?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -1488,
+        1904
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://queue.fal.run/fal-ai/wan-t2v/requests/{{ $json.request_id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Key 487d0bd9-8b96-4af1-8f51-06a6fafd86da:[REDACTED_HASH]"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "f4e438b2-a3d1-49a1-be6d-36f53cfc6032",
+      "name": "Get Result",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1280,
+        1792
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract video URL from FAL response\nconst output = $input.item.json;\nconst videoUrl = output.video?.url || '';\n\nreturn {\n  json: {\n    success: true,\n    video_url: videoUrl,\n    request_id: $('Submit to FAL (Wan2.1)').item.json.request_id,\n    prompt: $('Set Prompt & Config').item.json.prompt,\n    seed: output.seed\n  }\n};"
+      },
+      "id": "7a96f284-7d18-40b6-bac9-9c301b5cfe0a",
+      "name": "Extract Video URL",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1088,
+        1792
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Increment retry count\nconst currentRetry = $('Set Prompt & Config').item.json.retryCount || 0;\nconst maxRetries = $('Set Prompt & Config').item.json.maxRetries || 40;\nconst status = $input.item.json.status;\n\nreturn {\n  json: {\n    ...($input.item.json),\n    retryCount: currentRetry + 1,\n    maxRetries: maxRetries,\n    shouldContinue: currentRetry < maxRetries,\n    currentStatus: status\n  }\n};"
+      },
+      "id": "a7eaf29a-42b3-4665-9ccc-aa5234ebd3ac",
+      "name": "Increment Retry Counter",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1280,
+        2000
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "should-retry",
+              "leftValue": "={{ $json.shouldContinue }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              }
+            },
+            {
+              "id": "not-failed",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "FAILED",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "f8dac6a4-f9d5-40b3-9d67-d157896d1419",
+      "name": "Should Continue Retrying?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -1088,
+        2000
+      ]
+    },
+    {
+      "parameters": {
+        "amount": 10
+      },
+      "id": "8775fca1-226f-4117-b398-67db360cd92a",
+      "name": "Wait 10 Seconds (Loop)",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -880,
+        1984
+      ],
+      "webhookId": "wait-webhook-2"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.video_url }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "video_file"
+            }
+          }
+        }
+      },
+      "id": "021341cc-d201-4fa8-bcc7-468c99c266e8",
+      "name": "Download Video File",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -896,
+        1792
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Format final success response\nconst videoUrl = $input.item.json.video_url;\nconst prompt = $('Set Prompt & Config').item.json.prompt;\nconst requestId = $('Submit to FAL (Wan2.1)').item.json.request_id;\n\nreturn {\n  json: {\n    success: true,\n    message: \"Video generated successfully with Wan2.1 on FAL.ai!\",\n    video_url: videoUrl,\n    request_id: requestId,\n    prompt: prompt,\n    model: \"Wan2.1 (FAL.ai)\",\n    timestamp: new Date().toISOString()\n  }\n};"
+      },
+      "id": "b387fc09-8593-455c-ab51-15d7ee4ac0ff",
+      "name": "Format Success Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -704,
+        1792
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Format error/timeout response\nconst status = $input.item.json.status || $input.item.json.currentStatus || 'unknown';\nconst retryCount = $input.item.json.retryCount || 0;\nconst requestId = $('Submit to FAL (Wan2.1)').item.json.request_id;\n\nreturn {\n  json: {\n    success: false,\n    message: status === 'FAILED' ? 'Video generation failed' : 'Video generation timed out',\n    status: status,\n    retries_attempted: retryCount,\n    request_id: requestId,\n    timestamp: new Date().toISOString()\n  }\n};"
+      },
+      "id": "e4f7c7da-80f2-4a3c-9b59-91ceaabfc9ba",
+      "name": "Format Error Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -912,
+        2176
+      ]
+    }
+  ],
+  "connections": {
+    "Set Prompt & Config1": {
+      "main": [
+        [
+          {
+            "node": "Submit to Replicate (Wan2.1)1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Submit to Replicate (Wan2.1)1": {
+      "main": [
+        [
+          {
+            "node": "Wait 10 Seconds1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 10 Seconds1": {
+      "main": [
+        [
+          {
+            "node": "Check Prediction Status1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Prediction Status1": {
+      "main": [
+        [
+          {
+            "node": "Is Completed?1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Completed?1": {
+      "main": [
+        [
+          {
+            "node": "Extract Video URL1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Increment Retry Counter2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Video URL1": {
+      "main": [
+        [
+          {
+            "node": "Download Video File1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Increment Retry Counter2": {
+      "main": [
+        [
+          {
+            "node": "Should Continue Retrying?2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Should Continue Retrying?2": {
+      "main": [
+        [
+          {
+            "node": "Wait 15 Seconds (Loop)1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Format Error Response2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 15 Seconds (Loop)1": {
+      "main": [
+        [
+          {
+            "node": "Check Prediction Status1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Video File1": {
+      "main": [
+        [
+          {
+            "node": "Format Success Response2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Set Prompt & Config1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Prompt & Config": {
+      "main": [
+        [
+          {
+            "node": "Submit to FAL (Wan2.1)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Submit to FAL (Wan2.1)": {
+      "main": [
+        [
+          {
+            "node": "Wait 5 Seconds",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 5 Seconds": {
+      "main": [
+        [
+          {
+            "node": "Check Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Status": {
+      "main": [
+        [
+          {
+            "node": "Is Completed?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Completed?": {
+      "main": [
+        [
+          {
+            "node": "Get Result",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Increment Retry Counter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Result": {
+      "main": [
+        [
+          {
+            "node": "Extract Video URL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Video URL": {
+      "main": [
+        [
+          {
+            "node": "Download Video File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Increment Retry Counter": {
+      "main": [
+        [
+          {
+            "node": "Should Continue Retrying?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Should Continue Retrying?": {
+      "main": [
+        [
+          {
+            "node": "Wait 10 Seconds (Loop)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Format Error Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 10 Seconds (Loop)": {
+      "main": [
+        [
+          {
+            "node": "Check Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Video File": {
+      "main": [
+        [
+          {
+            "node": "Format Success Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": null,
+  "triggerCount": 0,
+  "tags": [
+    {
+      "updatedAt": "2025-10-28T07:41:35.810Z",
+      "createdAt": "2025-10-28T07:41:35.810Z",
+      "id": "Bjds4VMsUOfAftkN",
+      "name": "Abdul Wasay"
+    },
+    {
+      "updatedAt": "2025-10-24T04:04:28.048Z",
+      "createdAt": "2025-10-24T04:04:28.048Z",
+      "id": "SgbCkdz8ViP8OAzg",
+      "name": "SamCliff"
+    }
+  ]
+}

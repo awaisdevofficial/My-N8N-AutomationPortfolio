@@ -1,0 +1,474 @@
+{
+  "updatedAt": "2026-01-12T14:33:10.280Z",
+  "createdAt": "2025-10-30T06:36:04.475Z",
+  "id": "695T143JXJiyI6Vl",
+  "name": "My workflow",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "name": "access_token",
+              "value": "EAAYIYlpD9lgBP0e6ZBZCJycXgyC1X5f3LcygOKJBKg7uTSYxaQu4uDlbUkLXhJvyjsZBZA1g21E5JRtpcWSYzftbVkVtD1ZCSddo7ogj2pUBF8wjxLaTDww4b7FeYAxxsNi2Ev6weJsChvg6q4cTaGZBC02sPZCjSPZCZCFcxPJSjJkj52h3YZAjAaI8HBZAutZBBvuy6pPaK07fTQ1qXUwoGlYtv50GIFfJO71Jo77zS7c4pVC7o6AalJZAQYQZDZD",
+              "type": "string",
+              "id": "b0c958d2-58b2-40d4-8328-5f9475c85464"
+            },
+            {
+              "name": "page_id",
+              "value": "791966747334015",
+              "type": "string",
+              "id": "c0811d9b-10c8-4255-9a8e-8c898fca278a"
+            },
+            {
+              "name": "post_id",
+              "value": "122114815167009878",
+              "type": "string",
+              "id": "9486bdbf-4ef9-4a99-8ea5-8c02faf94edc"
+            },
+            {
+              "name": "page_and_post_id",
+              "value": "791966747334015_122114815167009878",
+              "type": "string",
+              "id": "ebf961d2-f92b-4835-9eda-27bce14e8472"
+            },
+            {
+              "name": "ad_account_id",
+              "value": "1306760837781681",
+              "type": "string",
+              "id": "5e39f9c3-0d56-4c09-97a2-93d6ff267017"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -2416,
+        3936
+      ],
+      "name": "Set Variables",
+      "id": "4503bdeb-9b48-4750-824e-e2c5da5e26a1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v21.0/act_{{ $('Set Variables').item.json.ad_account_id }}/ads",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"name\": \"Boosted Post - Example\",\n  \"adset_spec\": {\n    \"name\": \"Boosted Post Set\",\n    \"campaign_id\": \"{{ $json.id }}\",\n    \"daily_budget\": 1000,\n    \"billing_event\": \"IMPRESSIONS\",\n    \"bid_strategy\": \"LOWEST_COST_WITHOUT_CAP\",\n    \"promoted_object\": {\n      \"page_id\": \"{{ $('Set Variables').item.json.page_id }}\"\n    },\n    \"targeting\": {\n      \"geo_locations\": {\n        \"countries\": [\"PK\"]\n      },\n      \"publisher_platforms\": [\"facebook\"]\n    },\n    \"start_time\": \"2025-11-08T00:00:00Z\",\n    \"end_time\": \"2025-11-15T23:59:59Z\",\n    \"status\": \"PAUSED\"\n  },\n  \"creative\": {\n    \"object_story_spec\": {\n      \"page_id\": \"{{ $('Set Variables').item.json.page_id }}\",\n      \"link_data\": {\n        \"message\": \"Check out this post!\",\n        \"link\": \"https://www.facebook.com/{{ $('Set Variables').item.json.page_and_post_id }}\"\n      }\n    }\n  },\n  \"status\": \"PAUSED\",\n  \"access_token\": \"{{ $('Set Variables').item.json.access_token }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -3760,
+        4704
+      ],
+      "name": "Create Boosted Post Ad",
+      "id": "5601ae03-f44f-4e02-b3d5-74d510e85fad"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v21.0/act_1306760837781681/campaigns",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"name\": \"New lead form 1\",\n  \"objective\": \"OUTCOME_ENGAGEMENT\",\n  \"status\": \"ACTIVE\",\n  \"special_ad_categories\": [\"NONE\"],\n  \"is_adset_budget_sharing_enabled\": false,\n  \"access_token\": \"{{ $json.access_token }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -3984,
+        4704
+      ],
+      "id": "94266b2a-4135-4860-a924-549e6b66a3cf",
+      "name": "Create Campaign2"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "adsmanager",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -4560,
+        4288
+      ],
+      "id": "3be9761d-8459-4b29-8d15-c561dd9b6100",
+      "name": "Webhook",
+      "webhookId": "d6272a18-6a84-4abb-9bd2-372e8afb82ae"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v21.0/act_{{ $json.ad_account_id }}/campaigns",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"name\": \"Boosted Campaign\",\n  \"objective\": \"OUTCOME_LEADS\",\n  \"status\": \"PAUSED\",\n  \"special_ad_categories\": [\"NONE\"],\n  \"is_adset_budget_sharing_enabled\": false,\n  \"access_token\": \"{{ $('Set Variables').item.json.access_token }}\"\n}\n",
+        "options": {}
+      },
+      "name": "Create Campaign",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -3952,
+        4240
+      ],
+      "id": "97513ac1-c67b-4b16-a4dc-776671d4826e",
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v21.0/act_{{ $('Set Variables').item.json.ad_account_id }}/adsets",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"name\": \"Lead Gen Ad Set\",\n  \"campaign_id\": \"{{ $json.id }}\",\n  \"optimization_goal\": \"LEAD_GENERATION\",\n  \"billing_event\": \"IMPRESSIONS\",\n  \"bid_strategy\": \"LOWEST_COST_WITHOUT_CAP\",\n  \"daily_budget\": 50000,\n  \"promoted_object\": {\n    \"page_id\": \"{{ $('Set Variables').item.json.page_id }}\"\n  },\n  \"targeting\": {\n    \"geo_locations\": {\n      \"countries\": [\"PK\"]\n    }\n  },\n  \"start_time\": \"2025-12-01T08:00:00Z\",\n  \"end_time\": \"2025-12-10T23:59:59Z\",\n  \"status\": \"PAUSED\",\n  \"access_token\": \"{{ $('Set Variables').item.json.access_token }}\"\n}\n",
+        "options": {}
+      },
+      "name": "Create Ad Set",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -3664,
+        4240
+      ],
+      "id": "10f24108-d1e6-4b27-ba3f-da3879daaf3d",
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v21.0/act_{{ $('Set Variables').item.json.ad_account_id }}/adcreatives",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"name\": \"Boosted Creative\",\n  \"object_story_id\": \"{{ $('Set Variables').item.json.page_and_post_id }}\",\n  \"access_token\": \"{{ $('Set Variables').item.json.access_token }}\"\n}",
+        "options": {}
+      },
+      "name": "Create Creative",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -3360,
+        4048
+      ],
+      "id": "104610c6-0541-41cc-8624-9d07d583a820",
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v21.0/act_{{ $('Set Variables').item.json.ad_account_id }}/ads",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"name\": \"Boost Post Ad\",\n  \"adset_id\": \"{{ $json.id }}\",\n  \"status\": \"PAUSED\",\n  \"access_token\": \"{{ $('Set Variables').item.json.access_token }}\"\n}",
+        "options": {}
+      },
+      "name": "Create Ad (Boost Post)",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -3232,
+        4288
+      ],
+      "id": "54045799-9552-4a75-bf74-441a05629642",
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v21.0/act_{{ $json.ad_account_id }}/campaigns",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"name\": \"Boosted Post Campaign\",\n  \"objective\": \"OUTCOME_LEADS\",\n  \"status\": \"PAUSED\",\n  \"special_ad_categories\": [\"NONE\"],\n  \"is_adset_budget_sharing_enabled\": false,\n  \"access_token\": \"{{ $json.access_token }}\"\n}",
+        "options": {}
+      },
+      "name": "Create Campaign1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -2192,
+        3936
+      ],
+      "id": "5582d9e9-aa49-4f41-8ff0-38176ea59161"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v21.0/act_{{ $('Set Variables').item.json.ad_account_id }}/adsets",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"name\": \"Boost Post Ad Set\",\n  \"campaign_id\": \"{{ $json.id }}\",\n  \"optimization_goal\": \"POST_ENGAGEMENT\",\n  \"billing_event\": \"IMPRESSIONS\",\n  \"bid_strategy\": \"LOWEST_COST_WITHOUT_CAP\",\n  \"daily_budget\": 300000,\n  \"promoted_object\": {\n    \"page_id\": \"{{ $('Set Variables').item.json.page_id }}\",\n    \"post_id\": \"{{ $('Set Variables').item.json.post_id }}\"\n  },\n  \"targeting\": {\n    \"geo_locations\": { \"countries\": [\"PK\"] }\n  },\n  \"start_time\": \"2025-12-01T08:00:00Z\",\n  \"end_time\": \"2025-12-10T23:59:59Z\",\n  \"status\": \"PAUSED\",\n  \"access_token\": \"{{ $('Set Variables').item.json.access_token }}\"\n}",
+        "options": {}
+      },
+      "name": "Create Ad Set1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -2016,
+        4624
+      ],
+      "id": "8f0525e4-ab5f-4b21-a466-ed682ccf9a64"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v21.0/act_{{ $('Set Variables').item.json.ad_account_id }}/ads",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"name\": \"Boosted Post Ad\",\n  \"adset_id\": \"{{ $json.id }}\",\n  \"creative\": {\n    \"object_story_id\": \"{{ $('Set Variables').item.json.page_and_post_id }}\"\n  },\n  \"status\": \"PAUSED\",\n  \"access_token\": \"{{ $('Set Variables').item.json.access_token }}\"\n}",
+        "options": {}
+      },
+      "name": "Create Ad (Boost Post)1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1808,
+        3936
+      ],
+      "id": "79f84dd1-ddc1-4112-8994-78cda4c3d16c"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v21.0/act_{{ $('Set Variables').item.json.ad_account_id }}/adsets",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"name\": \"Lead Gen Ad Set\",\n  \"campaign_id\": \"{{ $json.id }}\",\n  \"optimization_goal\": \"LEAD_GENERATION\",\n  \"billing_event\": \"IMPRESSIONS\",\n  \"bid_strategy\": \"LOWEST_COST_WITHOUT_CAP\",\n  \"daily_budget\": 50000,\n  \"promoted_object\": {\n    \"page_id\": \"{{ $('Set Variables').item.json.page_id }}\"\n  },\n  \"targeting\": {\n    \"geo_locations\": {\n      \"countries\": [\"PK\"]\n    }\n  },\n  \"start_time\": \"2025-12-01T08:00:00Z\",\n  \"end_time\": \"2025-12-10T23:59:59Z\",\n  \"status\": \"PAUSED\",\n  \"access_token\": \"{{ $('Set Variables').item.json.access_token }}\"\n}\n",
+        "options": {}
+      },
+      "name": "Create Ad Set2",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -2000,
+        3936
+      ],
+      "id": "10a0780a-a5c2-4123-8e7e-ee9a3d1e670e",
+      "typeVersion": 4.2
+    },
+    {
+      "parameters": {
+        "content": "working ",
+        "height": 240,
+        "width": 928,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -2512,
+        3872
+      ],
+      "typeVersion": 1,
+      "id": "f9a958dc-cb5f-404b-9ba6-0365aa4e0614",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.retellai.com/v2/create-phone-call",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"from_number\": \"+12193019288\",\n  \"to_number\": \"+18185325340\",\n  \"call_type\": \"phone_call\",\n  \"retell_llm_dynamic_variables\": {\n    \"name\": \"Ali\"\n  },\n  \"override_agent_id\": \"agent_58604986492a99caa1fdfda8fe\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -2848,
+        3616
+      ],
+      "id": "13aafbfc-b5cb-49b8-94c9-96d2b7b1b8f9",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.retellai.com/v2/create-phone-call",
+        "authentication": "[REDACTED]",
+        "genericAuthType": "[REDACTED]",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"from_number\": \"+12193019288\",\n  \"to_number\": \"+18185325340\",\n  \"override_agent_id\": \"agent_58604986492a99caa1fdfda8fe\",\n  \"retell_llm_dynamic_variables\": {\n    \"name\": \"Ali\"\n  }\n}",
+        "options": {}
+      },
+      "id": "e71836e1-728a-4c7e-956c-8a4912c91db4",
+      "name": "Retell AI - Create Phone Call",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -4128,
+        3696
+      ],
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.retellai.com/v2/create-phone-call",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"from_number\": \"+12193019288\",\n  \"to_number\": \"+18185325340\",\n  \"override_agent_id\": \"agent_58604986492a99caa1fdfda8fe\",\n  \"retell_llm_dynamic_variables\": {\n    \"name\": \"Ali\"\n  }\n}",
+        "options": {}
+      },
+      "id": "20766a2d-ff5f-40c3-acd1-8401061a4ecb",
+      "name": "Retell AI - Create Phone Call1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -3264,
+        3696
+      ]
+    }
+  ],
+  "connections": {
+    "Set Variables": {
+      "main": [
+        [
+          {
+            "node": "Create Campaign",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Create Campaign1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Campaign2": {
+      "main": [
+        [
+          {
+            "node": "Create Boosted Post Ad",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        []
+      ]
+    },
+    "Create Campaign": {
+      "main": [
+        [
+          {
+            "node": "Create Ad Set",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Ad Set": {
+      "main": [
+        [
+          {
+            "node": "Create Ad (Boost Post)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Creative": {
+      "main": [
+        []
+      ]
+    },
+    "Create Campaign1": {
+      "main": [
+        [
+          {
+            "node": "Create Ad Set2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Ad Set1": {
+      "main": [
+        []
+      ]
+    },
+    "Create Ad Set2": {
+      "main": [
+        [
+          {
+            "node": "Create Ad (Boost Post)1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "triggerCount": 1,
+  "tags": [
+    {
+      "updatedAt": "2025-10-15T12:01:49.775Z",
+      "createdAt": "2025-10-15T12:01:49.775Z",
+      "id": "vqPjQ1pPoVp3pFKR",
+      "name": "Mark Edward"
+    }
+  ]
+}

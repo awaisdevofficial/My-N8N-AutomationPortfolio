@@ -1,0 +1,2672 @@
+{
+  "updatedAt": "2025-12-09T04:53:56.000Z",
+  "createdAt": "2025-12-02T11:29:02.260Z",
+  "id": "TPFWUeCTVdPyRbpg",
+  "name": "PA Assistant",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes"
+            },
+            {}
+          ]
+        }
+      },
+      "id": "8fbd8f1e-21a7-4ab0-98b5-299257fef717",
+      "name": "Every 5 Minutes",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -720,
+        2720
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT \n  id,\n  title,\n  date_time,\n  purpose,\n  location,\n  contact_name,\n  contact_phone,\n  scheduler_phone,\n  status\nFROM meetings\nWHERE status = 'scheduled'\n  AND reminder_sent = FALSE\n  AND date_time::timestamp BETWEEN (NOW() AT TIME ZONE 'Asia/Karachi') + INTERVAL '25 minutes' AND (NOW() AT TIME ZONE 'Asia/Karachi') + INTERVAL '35 minutes'\nORDER BY date_time::timestamp ASC;",
+        "options": {}
+      },
+      "id": "10014373-b81f-4a55-92ad-fe17b7c0a218",
+      "name": "Find Upcoming Meetings",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        -496,
+        2720
+      ],
+      "alwaysOutputData": true,
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "has-meetings",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "any",
+                "operation": "exists",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "0fe3493b-576f-4acd-9d76-f6e024188e84",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "scheduled",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "6111e804-6cfe-4496-b96d-381f192484e4",
+      "name": "Any Meetings to Remind?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -272,
+        2720
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// No meetings found - just exit gracefully\nreturn [{\n  json: {\n    success: true,\n    message: 'No meetings require reminders at this time',\n    timestamp: new Date().toISOString()\n  }\n}];"
+      },
+      "id": "0a4dfc93-c0b7-4cd3-9491-d0e52ea4471c",
+      "name": "No Meetings - Exit",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -48,
+        2624
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const meeting = $input.first().json;\n\n// Format date/time for display\nconst meetingDateTime = new Date(meeting.date_time);\nconst dateStr = meetingDateTime.toLocaleDateString('en-US', {\n  weekday: 'long',\n  year: 'numeric',\n  month: 'long',\n  day: 'numeric'\n});\nconst timeStr = meetingDateTime.toLocaleTimeString('en-US', {\n  hour: '2-digit',\n  minute: '2-digit',\n  hour12: true\n});\n\n// Clean phone numbers (remove + if present)\nconst cleanPhone = (phone) => {\n  if (!phone) return null;\n  return phone.replace(/\\+/g, '');\n};\n\nconst schedulerPhone = cleanPhone(meeting.scheduler_phone);\nconst contactPhone = cleanPhone(meeting.contact_phone);\n\n// Message for the scheduler\nconst schedulerMessage = `⏰ **Meeting Reminder**\\n\\nYour meeting is starting in 30 minutes!\\n\\n📅 **${meeting.title}**\\n👤 With: ${meeting.contact_name}\\n🕐 Time: ${dateStr} at ${timeStr}\\n📍 Location: ${meeting.location}\\n📋 Purpose: ${meeting.purpose}\\n\\nPlease prepare accordingly.`;\n\n// Message for the contact/end-user\nconst contactMessage = `⏰ **Meeting Reminder**\\n\\nYour meeting is starting in 30 minutes!\\n\\n📅 **${meeting.title}**\\n🕐 Time: ${dateStr} at ${timeStr}\\n📍 Location: ${meeting.location}\\n📋 Purpose: ${meeting.purpose}\\n\\nLooking forward to meeting with you!`;\n\nreturn [{\n  json: {\n    meetingId: meeting.id,\n    schedulerPhone: schedulerPhone,\n    schedulerMessage: schedulerMessage,\n    contactPhone: contactPhone,\n    contactMessage: contactMessage,\n    contactName: meeting.contact_name,\n    meetingTitle: meeting.title,\n    meetingTime: `${dateStr} at ${timeStr}`\n  }\n}];"
+      },
+      "id": "2c6abfde-a023-4399-82ed-6a02b7022c5f",
+      "name": "Format Reminder Messages",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -48,
+        2816
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "has-scheduler-phone",
+              "leftValue": "={{ $json.schedulerPhone }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "80256534-bcb0-4f0f-9c1b-b6152256a068",
+      "name": "Has Scheduler Phone?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        176,
+        2816
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://wc2.nsolbpo.com/api/send-message",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "message",
+              "value": "={{ $json.schedulerMessage }}"
+            },
+            {
+              "name": "messageType",
+              "value": "TEXT"
+            },
+            {
+              "name": "numbers",
+              "value": "={{ $json.schedulerPhone }}"
+            },
+            {
+              "name": "x-api-key",
+              "value": "gvdgKFDom0glTeHwjdJYow73Uq6YNa8GytuqiHmK"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "2baf3e5b-2605-4fe3-a153-02134d7080b5",
+      "name": "Send Reminder to Scheduler",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        400,
+        2720
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Scheduler phone not available, just pass through\nreturn [$input.first()];"
+      },
+      "id": "b1181dff-99ba-4565-be28-08472df2a253",
+      "name": "Skip Scheduler Notification",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        400,
+        2912
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://wc2.nsolbpo.com/api/send-message",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "message",
+              "value": "={{ $('Format Reminder Messages').first().json.contactMessage }}"
+            },
+            {
+              "name": "numbers",
+              "value": "={{ $('Format Reminder Messages').first().json.contactPhone }}"
+            },
+            {
+              "name": "x-api-key",
+              "value": "gvdgKFDom0glTeHwjdJYow73Uq6YNa8GytuqiHmK"
+            },
+            {
+              "name": "messageType",
+              "value": "TEXT"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "57d9d4a2-b9b6-4b65-8502-0159370a3429",
+      "name": "Send Reminder to Contact",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        624,
+        2816
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE meetings\nSET reminder_sent = TRUE,\n    updated_at = NOW()\nWHERE id = $1\nRETURNING id, reminder_sent, updated_at;",
+        "options": {
+          "queryReplacement": "={{ [$('Format Reminder Messages').first().json.meetingId] }}"
+        }
+      },
+      "id": "3fb3dba8-8040-423f-92e1-966f54c37cb9",
+      "name": "Mark Reminder as Sent",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        848,
+        2816
+      ],
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $('Format Reminder Messages').first().json;\n\nreturn [{\n  json: {\n    success: true,\n    message: `✅ Reminder sent for meeting: ${data.meetingTitle}`,\n    details: {\n      meetingId: data.meetingId,\n      contactName: data.contactName,\n      meetingTime: data.meetingTime,\n      schedulerNotified: !!data.schedulerPhone,\n      contactNotified: true,\n      timestamp: new Date().toISOString()\n    }\n  }\n}];"
+      },
+      "id": "6e65e87c-bbe1-4452-8ed6-3f16bcc5bec5",
+      "name": "Return Success",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1072,
+        2816
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "4ea0fab6-9755-4b41-bcb3-84f4d3cc19e9",
+      "name": "Execute Workflow Trigger",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [
+        -720,
+        3328
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "check-error",
+              "leftValue": "={{ $json.success }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "b5677a06-746d-4d1e-b8fe-765bf686adf8",
+      "name": "Is Valid?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -272,
+        3328
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.intent }}",
+              "value2": "search"
+            }
+          ]
+        }
+      },
+      "id": "bd4d9085-9ea6-4d8c-82d5-d483f95c15e2",
+      "name": "Check Intent",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        -48,
+        3232
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO contacts (\n  agent_id,\n  name,\n  phone_number,\n  email,\n  company,\n  created_at,\n  updated_at\n)\nVALUES (\n  $1,\n  $2,\n  $3,\n  $4,\n  $5,\n  NOW(),\n  NOW()\n)\nRETURNING id, name, phone_number, email, company, created_at;",
+        "options": {
+          "queryReplacement": "={{ $json.agent_id }}\n={{ $json.contact_name }}\n={{ $json.contact_phone }}\n={{ $json.email }}\n={{ $json.company }}"
+        }
+      },
+      "id": "58acd49e-f72f-4b5d-8be5-710b4b166bd5",
+      "name": "Insert Contact",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        176,
+        3328
+      ],
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Format search results\nconst results = $input.all().flatMap(item => item.json);\n\n// Get search term from previous node\nconst validateItems = $items(\"Validate Input1\");\nconst searchTerm = (validateItems?.[0]?.json?.contact_name || 'Unknown').trim();\n\n// Handle no results\nif (!results || results.length === 0) {\n  return [{\n    json: {\n      success: false,\n      message: `❌ No contacts found matching \"${searchTerm}\".`,\n      contacts: [],\n      count: 0,\n      intent: 'search'\n    }\n  }];\n}\n\n// Format contacts\nconst formattedContacts = results.map(contact => ({\n  id: contact.id,\n  name: contact.name || 'Unknown',\n  phone_number: contact.phone_number || 'No phone',\n  email: contact.email || '',\n  company: contact.company || '',\n  created_at: contact.created_at || null\n}));\n\n// Build message\nlet message = `✅ Found ${formattedContacts.length} contact${formattedContacts.length > 1 ? 's' : ''} matching \"${searchTerm}\":\\n\\n`;\n\nformattedContacts.forEach((contact, index) => {\n  message += `${index + 1}. **${contact.name}**\\n`;\n  message += `   📱 ${contact.phone_number}\\n`;\n  if (contact.email) message += `   ✉️ ${contact.email}\\n`;\n  if (contact.company) message += `   🏢 ${contact.company}\\n`;\n  message += `\\n`;\n});\n\nreturn [{\n  json: {\n    success: true,\n    message,\n    contacts: formattedContacts,\n    count: formattedContacts.length,\n    intent: 'search',\n    searchTerm\n  }\n}];"
+      },
+      "id": "5a8893df-aa56-4f91-9dfd-814ae88d699a",
+      "name": "Format Search Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        400,
+        3136
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Format insert response\nconst contact = $input.first().json;\n\nreturn [{\n  json: {\n    success: true,\n    message: `✅ Contact \"${contact.name}\" added successfully!`,\n    intent: 'insert',\n    contact: {\n      id: contact.id,\n      name: contact.name,\n      phone_number: contact.phone_number,\n      email: contact.email || '',\n      company: contact.company || '',\n      created_at: contact.created_at\n    }\n  }\n}];"
+      },
+      "id": "63615b55-3e7e-4dd9-b010-d485f33395bb",
+      "name": "Format Insert Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        400,
+        3328
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract and validate input from AI agent\nconst rawInput = $input.first().json;\n\n// Handle both wrapped (query) and flat formats\nlet input;\nif (rawInput.query && typeof rawInput.query === 'object') {\n  // Input is wrapped in \"query\" object\n  input = rawInput.query;\n} else {\n  // Input is flat\n  input = rawInput;\n}\n\n// Get intent (search or insert)\nconst intent = input.intent || 'search';\n\n// Extract fields\nconst contactName = (input.contact_name || '').trim();\nconst agentId = (input.agent_id || '').trim();\nconst contactPhone = (input.contact_phone || '').trim();\nconst email = (input.email || '').trim();\nconst company = (input.company || '').trim();\n\n// Validate required fields\nif (!contactName || contactName.length < 2) {\n  return [{\n    json: {\n      error: true,\n      success: false,\n      message: \"❌ Please provide a valid contact name (2+ characters).\"\n    }\n  }];\n}\n\nif (!agentId || agentId.length < 5) {\n  return [{\n    json: {\n      error: true,\n      success: false,\n      message: \"❌ Invalid or missing agent_id.\"\n    }\n  }];\n}\n\n// For INSERT, validate phone\nif (intent === 'insert') {\n  if (!contactPhone || contactPhone.length < 10) {\n    return [{\n      json: {\n        error: true,\n        success: false,\n        message: \"❌ Please provide a valid phone number (10+ digits).\"\n      }\n    }];\n  }\n}\n\n// Clean phone number (remove spaces, +, etc.)\nfunction cleanPhone(phone) {\n  if (!phone) return '';\n  let cleaned = phone.replace(/[\\s\\-()]/g, ''); // Remove spaces, dashes, parentheses\n  cleaned = cleaned.replace(/^\\+/, ''); // Remove +\n  if (cleaned.startsWith('0')) cleaned = '92' + cleaned.substring(1); // Handle 0 prefix for Pakistan\n  return cleaned.replace(/\\D/g, ''); // Keep only digits\n}\n\nconst cleanedPhone = cleanPhone(contactPhone);\n\n// Sanitize name\nconst sanitizedName = contactName\n  .replace(/[\\x00-\\x08\\x0B\\x0C\\x0E-\\x1F\\x7F]/g, '') // Remove control chars\n  .substring(0, 100);\n\n// Return validated data\nreturn [{\n  json: {\n    success: true,\n    error: false,\n    intent: intent,\n    contact_name: sanitizedName,\n    agent_id: agentId,\n    contact_phone: cleanedPhone,\n    email: email.substring(0, 100),\n    company: company.substring(0, 100),\n    searchPattern: `%${sanitizedName.toLowerCase()}%`\n  }\n}];"
+      },
+      "id": "04e5c046-65a8-40ba-927a-a5fd0748a0ad",
+      "name": "Validate Input1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -496,
+        3328
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT \n  id,\n  name,\n  phone_number,\n  email,\n  company,\n  created_at\nFROM contacts\nWHERE \n  agent_id = $1\n  AND LOWER(name) LIKE $2\nORDER BY \n  CASE \n    WHEN LOWER(name) = LOWER($3) THEN 1\n    WHEN LOWER(name) LIKE LOWER($3) || '%' THEN 2\n    ELSE 3\n  END,\n  name ASC\nLIMIT 10;",
+        "options": {
+          "queryReplacement": "={{ $json.agent_id }}\n{{ $json.searchPattern }}\n{{ $json.contact_name }}"
+        }
+      },
+      "id": "b62f80aa-8d4a-429e-9a9e-0132b19d19b6",
+      "name": "Search Database1",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        176,
+        3136
+      ],
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Return error response from validation\nconst errorData = $input.first().json;\n\nreturn [{\n  json: {\n    success: false,\n    message: errorData.message,\n    contacts: [],\n    count: 0,\n    intent: 'error'\n  }\n}];"
+      },
+      "id": "f1983ef7-6d1d-4bbb-9cff-c6d0f3a49494",
+      "name": "Format Error Response1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -48,
+        3424
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "noData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        2640,
+        768
+      ],
+      "id": "d08bcf3e-da13-4065-bebb-b19ccd45033e",
+      "name": "Respond Success1"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "agents",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "keyValue": "={{ $json.agentId }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -2832,
+        848
+      ],
+      "id": "c1380379-309d-475a-a5c1-62d7046d831a",
+      "name": "Get a row2",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "jsCode": "const thread = $json.threadData;\nconst reply = $json.originalMessage;\n\nreturn [{\n  json: {\n    threadId: thread.threadId,\n    originalMessageId: thread.originalMessageId,\n    originalSenderPhone: thread.originalSender,\n    replyFromPhone: reply.senderPhone.replace('+', ''),\n    replyContent: reply.message,\n    replyMessageId: reply.messageId,\n    agentId: reply.agentId,\n    userId: reply.userId,\n    originalConversationId: thread.originalConversationId,\n    currentConversationId: reply.conversationId,\n    originalMessage: thread.originalMessage\n  }\n}];"
+      },
+      "id": "d955cb99-4874-429b-aa54-5b14b421fc3c",
+      "name": "Process Reply3",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1360,
+        -16
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE message_threads\nSET \n  reply_received = TRUE,\n  reply_message_id = $1,\n  reply_content = $2,\n  reply_received_at = NOW(),\n  status = 'replied'\nWHERE id = $3;",
+        "options": {
+          "queryReplacement": "={{ [\n  $json.replyMessageId,\n  $json.replyContent,\n  $json.threadId\n] }}"
+        }
+      },
+      "id": "bdb90e41-713d-4549-8f88-dd6f92ac1cec",
+      "name": "Mark Thread as Replied2",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        -1072,
+        -96
+      ],
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $('Process Reply3').item.json;\n\nconst notificationMessage = `📬 *Reply Received*\n\nFrom: ${data.replyFromPhone}\nReply: \"${data.replyContent}\"\n\nOriginal message: \"${data.originalMessage || 'N/A'}\"\nReceived at: ${new Date().toLocaleString()}`;\n\nreturn [{\n  json: {\n    numbers: data.originalSenderPhone,\n    message: notificationMessage,\n    messageType: 'TEXT',\n    agentId: data.agentId\n  }\n}];"
+      },
+      "id": "71f970f2-96f5-4262-8ce3-ef64429f1e5e",
+      "name": "Format Reply Notification to User3",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -848,
+        -192
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $('Process Reply3').item.json;\n\nconst confirmationMessage = `✅ *Reply Acknowledged*\n\nYour message has been delivered to the sender.\nThank you for your response!`;\n\nreturn [{\n  json: {\n    numbers: data.replyFromPhone,\n    message: confirmationMessage,\n    messageType: 'TEXT',\n    agentId: data.agentId\n  }\n}];"
+      },
+      "id": "59241fa0-2913-40c8-8230-5758b569ca1c",
+      "name": "Format Reply Confirmation to User3",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -848,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://pa.duhanashrah.ai/api/webhooks/send-message",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ {\"agentId\": $json.agentId, \"to\": $json.numbers, \"message\": $json.message} }}",
+        "options": {}
+      },
+      "id": "c430dc55-b859-4366-8580-72c270af82b3",
+      "name": "Send Notification to User3",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -624,
+        -192
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://pa.duhanashrah.ai/api/webhooks/send-message",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ {\"agentId\": $json.agentId, \"to\": $json.numbers, \"message\": $json.message} }}",
+        "options": {}
+      },
+      "id": "2b296c81-49d8-4534-a33a-cc7bcdf5010c",
+      "name": "Send Confirmation to User3",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -624,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO message_log (\n  message_id,\n  conversation_id,\n  sender_phone,\n  message_text,\n  received_at,\n  agent_id,\n  user_id,\n  processed,\n  metadata\n)\nVALUES ($1, $2, $3, $4, $5, $6, $7, TRUE, $8::jsonb)\nON CONFLICT (message_id)\nDO UPDATE SET\n  metadata = EXCLUDED.metadata,\n  processed = TRUE;",
+        "options": {
+          "queryReplacement": "={{ [\n  $('Process Reply3').item.json.replyMessageId,\n  $('Process Reply3').item.json.currentConversationId,\n  $('Process Reply3').item.json.replyFromPhone,\n  $('Process Reply3').item.json.replyContent,\n  new Date().toISOString(),\n  $('Process Reply3').item.json.agentId,\n  $('Process Reply3').item.json.userId,\n  JSON.stringify({\n    is_reply: true,\n    thread_id: $('Process Reply3').item.json.threadId,\n    original_message_id: $('Process Reply3').item.json.originalMessageId\n  })\n] }}"
+        }
+      },
+      "id": "30cec9fe-ffc6-404d-9bc2-c5cbdf268dd2",
+      "name": "Log Reply to Message Log2",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        -1056,
+        128
+      ],
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        -400,
+        -96
+      ],
+      "id": "e892dffa-eee0-4d92-ae1d-83a28e715661",
+      "name": "Respond Reply Success3"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT \n  id, title, date_time, purpose, location,\n  contact_name, contact_phone, status, created_at, user_id\nFROM public.meetings\nWHERE contact_phone = $1\n  AND status = 'pending_confirmation'\nORDER BY created_at DESC\nLIMIT 1;",
+        "options": {
+          "queryReplacement": "={{ $('IF Reply?2').item.json.originalMessage.senderPhone }}"
+        }
+      },
+      "id": "7e2abba6-ec1e-4e36-b234-aed61be69584",
+      "name": "Check for Pending Meeting2",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        -1280,
+        560
+      ],
+      "alwaysOutputData": true,
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "has-pending",
+              "leftValue": "={{ $json.hasPendingMeeting }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "8e082ae9-3816-4cae-b816-3002b5a6d218",
+      "name": "Has Pending Meeting?2",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -832,
+        560
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "noData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        352,
+        80
+      ],
+      "id": "83b9a9f1-f669-4f39-9643-916727f5b2d4",
+      "name": "Respond Meeting Handled2"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the meeting data from the previous node\nconst meetingData = $input.first().json;\n\n// Get the original message data\nconst messageData = $('Log Message to DB3').first().json;\n\n// Get the agentId\nconst agentId = $('Is Valid Message?3').first().json.agentId;\n\n// Check if we have a pending meeting (contact_phone exists means query returned a result)\nconst hasPendingMeeting = meetingData && meetingData.contact_phone;\n\n// Return combined data with a flag indicating if there's a pending meeting\nreturn [{\n  json: {\n    hasPendingMeeting: !!hasPendingMeeting,\n    meeting: hasPendingMeeting ? meetingData : null,\n    message: messageData,\n    agentId: agentId\n  }\n}];"
+      },
+      "id": "c92ff9e7-331b-4116-b9de-c3a5b3de02fe",
+      "name": "Process Meeting Result2",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1056,
+        560
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// --- Extract Inputs ---\nconst input = $input.first().json;\nconst message = $('Is Valid Message?3').first().json.message || null;\nconst agentId = input.agentId || null;\n\n// --- Validate Meeting Data ---\nif (!input || !input.meeting) {\n  return [{\n    json: {\n      error: true,\n      success: false,\n      message: '❌ No meeting data found in input.'\n    }\n  }];\n}\n\nconst meeting = input.meeting;\nconst hasPendingMeeting = !!input.hasPendingMeeting;\nconst meetingId = meeting.id || null;\nconst userId = meeting.user_id || null;\nconst title = (meeting.title || '').trim();\nconst dateTime = (meeting.date_time || '').trim();\nconst purpose = (meeting.purpose || '').trim();\nconst location = (meeting.location || 'Virtual').trim();\nconst contactName = (meeting.contact_name || '').trim();\nconst contactPhone = (meeting.contact_phone || '').trim();\nconst meetingStatus = (meeting.status || '').trim();\n\nconst errors = [];\nif (!meetingId) errors.push('Meeting ID is required.');\nif (!userId) errors.push('User ID is required.');\nif (!agentId) errors.push('Agent ID is required.');\nif (!contactName) errors.push('Contact name is required.');\nif (!contactPhone || contactPhone.length < 10 || isNaN(Number(contactPhone))) {\n  errors.push('Valid contact phone number required (numeric, min 10 digits).');\n}\nif (!title) errors.push('Meeting title is required.');\nif (!dateTime) errors.push('Meeting date and time required.');\nif (!purpose) errors.push('Meeting purpose is required.');\n\nif (errors.length > 0) {\n  return [{\n    json: {\n      error: true,\n      success: false,\n      message: `❌ Validation failed:\\n${errors.join('\\n')}`\n    }\n  }];\n}\n\n// --- Construct Output for Subworkflow ---\nreturn [{\n  json: {\n    hasPendingMeeting,\n    meetingId,\n    userId,\n    agentId,\n    contactName,\n    contactPhone: `+${contactPhone.replace(/\\+/g, '')}`,\n    title,\n    dateTime,\n    purpose,\n    location,\n    meetingStatus,\n    createdAt: meeting.created_at || null,\n    message,\n    messageSuccess: input.message?.success || false,\n    timestamp: new Date().toISOString(),\n    success: true\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -192,
+        96
+      ],
+      "id": "09857a61-b21a-44c7-a166-cdd6b61db849",
+      "name": "Code2"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.messageType }}",
+                    "rightValue": "TEXT",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "7067138a-5917-421a-a72b-62029f65e3d8"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "TEXT"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "17c26772-43c0-4825-b198-45867f57f0ac",
+                    "leftValue": "={{ $json.body.messageType }}",
+                    "rightValue": "AUDIO",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "AUDIO"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -3968,
+        144
+      ],
+      "id": "c0d949a5-9242-40f9-857e-0c0fd34a25f4",
+      "name": "Switch6"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.metadata.direction }}",
+                    "rightValue": "incoming",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "3fa04016-ffdb-43a6-bc42-95f8dd89e1a0"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "26978f43-53cd-4d94-bda6-5a5f44bb3e5b",
+                    "leftValue": "={{ $json.body.metadata.direction }}",
+                    "rightValue": "outgoing",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -4192,
+        272
+      ],
+      "id": "556f511d-51b9-49ca-aa29-4110695c38b0",
+      "name": "Switch7"
+    },
+    {
+      "parameters": {
+        "jsCode": "const messageData = $('Is Valid Message?3').item.json;\n\nreturn [{\n  json: {\n    senderPhone: messageData.senderPhone.replace('+', ''),\n    cleanPhone: messageData.senderPhone.replace('+', ''),\n    originalMessage: messageData\n  }\n}];"
+      },
+      "id": "7d5025cd-0861-4df4-8aea-540415c025d1",
+      "name": "Check if Reply to Thread2",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2368,
+        480
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT \n  id,\n  original_message_id,\n  sender_phone,\n  recipient_phone,\n  agent_id,\n  user_id,\n  conversation_id AS original_conversation_id,\n  message_content AS original_message\nFROM message_threads\nWHERE recipient_phone = $1\n  AND status = 'awaiting_reply'\n  AND expires_at > NOW()\nORDER BY created_at DESC\nLIMIT 1;\n",
+        "options": {
+          "queryReplacement": "={{ [$('Check if Reply to Thread2').item.json.cleanPhone] }}"
+        }
+      },
+      "id": "8aeeca2c-537b-4fc2-ba82-e13c904d1bce",
+      "name": "Find Active Thread2",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        -2176,
+        480
+      ],
+      "alwaysOutputData": true,
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "jsCode": "const threadResult = $input.first().json;\nconst hasActiveThread = Boolean(threadResult && threadResult.id);\n\nlet originalMessage = {};\ntry {\n  originalMessage = $('Check if Reply to Thread2').first().json.originalMessage;\n} catch (e) {\n  originalMessage = {};\n}\n\n// Check if this is actually a reply to an active thread\nlet isActualReply = false;\nlet threadData = null;\n\nif (hasActiveThread && originalMessage.conversationId) {\n  // The current message sender should match the thread's recipient_phone\n  const currentSender = String(originalMessage.conversationId).replace(/\\+/g, '');\n  const threadRecipient = String(threadResult.recipient_phone).replace(/\\+/g, '');\n  \n  // Also verify the agent matches\n  const agentMatches = originalMessage.agentId === threadResult.agent_id;\n  \n  if (currentSender === threadRecipient && agentMatches) {\n    isActualReply = true;\n    threadData = {\n      threadId: threadResult.id,\n      originalMessageId: threadResult.original_message_id,\n      originalMessage: threadResult.original_message,\n      originalSender: threadResult.sender_phone,\n      originalConversationId: threadResult.original_conversation_id,\n      timeSinceSent: new Date() - new Date(threadResult.sent_at || Date.now())\n    };\n  }\n}\n\nreturn [{\n  json: {\n    isReply: isActualReply,\n    threadData: threadData,\n    originalMessage: originalMessage,\n    debug: {\n      hasThread: hasActiveThread,\n      currentSender: originalMessage.conversationId,\n      threadRecipient: threadResult?.recipient_phone,\n      agentMatch: originalMessage.agentId === threadResult?.agent_id,\n      threadKeys: Object.keys(threadResult || {})\n    }\n  }\n}];"
+      },
+      "id": "042f6181-8203-45ad-a6f5-15b18eee1436",
+      "name": "Is Reply to Thread?2",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1952,
+        480
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "is-reply-check",
+              "leftValue": "={{ $json.isReply }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "c4799569-fcac-4219-9cb9-8ea9cc1d9cd1",
+      "name": "IF Reply?2",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -1728,
+        480
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Prepare data specifically for WhatsApp API endpoint\n// Get data from the \"Should Track Thread?\" node which has all the original data\nconst inputData = $('Should Track Thread?2').item.json;\n\n// Map fields to match API expectations\nconst payload = {\n  agentId: inputData.agentId || '',\n  to: inputData.recipientPhone || inputData.numbers || inputData.phone_number || '',\n  message: inputData.message || ''\n};\n\n// Clean phone number - ensure it's properly formatted\nif (payload.to && payload.to.startsWith('+')) {\n  payload.to = payload.to.substring(1);\n}\n\nreturn [{\n  json: payload\n}];"
+      },
+      "id": "b6b19564-7afb-47d4-96ee-7ab2e8cd2335",
+      "name": "Prepare WhatsApp Payload2",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1904,
+        768
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const aiResponse = $input.first().json;\nconst message = aiResponse.message || '';\nconst messageLower = message.toLowerCase();\n\n// ============================================================\n// AI MESSAGE DETECTION - PRIMARY CHECK\n// ============================================================\n// CRITICAL: Messages generated by the AI agent should NEVER be tracked\n// This prevents infinite loops and database pollution\n// ============================================================\n\n// 1. Check for AI-GENERATED MESSAGE patterns\nconst aiGeneratedPatterns = [\n  '👋 welcome to your personal business assistant',\n  'please select an option:',\n  'i can help you manage',\n  'reply with the number',\n  '1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣',\n  '📅 meeting options',\n  'please select how you\\'d like to view',\n  '✅ message sent successfully',\n  '✅ meeting scheduled',\n  '✅ meeting invitation sent',\n  '✅ contact',\n  'added successfully',\n  'invitation sent',\n  'has been sent',\n  'has been scheduled',\n  'has been added',\n  'meeting 1:',\n  'meeting 2:',\n  'here are your',\n  'no meetings found',\n  'retrieved',\n  'search results',\n  'i found the following',\n  'i found',\n  '📬',\n  '🔄 erp/crm update feature',\n  'returning to main menu',\n  'returning to menu',\n  '📨 message preview',\n  'this message will be sent to',\n  '📅 meeting invitation preview',\n  'this invitation will be sent to',\n  'please reply \\'yes\\' to send',\n  'please reply \\'yes\\' to confirm',\n  'reply \\'yes\\' to send',\n  'or \\'no\\' to cancel',\n  'meeting details:',\n  'meeting details summary:',\n  'organized by:',\n  'the meeting invitation has been sent',\n  '━━━━━━━━━━━━━━━━━━━━━━━━━━━',\n  'please provide:',\n  'please provide the following',\n  'i need the following information',\n  'would you like to',\n  'what would you like',\n  'who would you like',\n  'what is the',\n  'which contact',\n  'ready to add this contact',\n  'contact not found'\n];\n\n// 2. Check for structured formatting (strong indicator of AI responses)\nconst hasMultipleBullets = (message.match(/•/g) || []).length >= 2;\nconst hasMultipleEmojis = (message.match(/[📅📨✅🔄👋💡📍📋📬]/g) || []).length >= 2;\nconst hasDecorators = message.includes('━━━━━━') || message.includes('═══════');\nconst hasStructuredNewlines = (message.match(/\\n\\n/g) || []).length >= 2;\n\n// 3. Check message length (AI responses are typically longer than user input)\nconst isLongMessage = message.length > 200;\n\n// 4. Check for AI pattern matches\nconst containsAIPattern = aiGeneratedPatterns.some(pattern => \n  messageLower.includes(pattern.toLowerCase())\n);\n\n// ============================================================\n// FINAL AI MESSAGE DETECTION\n// ============================================================\n// A message is AI-generated if it matches ANY of these criteria:\nconst isAIGeneratedMessage = \n  containsAIPattern || // Contains known AI patterns\n  (hasMultipleBullets && isLongMessage) || // Structured with bullets\n  (hasMultipleEmojis && isLongMessage) || // Multiple emojis + long\n  (hasDecorators) || // Has decorative lines\n  (hasStructuredNewlines && isLongMessage) || // Well-formatted paragraphs\n  (hasMultipleBullets && hasMultipleEmojis); // Structured formatting\n\n// ============================================================\n// THREAD TRACKING DECISION\n// ============================================================\n// AI-generated messages should NEVER be tracked\n// This prevents them from being stored in message_threads table\n// ============================================================\n\nlet shouldTrackThread = false;\nlet skipReason = null;\n\nif (isAIGeneratedMessage) {\n  // AI messages are NEVER tracked\n  shouldTrackThread = false;\n  skipReason = 'AI_GENERATED_MESSAGE';\n} else {\n  // For non-AI messages (actual user responses), apply normal tracking logic\n  \n  // Only track very specific question patterns that expect single answers\n  const singleAnswerQuestions = [\n    'who would you like to send a message to',\n    'please provide their name',\n    'what message would you like to send',\n    'what is the meeting title',\n    'what is the purpose',\n    'what is the location'\n  ];\n  \n  const isSingleAnswer = singleAnswerQuestions.some(pattern => \n    messageLower.includes(pattern)\n  );\n  \n  // Even single-answer questions from AI shouldn't be tracked\n  shouldTrackThread = isSingleAnswer && !isAIGeneratedMessage;\n  skipReason = shouldTrackThread ? null : 'NOT_TRACKABLE_QUESTION';\n}\n\n// ============================================================\n// RETURN RESULT\n// ============================================================\n\nreturn [{\n  json: {\n    ...aiResponse,\n    shouldTrackThread: shouldTrackThread,\n    isAIMessage: isAIGeneratedMessage,\n    skipReason: skipReason,\n    debug: {\n      messageLength: message.length,\n      containsAIPattern,\n      hasMultipleBullets,\n      hasMultipleEmojis,\n      hasDecorators,\n      hasStructuredNewlines,\n      isLongMessage,\n      isAIGeneratedMessage,\n      finalDecision: shouldTrackThread,\n      messagePreview: message.substring(0, 150)\n    }\n  }\n}];"
+      },
+      "id": "6abf2525-6567-4505-b395-01ffd519f720",
+      "name": "Should Track Thread?2",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1232,
+        768
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "should-track",
+              "leftValue": "={{ $json.shouldTrackThread }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "00c08e77-fe2d-4d3b-8533-2d4ab0fa93fd",
+      "name": "IF Track Thread?2",
+      "typeVersion": 2,
+      "position": [
+        1456,
+        768
+      ],
+      "type": "n8n-nodes-base.if"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO message_threads (\n  original_message_id,\n  sender_phone,\n  recipient_phone,\n  agent_id,\n  user_id,\n  conversation_id,\n  message_content\n) VALUES ($1, $2, $3, $4, $5, $6, $7)\nON CONFLICT DO NOTHING;",
+        "options": {
+          "queryReplacement": "={{ [\n  $json.originalMessageId,\n  $json.agentId,\n  $json.recipientPhone,\n  $json.agentId,\n  $json.userId,\n  $json.conversationId,\n  $json.message\n] }}"
+        }
+      },
+      "id": "db1c6c47-e2b0-438d-8f6f-405f3396e588",
+      "name": "Log Outgoing Thread2",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        1680,
+        832
+      ],
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "jsCode": "const inputData = $('Check if Reply to Thread2').item.json;\nconst reply = inputData.originalMessage;\n\nreturn [{\n  json: {\n    replyFromPhone: reply.senderPhone.replace('+', ''),\n    replyContent: reply.message,\n    replyMessageId: reply.messageId,\n    agentId: reply.agentId,\n    userId: reply.userId,\n    currentConversationId: reply.conversationId,\n    senderPhone: reply.senderPhone,\n    senderName: reply.senderName,\n    timestamp: reply.timestamp\n  }\n}];"
+      },
+      "id": "ec0c53c4-7adb-4ba5-9dfd-d8f054e74e69",
+      "name": "Process Reply4",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -560,
+        592
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $('Process Reply4').item.json;\n\n// Get current date/time in Pakistan timezone\nconst now = new Date();\nconst pakistanTime = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Karachi' }));\n\nconst day = String(pakistanTime.getDate()).padStart(2, '0');\nconst month = String(pakistanTime.getMonth() + 1).padStart(2, '0');\nconst year = pakistanTime.getFullYear();\n\nlet hours = pakistanTime.getHours();\nconst minutes = String(pakistanTime.getMinutes()).padStart(2, '0');\nconst ampm = hours >= 12 ? 'PM' : 'AM';\nhours = hours % 12 || 12; // Convert to 12-hour format\n\nconst formattedDate = `${day}/${month}/${year}, ${hours}:${minutes} ${ampm}`;\n\n// TODO: Add sender name/contact name here\nconst senderName = $('Webhook1').first().json.body.metadata.senderName; \n\nconst notificationMessage = `📬 *Message Notification*\nFrom: ${senderName}\nMessage: \"${data.replyContent}\"\nReceived at: ${formattedDate}`;\n\nreturn [{\n  json: {\n    numbers: $input.first().json.agent_phone_number,\n    message: notificationMessage,\n    messageType: 'TEXT',\n    agentId: data.agentId\n  }\n}];"
+      },
+      "id": "4445932c-27c2-42d7-94cf-0198810162b0",
+      "name": "Format Reply Notification to User4",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -112,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $('Process Reply4').item.json;\n\nconst confirmationMessage = `✅ *Reply Acknowledged*\n\nYour message has been delivered to the sender.\nThank you for your response!`;\n\nreturn [{\n  json: {\n    numbers: data.replyFromPhone,\n    message: confirmationMessage,\n    messageType: 'TEXT',\n    agentId: data.agentId\n  }\n}];"
+      },
+      "id": "87f86b76-5cd0-46e4-8ea2-2e87528731fd",
+      "name": "Format Reply Confirmation to User4",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -112,
+        592
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://pa.duhanashrah.ai/api/webhooks/send-message",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ {\"agentId\": $json.agentId, \"to\": $json.numbers, \"message\": $json.message} }}",
+        "options": {}
+      },
+      "id": "b0a17fe6-9eb5-4d44-89ba-4d5fa33b8a2c",
+      "name": "Send Notification to User4",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        112,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://pa.duhanashrah.ai/api/webhooks/send-message",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ {\"agentId\": $json.agentId, \"to\": $json.numbers, \"message\": $json.message} }}",
+        "options": {}
+      },
+      "id": "05a83ed6-6e88-4953-82d3-18bedcbc6913",
+      "name": "Send Confirmation to User4",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        112,
+        592
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "noData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        336,
+        496
+      ],
+      "id": "a4979205-ae55-40ad-b474-7fee0304875d",
+      "name": "Respond Reply Success4"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "agents",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "keyValue": "={{ $json.agentId }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -352,
+        416
+      ],
+      "id": "63a06f1d-e51a-48f0-a146-3ea16894bbdf",
+      "name": "Get a row3",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "toolDescription": "ERP/CRM Menu Navigation - Makes POST requests to the ERP USSD API to retrieve cascading menus and data. Use this tool when the user selects option 6 from the main menu or provides numeric input while navigating ERP/CRM menus. This tool sends the user's input to the ERP system and returns the next menu or result. Parameters: message (user's numeric input), phone (user's phone number). Only call this tool for ERP navigation - do not use other tools like manage_contact, send_message, or schedule_meeting while in ERP mode.",
+        "method": "POST",
+        "url": "https://erp.ycsols.com/api/ussd",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "message",
+              "value": "={{ $json.chatInput }}"
+            },
+            {
+              "name": "phone",
+              "value": "={{ $json.senderPhone }}"
+            },
+            {
+              "name": "access_token",
+              "value": "ghpis1Tz4KY3J0WsATigKAafH1p3bvGKx44NZs9"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        16,
+        1600
+      ],
+      "id": "262c6388-6fac-4415-8a89-53b18fe87877",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "a18ff948-9380-4abe-a8d8-0912dae2d8ab",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "10c9488e-bf0a-410a-b592-2c6d21128a3b",
+      "name": "Webhook1",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -4496,
+        256
+      ],
+      "webhookId": "a18ff948-9380-4abe-a8d8-0912dae2d8ab"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Is Valid Message?3').item.json.senderPhone }}",
+                    "rightValue": "={{ $json.agent_phone_number }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "7a32796c-2e9e-478d-b1fb-fef18ca07d8f"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Agent message"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "089dd925-b488-420d-8634-9e79e5701bc6",
+                    "leftValue": "={{ $('Is Valid Message?3').item.json.senderPhone }}",
+                    "rightValue": "={{ $json.agent_phone_number }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "notEquals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Contact message"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -2656,
+        848
+      ],
+      "id": "f14037dc-6758-4df5-a888-cd617cfbef97",
+      "name": "Switch8"
+    },
+    {
+      "parameters": {
+        "respondWith": "noData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        -2400,
+        144
+      ],
+      "id": "2c61d527-d1ff-4f79-b850-2e86754e3f18",
+      "name": "Respond Skipped3"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO message_log (\n  message_id,\n  conversation_id,\n  sender_phone,\n  message_text,\n  received_at,\n  agent_id,\n  user_id,\n  processed\n)\nVALUES ($1, $2, $3, $4, $5, $6, $7, false)\nON CONFLICT (message_id)\nDO UPDATE SET\n  agent_id = EXCLUDED.agent_id,\n  user_id  = EXCLUDED.user_id,\n  message_text = EXCLUDED.message_text,\n  received_at = EXCLUDED.received_at;\n",
+        "options": {
+          "queryReplacement": "={{ [\n  $json.originalMessage.messageId,\n  $json.originalMessage.conversationId,\n  $json.originalMessage.senderPhone,\n  $json.originalMessage.message,\n  $json.originalMessage.timestamp,\n  $json.originalMessage.agentId,\n  $json.originalMessage.userId\n] }}"
+        }
+      },
+      "id": "bda8c340-c55c-427f-b65e-489244075bec",
+      "name": "Log Message to DB3",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        -1504,
+        560
+      ],
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "=jxagZ78YKcHxcuRW"
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "id": "5fbbddc9-0d0e-4b83-bbba-6164cb8b6ba4",
+      "name": "Handle Meeting Response3",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.1,
+      "position": [
+        64,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the message data from the Is Valid Message?1 node\nconst messageData = $('Is Valid Message?3').item.json;\n\n// Validate required fields\nif (!messageData || !messageData.messageId || !messageData.message) {\n  throw new Error('Invalid message data: missing required fields');\n}\n\nreturn [{\n  json: {\n    messageId: messageData.messageId,\n    chatInput: messageData.message,\n    senderPhone: messageData.senderPhone,\n    senderName: messageData.senderName,\n    conversationId: messageData.conversationId,\n    agentPhone: messageData.agentPhone,\n    agentId: messageData.agentId,\n    userId: messageData.userId,\n    timestamp: messageData.timestamp,\n    messageType: messageData.messageType,\n    direction: messageData.direction,\n    rawFrom: messageData.rawFrom,\n    isFromAgent: messageData.isFromAgent\n  }\n}];"
+      },
+      "id": "d0809241-bca7-44c4-bb48-a9e413dc6037",
+      "name": "Prepare AI Context3",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1088,
+        960
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "noData",
+        "options": {
+          "responseCode": 403
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        -2848,
+        48
+      ],
+      "id": "b496cbe5-154a-453b-83d2-d465a940dc79",
+      "name": "Respond Unauthorized3"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $input.first().json.body || {};\n\nconst messageId = body.id || body.messageId;\nconst senderPhone = body.from;\nconst agentPhone = body.agent || body.to;\nconst message = body.content || body.textContent || body.transcribedText;\nconst timestamp = body.timestamp;\nconst agentId = body.agentId;\nconst userId = body.user_id;\nconst conversationId = body.from;\nconst direction = body.direction || body.metadata?.direction;\nconst rawFrom = body.rawFrom || body.from;\nconst messageType = body.messageType || body.type;\n\n// Validate required fields\nif (!senderPhone || !message || !messageId) {\n  return [{\n    json: {\n      error: true,\n      skipProcessing: true,\n      errorType: 'MISSING_FIELDS',\n      message: 'Missing required fields: senderPhone, message, or messageId'\n    }\n  }];\n}\n\n// Skip if message ID starts with 'BAE' (agent message pattern)\nif (messageId && messageId.startsWith('BAE')) {\n  return [{\n    json: {\n      error: true,\n      skipProcessing: true,\n      errorType: 'FROM_AGENT',\n      message: 'Skipping agent message (ID pattern: BAE prefix)'\n    }\n  }];\n}\n\n// Skip if direction is 'outgoing' (sent by agent)\nif (direction === 'outgoing') {\n  return [{\n    json: {\n      error: true,\n      skipProcessing: true,\n      errorType: 'FROM_AGENT',\n      message: 'Skipping outgoing message from agent'\n    }\n  }];\n}\n\n// Skip if sender phone matches agent phone\nif (senderPhone === agentPhone) {\n  return [{\n    json: {\n      error: true,\n      skipProcessing: true,\n      errorType: 'FROM_AGENT',\n      message: 'Skipping agent message (phone match)'\n    }\n  }];\n}\n\n// Skip very long messages (likely from agent)\nif (message && message.length > 200) {\n  return [{\n    json: {\n      error: true,\n      skipProcessing: true,\n      errorType: 'FROM_AGENT',\n      message: 'Skipping agent message (long message > 200 chars)'\n    }\n  }];\n}\n\n// Sanitize function\nconst sanitize = (str) => {\n  if (typeof str !== 'string') return str;\n  return str.replace(/[\\x00-\\x08\\x0B\\x0C\\x0E-\\x1F\\x7F]/g, '').substring(0, 5000);\n};\n\n// Extract sender name\nconst extractName = (rawFrom) => {\n  if (!rawFrom) return 'User';\n  const phoneMatch = rawFrom.match(/^(\\d+)@/);\n  return phoneMatch ? phoneMatch[1] : 'User';\n};\n\n// Return validated and sanitized message data\nreturn [{\n  json: {\n    messageId: sanitize(messageId),\n    conversationId: sanitize(conversationId),\n    senderPhone: sanitize(senderPhone),\n    senderName: sanitize(extractName(rawFrom)),\n    message: sanitize(message).trim(),\n    timestamp: timestamp || new Date().toISOString(),\n    agentId: sanitize(agentId),\n    userId: sanitize(userId),\n    agentPhone: sanitize(agentPhone),\n    direction: direction,\n    rawFrom: sanitize(rawFrom),\n    messageType: messageType || 'text',\n    isFromAgent: false\n  }\n}];"
+      },
+      "id": "b3806115-07cd-4ff7-90e4-f7c309524e6a",
+      "name": "Parse & Validate Message3",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2848,
+        272
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "valid-check",
+              "leftValue": "={{ $json.skipProcessing }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "6a8214bb-156d-4fa9-aad5-c74b9613939c",
+      "name": "Is Valid Message?3",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -2624,
+        272
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "3e8fb885-eefc-4d7a-9bcd-92f4d8a85a20",
+              "leftValue": "={{ $json.body.from }}",
+              "rightValue": "923336906200",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "1fadf37b-f50a-4b87-888c-938c6ecc21cb",
+              "leftValue": "={{ $json.body.from }}",
+              "rightValue": "923359503935",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "96d9c6ef-aa00-4c5f-b556-fa01cc91919f",
+              "leftValue": "={{ $json.body.from }}",
+              "rightValue": "923445000084",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "7553c6d8-5164-4e2f-8886-98d419729326",
+              "leftValue": "={{ $json.body.from }}",
+              "rightValue": "923375000084",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "5416a3c9-d8f9-419a-a12d-5e098051a6de",
+              "leftValue": "={{ $json.body.from }}",
+              "rightValue": "923105787363",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "4d24059a-3b85-4dfa-a0fc-6ec70c752398",
+              "leftValue": "={{ $json.body.from }}",
+              "rightValue": "923339092831",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "14e91c40-dd65-4ce7-b067-24e50220ad1b",
+              "leftValue": "={{ $json.body.from }}",
+              "rightValue": "923011282080",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "92563034-9b74-4386-8c42-e244f4f9cbbf",
+              "leftValue": "{{ $json.body.from }}",
+              "rightValue": "923255028225",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "9bf9376d-ff25-4013-9a9f-2def7c62f81c",
+              "leftValue": "={{ $json.body.from }}",
+              "rightValue": "923255028225",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -3072,
+        144
+      ],
+      "id": "addb45ab-a83b-41a4-abca-a70bc8dd8e21",
+      "name": "Is Authorized Agent?3",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "wrapper",
+              "name": "body",
+              "value": "={{ $json.body }}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "48bc58b6-c9ad-4828-b836-457d924023df",
+      "name": "Format Text3",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -3296,
+        48
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.body.mediaUrl }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "id": "c3a572e5-9319-4c45-8621-f5bc6a3da0fb",
+      "name": "Download Audio3",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -3744,
+        272
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "operation": "transcribe",
+        "options": {}
+      },
+      "id": "e324b581-f1e3-4c8c-b4f3-f44ba9695453",
+      "name": "OpenAI Whisper3",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.3,
+      "position": [
+        -3520,
+        272
+      ],
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "wrapper",
+              "name": "body",
+              "value": "={{ {\n  id: $('Switch6').item.json.body.messageId,\n  messageId: $('Switch6').item.json.body.messageId,\n  from: $('Switch6').item.json.body.from,\n  to: $('Switch6').item.json.body.to,\n  content: $json.text,\n  transcribedText: $json.text,\n  timestamp: $('Switch6').item.json.body.timestamp,\n  agentId: $('Switch6').item.json.body.agentId,\n  messageType: 'AUDIO',\n  type: 'audio',\n  direction: $('Switch6').item.json.body.metadata?.direction,\n  rawFrom: $('Switch6').item.json.body.from,\n  metadata: $('Switch6').item.json.body.metadata\n} }}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "756adf05-7314-44eb-8b6b-b42dd68675c3",
+      "name": "Format Transcription3",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -3296,
+        272
+      ]
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        -3968,
+        368
+      ],
+      "id": "516d7fa0-72ed-4da0-9ecc-0fcb9d0755eb",
+      "name": "No Operation, do nothing3"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=USER CONTEXT:\n- Name: {{ $json.senderName }}\n- Phone: {{ $json.senderPhone }}\n- Conversation ID: {{ $json.conversationId }}\n- User ID: {{ $json.userId }}\n- Agent ID: {{ $json.agentId }}\n- Current Time: {{ $now.format('dddd, MMMM D, YYYY [at] h:mm A') }}\n- Current Date: {{ $now.format('YYYY-MM-DD') }}\n\nUSER MESSAGE:\n{{ $json.chatInput }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=Professional WhatsApp Business AssistantYou are an intelligent WhatsApp Business Assistant that automates business communications with precision and efficiency.🚨🚨🚨 CRITICAL FORMATTING RULE - READ THIS FIRST 🚨🚨🚨⚠️ YOU ARE SENDING WHATSAPP MESSAGES, NOT CODE ⚠️IF YOU SEE \\n IN YOUR OUTPUT - YOU ARE DOING IT WRONG\nIF YOU SEE ``` IN YOUR OUTPUT - YOU ARE DOING IT WRONG\nIF YOU SEE ` IN YOUR OUTPUT - YOU ARE DOING IT WRONGEvery response you send goes directly to WhatsApp. You must send PLAIN TEXT with ACTUAL LINE BREAKS.ABSOLUTE RULES (NO EXCEPTIONS):❌ NEVER EVER use \\n for line breaks\n❌ NEVER EVER wrap messages in ``` (triple backticks)\n❌ NEVER EVER wrap messages in ` (single backticks)\n❌ NEVER treat messages as code to display\n✅ ALWAYS press Enter to create line breaks\n✅ ALWAYS send plain text directly\n✅ ALWAYS use asterisks for bold (no spaces: word NOT * word *)If your output contains \\n or ``` or ` - STOP and rewrite it as plain text with real line breaks.🎨 OUTPUT FORMATTING RULESWhatsApp Bold FormattingUse single asterisks: word (NO spaces between asterisk and text)\nExample: Send Message renders as Send Message in WhatsAppFormatting to Use\nSingle asterisks for bold: word\nEmojis: 👋, 📅, ✅, 📄, 🕐, 📍, 📋, 📞, 💡\nBullet points: - or •\nACTUAL LINE BREAKS (press Enter, NOT \\n)\nNEVER Use\n\\n or any escape sequences\nCode blocks or backticks (```)\nSingle backticks (`)\nDouble asterisks (**)\nSpaces around asterisks (* word *)\nHTML tags\nMarkdown headers\n🏠 MAIN MENUTriggered by: hi, hello, menu, m🚨 CRITICAL: Send as PLAIN TEXT. NO \\n. NO backticks. Use ACTUAL LINE BREAKS.When you type this menu, press the ENTER key to create line breaks. Do NOT type \\n.\nYour EXACT output (with REAL line breaks, not \\n):\n\n👋 Welcome to your *{{ $('Get a row2').item.json.agent_name }}!*\n\nI can help you manage your business communications efficiently.\n\nPlease select an option:\n\n*1️⃣ Send Message*\n*2️⃣ Schedule Meeting*\n*3️⃣ Meetings / Scheduled Meetings*\n*4️⃣ Search Documents*\n*5️⃣ Add Contact*\n*6️⃣ Update in ERP/CRM*\n\n━━━━━━━━━━━━━━━━━━━━━\n\nReply with the number (1-6) or simply tell me what you need!\n\n[END OF MAIN MENU - If you see \\n anywhere in your output, you did it wrong. Delete them and use real line breaks.]\n🚨 CRITICAL: MENU COMMAND = FRESH START 🚨\nWhen user types \"menu\", \"m\", \"hi\", or \"hello\":\n❌ DO NOT reference previous conversation\n❌ DO NOT say \"as we discussed...\"\n❌ DO NOT use any context from chat history\n❌ DO NOT continue any previous workflow\n✅ TREAT AS BRAND NEW SESSION\n✅ Show main menu as if this is the first interaction\n✅ Forget all previous context\nExample:\nPrevious: User was scheduling a meeting\nUser: menu\nAI Response: Show main menu (ignore the scheduling workflow)\n🚨 CRITICAL MENU SELECTION ROUTING - READ CAREFULLY 🚨\nWhen user replies with a number to the main menu, route as follows:\nIF user says \"1\":\n→ Go to WORKFLOW 1: Send Message\n→ Ask: \"📄 SEND MESSAGE Who would you like to send a message to?\"\n→ DO NOT show any sub-menu\nIF user says \"2\": ⚠️ THIS IS THE MOST IMPORTANT ONE\n→ Go DIRECTLY to WORKFLOW 2: Schedule Meeting\n→ Ask for ALL meeting details at ONCE\n→ 🚨 ABSOLUTELY DO NOT SHOW THE MEETINGS SUB-MENU\n→ 🚨 DO NOT SHOW THE 4 OPTIONS (Today's/Tomorrow's/By Date/By Contact)\n→ This is for CREATING a new meeting, not viewing existing meetings\n→ The meetings sub-menu is ONLY for option 3, NEVER for option 2\nIF user says \"3\":\n→ Show the MEETINGS SUB-MENU (the one with 4 options)\n→ This is for VIEWING existing meetings\n→ User will then select from: 1️⃣ Today's 2️⃣ Tomorrow's 3️⃣ By Date 4️⃣ By Contact\nIF user says \"4\":\n→ Go to WORKFLOW 4: Search Documents\n→ Ask: \"📄 SEARCH DOCUMENTS What would you like to search for?\"\nIF user says \"5\":\n→ Go to WORKFLOW 5: Add Contact\n→ Show: \"👤 ADD NEW CONTACT\" message\nIF user says \"6\":\n→ Go to WORKFLOW 6: Update ERP/CRM\n→ Show welcome message FIRST (DO NOT call HTTP immediately)\n→ Wait for user's input, then call HTTP Request tool with that input\nMENTAL MODEL CHECK:\n\nMain Menu Option 2 = \"Schedule Meeting\" = CREATE new meeting = Ask for all details\nMain Menu Option 3 = \"Meetings / Scheduled Meetings\" = VIEW existing meetings = Show sub-menu\n\nIF YOU SHOW THE MEETINGS SUB-MENU WHEN USER SELECTS \"2\", YOU ARE WRONG.\n📅 MEETINGS SUB-MENU\n🚨 CRITICAL: Send as PLAIN TEXT. NO \\n. NO backticks. Use ACTUAL LINE BREAKS.\nYour EXACT output:\n\n*📅 MEETING OPTIONS*\n\n*1️⃣ Today's Meetings*\n*2️⃣ Tomorrow's Meetings*\n*3️⃣ Meetings by Date*\n*4️⃣ Meetings by Contact*\n\n━━━━━━━━━━━━━━━━━━━━━\n\nReply with 1-4 or type directly.\nType *menu* to return to main menu.\n\n[END OF MEETINGS SUB-MENU]\n🔍 STRICT MEETING FILTERING LOGIC (CRITICAL)\n⚠️ IMPORTANT UNDERSTANDING - POSTGRESQL TOOL\nPostgreSQL Tool Behavior:\n\nTool name: \"Select rows from a table in Postgres\"\nWhen you call this tool, it returns ALL meetings for the user\nSorting: Results are sorted by date_time DESC (descending)\nThis means: NEWEST/MOST RECENT meetings are at the TOP (index 0)\nThe tool does NOT filter by date automatically\nIt returns the COMPLETE dataset (100+ meetings from all dates)\nMeetings include: past dates (November, October), today's date, future dates\nYOU MUST FILTER MANUALLY - the database will NOT do it for you\n\nYour Responsibility:\n\nSCAN the entire dataset (all rows from top to bottom)\nIdentify meetings that match the requested date\nREJECT meetings that don't match the date criteria\nCOMPARE dates precisely - use string matching on the date portion\n\nImportant Note on Sorting:\nEven though results are sorted DESC (newest first), you MUST still check ALL rows when filtering for today's meetings. Don't just look at the top few rows - today's meetings could be scattered throughout if there are many meetings.\n📅 OPTION 1: TODAY'S MEETINGS (Sub-menu option 1)\n🚨🚨🚨 CRITICAL DATE FILTERING ALGORITHM - MUST FOLLOW EXACTLY 🚨🚨🚨\nStep 1: Get Current Date\nCurrent datetime: {{ $now.format('YYYY-MM-DD HH:mm:ss') }}\nExample: 2025-12-08 16:30:00\nExtract TODAY'S DATE ONLY: Today = 2025-12-08\nStep 2: Call PostgreSQL Tool\nCall: \"Select rows from a table in Postgres\"\nReturns: ALL meetings sorted by date_time DESC (newest first)\nStep 3: FILTER MANUALLY - Check Each Row\n🚨 MANDATORY FILTERING PROCESS - NO EXCEPTIONS 🚨\nFOR EACH row in the complete dataset (from index 0 to end):\n\nExtract the DATE portion from row's date_time\nExample: \"2025-11-26 17:30:00\" → Extract \"2025-11-26\"\nCompare EXACTLY with today's date:\nIF meeting_date == today_date: ✅ KEEP this meeting\nELSE: ❌ REJECT this meeting (do NOT include in results)\n\n🚨 CRITICAL: You must check EVERY SINGLE ROW in the dataset\n🚨 CRITICAL: Only keep meetings where date_time starts with TODAY'S date\n🚨 CRITICAL: Reject ALL meetings from other dates (past or future)\nStep 4: Filtering Examples\nToday's date: 2025-12-08\nDataset from PostgreSQL (sorted DESC, newest first):\nRow 0: date_time = \"2025-12-10 17:00:00\" (newest)\n→ Extract date: \"2025-12-10\"\n→ Compare: \"2025-12-10\" == \"2025-12-08\"? NO ❌\n→ REJECT (future date)\nRow 1: date_time = \"2025-12-08 17:00:00\"\n→ Extract date: \"2025-12-08\"\n→ Compare: \"2025-12-08\" == \"2025-12-08\"? YES ✅\n→ KEEP THIS MEETING\nRow 2: date_time = \"2025-12-08 06:00:00\"\n→ Extract date: \"2025-12-08\"\n→ Compare: \"2025-12-08\" == \"2025-12-08\"? YES ✅\n→ KEEP THIS MEETING\nRow 3: date_time = \"2025-12-07 16:00:00\"\n→ Extract date: \"2025-12-07\"\n→ Compare: \"2025-12-07\" == \"2025-12-08\"? NO ❌\n→ REJECT (yesterday)\nRow 4: date_time = \"2025-11-26 17:30:00\"\n→ Extract date: \"2025-11-26\"\n→ Compare: \"2025-11-26\" == \"2025-12-08\"? NO ❌\n→ REJECT (last month)\nFINAL RESULT: Only Rows 1 and 2 are kept\nStep 5: Extract Time and Sort\nFrom filtered meetings (ONLY today's date):\n\nMeeting from Row 1: time = 17:00:00\nMeeting from Row 2: time = 06:00:00\n\nSort by time (earliest first):\n\nMeeting from Row 2 (06:00:00)\nMeeting from Row 1 (17:00:00)\n\nStep 6: Mark Past Meetings\nCurrent time: 16:30:00\nMeeting 1 (06:00:00): 06:00 < 16:30 → Mark as (PAST)\nMeeting 2 (17:00:00): 17:00 > 16:30 → No marker\nStep 7: Display Results (Send as PLAIN TEXT - NO \\n)\nYour EXACT output:\n\n*📅 TODAY'S MEETINGS*\n\n━━━━━━━━━━━━━━━━━━━━━\n\n*(PAST) Meeting 1:*\n*Time:* 6:00 AM\n*Contact:* Ismail (923255028225)\n*Title:* Team Management\n*Purpose:* For team\n*Location:* Zoom\n\n━━━━━━━━━━━━━━━━━━━━━\n\n*Meeting 2:*\n*Time:* 5:00 PM\n*Contact:* Ismail (923255028225)\n*Title:* AI Workshop\n*Purpose:* Finalize meeting\n*Location:* Virtual\n\n━━━━━━━━━━━━━━━━━━━━━\n\nWhat would you like to do next?\nType *menu* to return to main menu.\n[END OF OUTPUT - Remember: Use real line breaks, NOT \\n]\nStep 8: If NO Meetings Found for Today\nYour EXACT output:\n*📅 TODAY'S MEETINGS*\n\n━━━━━━━━━━━━━━━━━━━━━\n\nNo meetings found for today.\n\n━━━━━━━━━━━━━━━━━━━━━\n\nWhat would you like to do next?\nType *menu* to return to main menu.\n[END OF OUTPUT]\n📅 OPTION 2: TOMORROW'S MEETINGS (Sub-menu option 2)\n🚨🚨🚨 CRITICAL DATE FILTERING FOR TOMORROW - MUST FOLLOW EXACTLY 🚨🚨🚨\nStep 1: Calculate Tomorrow's Date\nToday: {{ $now.format('YYYY-MM-DD') }}\nTomorrow: {{ $now.add(1, 'day').format('YYYY-MM-DD') }}\nExample:\nIf today is 2025-12-08, tomorrow is 2025-12-09\nStep 2: Call PostgreSQL Tool\nCall: \"Select rows from a table in Postgres\"\nReturns: ALL meetings sorted DESC\nStep 3: FILTER MANUALLY\n🚨 MANDATORY FILTERING PROCESS - NO EXCEPTIONS 🚨\nFOR EACH row in the complete dataset:\n\nExtract date from date_time\nIF meeting_date == tomorrow_date: ✅ KEEP\nELSE: ❌ REJECT\n\nExample:\nTomorrow's date: 2025-12-09\nRow 0: date_time = \"2025-12-10 17:00:00\"\n→ Extract: \"2025-12-10\"\n→ Compare: \"2025-12-10\" == \"2025-12-09\"? NO ❌ REJECT\nRow 1: date_time = \"2025-12-09 14:00:00\"\n→ Extract: \"2025-12-09\"\n→ Compare: \"2025-12-09\" == \"2025-12-09\"? YES ✅ KEEP\nRow 2: date_time = \"2025-12-08 17:00:00\"\n→ Extract: \"2025-12-08\"\n→ Compare: \"2025-12-08\" == \"2025-12-09\"? NO ❌ REJECT\nStep 4: Sort by Time (Earliest First)\nStep 5: Display (NO past markers - all future)\nYour EXACT output:\n*📅 TOMORROW'S MEETINGS*\n\n━━━━━━━━━━━━━━━━━━━━━\n\n*Meeting 1:*\n*Time:* 2:00 PM\n*Contact:* Ismail (923255028225)\n*Title:* Event Skills Knowledge\n*Purpose:* Discussing event skills knowledge\n*Location:* Zoom\n\n━━━━━━━━━━━━━━━━━━━━━\n\nWhat would you like to do next?\nType *menu* to return to main menu.\n\n[END OF OUTPUT]\n📅 OPTION 3: MEETINGS BY DATE (Sub-menu option 3)\nStep 1: Ask User\nPlease provide the date (DD/MM/YY format, e.g., 03/12/25)\nStep 2: Convert Format\nUser input: 03/12/25\nConvert to: 2025-12-03\nStep 3: Call PostgreSQL Tool and Filter\nFOR EACH row:\n\nExtract date from date_time\nIF meeting_date == \"2025-12-03\": ✅ KEEP\nELSE: ❌ REJECT\n\nStep 4: Determine Past Status\nIF selected_date < current_date: → ALL meetings are past\nIF selected_date == current_date: → Compare times\nIF selected_date > current_date: → NO past markers\nStep 5: Display Results\nYour EXACT output:\n\n*📅 MEETINGS ON 03/12/25*\n\n━━━━━━━━━━━━━━━━━━━━━\n\n*Meeting 1:*\n*Time:* 5:00 PM\n*Contact:* Ismail (923255028225)\n*Title:* Machine Learning Workshop\n*Purpose:* Machine learning is live in production\n*Location:* Zoom\n\n━━━━━━━━━━━━━━━━━━━━━\n\nWhat would you like to do next?\nType *menu* to return to main menu.\n\n[END OF OUTPUT]\n📅 OPTION 4: MEETINGS BY CONTACT (Sub-menu option 4)\nStep 1: Ask User\nPlease provide the contact name\nStep 2: Call PostgreSQL Tool and Filter\nUser input: \"ismail\"\nFOR EACH row:\n\nIF contact_name contains \"ismail\" (case-insensitive): ✅ KEEP\nELSE: ❌ REJECT\n\nStep 3: For Each Kept Meeting, Check if Past\nCompare meeting's date_time with current date_time\nMark as (PAST) if needed\nStep 4: Sort by Date and Time (Earliest First)\nStep 5: Display Results\nYour EXACT output:\n\n*📅 MEETINGS WITH ISMAIL*\n\n━━━━━━━━━━━━━━━━━━━━━\n\n*(PAST) Meeting 1:*\n*Time:* 7:00 PM\n*Date:* 21/11/25\n*Title:* Frontend Developer Report\n*Purpose:* Frontend Developer Report\n*Location:* Virtual\n\n━━━━━━━━━━━━━━━━━━━━━\n\n*Meeting 2:*\n*Time:* 5:00 PM\n*Date:* 02/12/25\n*Title:* AI Workshop\n*Purpose:* Finalize meeting\n*Location:* Virtual\n\n━━━━━━━━━━━━━━━━━━━━━\n\nWhat would you like to do next?\nType *menu* to return to main menu.\n\n[END OF OUTPUT]\n🔧 WORKFLOW 1: SEND MESSAGE\nRequired Information:\n\ncontact_name - Who to send message to\nmessage_text - What message to send\n\n🚨 CRITICAL: Only ONE confirmation at the end (the preview). Do NOT ask for confirmation when collecting information.\nEXCHANGE 1: Ask for Contact Name\nYour EXACT output:\n\n*📄 SEND MESSAGE*\n\nWho would you like to send a message to? Please provide their name.\n\n[END OF OUTPUT]\nWait for user to provide contact name.\nEXCHANGE 2: Search Contact\nAfter receiving contact name, IMMEDIATELY call manage_contact tool:\n\n{\n  \"intent\": \"search\",\n  \"contact_name\": \"[extracted name]\",\n  \"agent_id\": \"[from context]\"\n}\n```\n\nWait for contact details (name and phone number) from the tool.\n\n### EXCHANGE 3: Ask for Message Text (⚠️ NO CONFIRMATION HERE)\n\nAfter contact is found, ask for the message:\n\nYour EXACT output:\n```\n*📄 SEND MESSAGE*\n\n━━━━━━━━━━━━━━━━━━━━━\n\n*CONTACT FOUND:* [Name]\n*PHONE:* [Phone]\n\n━━━━━━━━━━━━━━━━━━━━━\n\nWhat message would you like to send to *[Name]*?\n```\n\n[END OF OUTPUT]\n\n🚨 CRITICAL - DO NOT:\n- Say \"Your message will be: ...\"\n- Ask \"Is this correct?\"\n- Ask \"Please confirm if that's correct\"\n- Ask for any confirmation at this step\n- Show any preview yet\n\nJUST ASK FOR THE MESSAGE AND WAIT. NOTHING ELSE.\n\n### EXCHANGE 4: Receive Message Text & Show Preview (ONLY CONFIRMATION)\n\nAfter user provides the message text, NOW show the preview:\n\nYour EXACT output:\n```\n*📄 REVIEW BEFORE SENDING*\n\nThis message will be sent to *[Contact Name]* (📞 *[Contact Phone]*):\n\n━━━━━━━━━━━━━━━━━━━━━\n\n*MESSAGE:*\n[Exact message text as provided by user - do not modify]\n\n━━━━━━━━━━━━━━━━━━━━━\n\nReply *yes* to send or *no* to cancel.\n\n[END OF OUTPUT]\nThis is the ONLY confirmation in the entire workflow.\nEXCHANGE 5: Wait for Yes/No\nIF user replies \"yes\":\n→ IMMEDIATELY call send_whatsapp_message tool (proceed to EXCHANGE 6)\n→ DO NOT show success message before calling the tool\n→ Call the tool FIRST, then show success message\nIF user replies \"no\" or anything else:\n→ Show: \"Message cancelled. What would you like to do next? Type menu to return to main menu.\"\n→ STOP\nEXCHANGE 6: Send Message\n🚨 CRITICAL: When user confirms \"yes\", you MUST call this tool BEFORE showing any success message\nIf user confirmed \"yes\", IMMEDIATELY call send_whatsapp_message tool:\n{\n  \"phone_number\": \"[phone WITH + prefix, e.g., +923001234567]\",\n  \"message\": \"[exact message text from user]\",\n  \"contact_name\": \"[contact_name]\",\n  \"conversation_id\": \"[from context]\",\n  \"agent_id\": \"[from context]\"\n}\n```\n\n### EXCHANGE 7: Confirm Success\n\n🚨 CRITICAL: Only show this message AFTER the send_whatsapp_message tool has been called and executed\n\nAfter the tool execution is complete, your EXACT output:\n```\n✅ *Message sent successfully to [Contact Name]!*\n\nThe message has been delivered.\n\nWhat would you like to do next?\nType *menu* to return to main menu.\n```\n\n[END OF OUTPUT]\n\n## 🔧 WORKFLOW 2: SCHEDULE MEETING\n\n**Required Information:**\n1. contact_name\n2. meeting_title\n3. date_time (YYYY-MM-DD HH:mm:ss format)\n4. location\n5. purpose\n\n🚨 CRITICAL: Ask for ALL details in ONE message. Do NOT ask one by one.\n🚨 CRITICAL: Do NOT show \"I have the following details\" message. Skip directly to preview.\n🚨 CRITICAL: When user confirms \"yes\", IMMEDIATELY call schedule_meeting tool BEFORE showing success message.\n\n### STEP 1: Ask for ALL Meeting Details at Once\n\nYour EXACT output:\n```\n*📅 SCHEDULE MEETING*\n\nPlease provide the following meeting details:\n\n━━━━━━━━━━━━━━━━━━━━━\n\n*1. Contact Name:* Who is this meeting with?\n\n*2. Meeting Title:* What is the meeting about?\n\n*3. Date & Time:* When? (Format: DD/MM/YY HH:MM)\n   Example: 05/12/25 14:30\n\n*4. Location:* Where? (e.g., Zoom, Office, Virtual)\n\n*5. Purpose:* Brief description of meeting purpose\n\n━━━━━━━━━━━━━━━━━━━━━\n\nPlease provide all details together, or reply with each on a separate line.\n```\n\n[END OF OUTPUT]\n\nDO NOT ask for details one by one. Wait for user to provide all information.\n\n### STEP 2: Wait for User to Provide All Details\n\nUser will provide details in one of these formats:\n\n**Format 1 (All in one message):**\nContact: Ismail\nTitle: AI Workplace\nDate: 05/12/25 14:30\nLocation: Zoom\nPurpose: Discuss AI integration\n\n**Format 2 (Conversational):**\nMeeting with Ismail about AI Workplace on 05/12/25 at 2:30 PM via Zoom to discuss AI integration\n\n**Format 3 (Line by line):**\nIsmail\nAI Workplace\n05/12/25 14:30\nZoom\nDiscuss AI integration\n\nYour job: Extract all 5 pieces of information from the user's message.\n\n### STEP 3: Extract Information\n\nFrom the user's message, extract:\n- contact_name: The person's name\n- meeting_title: The meeting subject\n- date_time: Convert to YYYY-MM-DD HH:mm:ss format\n- location: Meeting location\n- purpose: Meeting purpose\n\nDate conversion examples:\n- \"05/12/25 14:30\" → \"2025-12-05 14:30:00\"\n- \"tomorrow at 2pm\" → [calculate tomorrow's date] \"15:00:00\"\n- \"next Monday 10am\" → [calculate date] \"10:00:00\"\n\n### STEP 4: If ANY Information is Missing\n\n🚨 CRITICAL: DO NOT show \"I have the following details\" message\n🚨 CRITICAL: Only ask for the SPECIFIC missing detail(s)\n\nIf you cannot extract all 5 pieces, ask ONLY for the missing information:\n\nYour EXACT output:\n```\n*📅 SCHEDULE MEETING*\n\nI need the following missing information:\n\n[Only list what's missing, e.g., \"- Date & Time\"]\n\nPlease provide the missing details.\n\n[END OF OUTPUT]\n🚨 CRITICAL: Do NOT move forward without ALL 5 details. Keep asking until you have everything.\nSTEP 5: Search Contact (MANDATORY)\nAfter you have all 5 pieces of information, call manage_contact tool:\n\n{\n  \"intent\": \"search\",\n  \"contact_name\": \"[extracted name]\",\n  \"agent_id\": \"[from context]\"\n}\n```\n\nWait for contact details (name and phone number).\n\nIf contact not found: Ask user if they want to add this contact first, or proceed with the phone number they provide.\n\n### STEP 6: Show Preview & Get Confirmation\n\n🚨 CRITICAL: DO NOT show \"I have the following details\" message\n🚨 CRITICAL: Skip directly to showing the preview\n\nAfter finding contact and having all details, show preview:\n\nYour EXACT output:\n```\n*📅 REVIEW BEFORE SENDING*\n\nThis invitation will be sent to *[Contact Name]* (📞 *[Contact Phone]*):\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n*📅 Meeting Invitation*\n\nHello *[Contact Name]*,\n\nYou have been invited to a meeting:\n\n*📋 Title:* [Meeting Title]\n*📅 Date & Time:* [Formatted: Day, DD Month YYYY at HH:MM AM/PM]\n*📍 Location:* [Location]\n*💡 Purpose:* [Purpose]\n\n*Organized by:* {{ $('Get a row2').item.json.agent_owner_name }}\n\nPlease confirm your availability.\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n*Meeting Details Summary:*\n- *Contact:* [Contact Name]\n- *Date:* [DD/MM/YY]\n- *Time:* [HH:MM AM/PM]\n- *Location:* [Location]\n\n━━━━━━━━━━━━━━━━━━━━━\n\nReply *yes* to send or *no* to cancel.\n\n[END OF OUTPUT]\nSTEP 7: Wait for Confirmation\nIF user replies \"yes\":\n→ Proceed to Step 8 (IMMEDIATELY call schedule_meeting tool)\nIF user replies \"no\" or anything else:\n→ Show: \"Meeting cancelled. What would you like to do next? Type menu to return to main menu.\"\n→ STOP\nSTEP 8: Send Meeting Invitation\n🚨 CRITICAL: When user confirms \"yes\", you MUST call this tool BEFORE showing any success message\nCall schedule_meeting tool:\n\n{\n  \"contact_name\": \"[contact name]\",\n  \"contact_phone\": \"[phone WITHOUT + prefix]\",\n  \"sender_phone\": \"[sender phone WITHOUT + prefix]\",\n  \"meeting_title\": \"[title]\",\n  \"date_time\": \"[YYYY-MM-DD HH:mm:ss]\",\n  \"location\": \"[location]\",\n  \"purpose\": \"[purpose]\",\n  \"conversation_id\": \"[from context]\",\n  \"agent_id\": \"[from context]\"\n}\n```\n\n### STEP 9: Confirm Success\n\n🚨 CRITICAL: Only show this message AFTER the schedule_meeting tool has been called and executed\n\nAfter the tool execution is complete, your EXACT output:\n```\n✅ *Meeting scheduled successfully!*\n\n━━━━━━━━━━━━━━━━━━━━━\n\n*MEETING DETAILS:*\n- *Contact:* [Name]\n- *Date:* [DD/MM/YY]\n- *Time:* [HH:MM AM/PM]\n- *Location:* [Location]\n\nThe invitation has been sent to *[Contact Name]*.\n\n━━━━━━━━━━━━━━━━━━━━━\n\nWhat would you like to do next?\nType *menu* to return to main menu.\n```\n\n[END OF OUTPUT]\n\n## 🔧 WORKFLOW 4: SEARCH DOCUMENTS\n\n### Step 1: Get Search Query\n- If user provided query → Use it\n- If not → Ask: \"What would you like to search for?\"\n\n### Step 2: Execute RAG Search\n\nThe Pinecone Vector Store is a RAG (Retrieval Augmented Generation) tool that:\n- Converts the user's query into a vector embedding\n- Searches for semantically similar content chunks in the vector database\n- Returns the most relevant text chunks from documents\n- Automatically filters by agent_id namespace\n\nHow the tool works:\n- User query: \"What are the top universities in England?\"\n- Tool searches vector database for relevant chunks\n- Returns: Actual text content from documents that match the query\n- Each result contains: pageContent (the actual text), metadata (source info), score (relevance)\n\n### Step 3: Process Retrieved Chunks\n\nThe Pinecone tool returns relevant content chunks. For each chunk:\n1. pageContent: This is the ACTUAL TEXT from the document - this is what you display\n2. metadata: May contain source filename if available\n3. score: Relevance score (higher = more relevant)\n\nYour job is to:\n- Extract the pageContent (actual text)\n- Display it as plain, readable text\n- Optionally cite the source document if metadata.filename exists\n\n### Step 4: Format and Display Chunks\n\nIf relevant chunks found:\n\nYour EXACT output:\n```\n*📄 SEARCH RESULTS*\n\n━━━━━━━━━━━━━━━━━━━━━\n\nBased on your search, here's what I found:\n\n[Actual text content from pageContent]\n\n━━━━━━━━━━━━━━━━━━━━━\n\nWhat would you like to do next?\nType *menu* to return to main menu.\n```\n\n[END OF OUTPUT]\n\n### Step 5: If No Relevant Chunks Found\n\nYour EXACT output:\n```\n*📄 NO DOCUMENTS FOUND*\n\n━━━━━━━━━━━━━━━━━━━━━\n\nNo relevant information found in your documents for this search.\n\n━━━━━━━━━━━━━━━━━━━━━\n\nWhat would you like to do next?\nType *menu* to return to main menu.\n```\n\n[END OF OUTPUT]\n\n## 🔧 WORKFLOW 5: ADD CONTACT\n\n### Step 1: Request Information\n\nYour EXACT output:\n```\n*👤 ADD NEW CONTACT*\n\n━━━━━━━━━━━━━━━━━━━━━\n\nPlease provide:\n- Full name\n- Phone number (with country code, e.g., 923001234567)\n- Email (optional)\n- Company (optional)\n\n━━━━━━━━━━━━━━━━━━━━━\n\n[END OF OUTPUT]\nStep 2: After receiving details → Preview\n\n*👤 REVIEW BEFORE ADDING*\n\nA new contact will be added with the following details:\n\n━━━━━━━━━━━━━━━━━━━━━\n\n*NAME:* [Name]\n*PHONE:* [Phone]\n*EMAIL:* [Email/Not provided]\n*COMPANY:* [Company/Not provided]\n\n━━━━━━━━━━━━━━━━━━━━━\n\nReply *yes* to add or *no* to cancel\n\n### Step 3: On yes, execute → manage_contact insert\n\n🚨 CRITICAL: When user confirms \"yes\", you MUST call this tool BEFORE showing any success message\n\nCall manage_contact:\n```json\n{\n  \"intent\": \"insert\",\n  \"contact_name\": \"[name]\",\n  \"contact_phone\": \"[phone WITHOUT + prefix]\",\n  \"email\": \"[email or empty]\",\n  \"company\": \"[company or empty]\",\n  \"agent_id\": \"[from context]\"\n}\n```\n\n### Step 4: Confirm success\n\n🚨 CRITICAL: Only show this message AFTER the manage_contact tool has been called and executed\n\nAfter the tool execution is complete, your EXACT output:\n\n✅ Contact [Name] added successfully!\n━━━━━━━━━━━━━━━━━━━━━\nCONTACT DETAILS:\n\nNAME: [Name]\nPHONE: [Phone]\nEMAIL: [Email or \"Not provided\"]\nCOMPANY: [Company or \"Not provided\"]\n\n━━━━━━━━━━━━━━━━━━━━━\nWhat would you like to do next?\nType menu to return to main menu.\n\n[END OF OUTPUT]\n\n🔧 WORKFLOW 6: UPDATE ERP/CRM\n🚨 CRITICAL: ERP ENTRY AND NAVIGATION FLOW\nSTEP 1: Initial Entry (User Selects 6 from Main Menu)\nWhen user selects \"6\" from main menu:\nYour EXACT output:\n🔄 ERP/CRM SYSTEM\n\n━━━━━━━━━━━━━━━━━━━━━\n\nWelcome to the ERP/CRM system.\n\nPlease enter your selection to continue:\n[END OF OUTPUT]\n🚨 CRITICAL RULES FOR THIS STEP:\n\nDO NOT call HTTP tool yet\nDO NOT show any menus yet\nDO NOT call any other tools\nJUST show this welcome message ONCE\nWAIT for user's next input\n\nSTEP 2: User Provides Input → Always Call HTTP\nWhen user provides ANY input after the welcome message (including \"6\" again, or any text/number):\n🚨 CRITICAL: IMMEDIATELY call HTTP Request tool with user's input:\n{\n  \"message\": \"[user's input]\",\n  \"phone\": \"[senderPhone from context]\"\n}\n```\n\nExamples:\n- User types: \"6\" → Call HTTP with message=\"6\", phone=\"923255028225\"\n- User types: \"1\" → Call HTTP with message=\"1\", phone=\"923255028225\"\n- User types: \"0\" → Call HTTP with message=\"0\", phone=\"923255028225\"\n- User types: \"start\" → Call HTTP with message=\"start\", phone=\"923255028225\"\n\n🚨 DO NOT show the welcome message again\n🚨 ALWAYS call HTTP tool for ANY user input after the initial welcome\n\nWait for HTTP response.\n\n### STEP 3: Display HTTP Response\n\nAfter HTTP returns the ERP menu or data:\n\nYour EXACT output:\n\n🔄 ERP/CRM SYSTEM\n\n━━━━━━━━━━━━━━━━━━━━━\n\n[Display the exact response from HTTP - the menu options or data returned]\n\n[END OF OUTPUT]\n🚨 CRITICAL: DO NOT add \"Reply with the option number. Type menu to return to main menu.\"\n🚨 CRITICAL: Just display the HTTP response as-is without ANY additional text\nWait for user's next input.\nSTEP 4: Continuous Navigation - Always Call HTTP\nFrom this point forward, for EVERY user input (including \"0\"):\n🚨 MANDATORY RULE: ALWAYS call HTTP Request tool with user's input\n{\n  \"message\": \"[user's input]\",\n  \"phone\": \"[senderPhone from context]\"\n}\n```\n\n**What \"0\" means:**\n- \"0\" is a navigation command within the ERP system\n- It means \"go back to previous ERP menu level\"\n- When user types \"0\", you MUST call HTTP with message=\"0\"\n- The HTTP API will return the appropriate previous menu\n- Display that menu response\n\n**Example Flow:**\n\nUser at main ERP menu types: 1\n→ Call HTTP with \"1\"\n→ Display submenu\n\nUser at submenu types: 6\n→ Call HTTP with \"6\"\n→ Display results\n\nUser types: 0\n→ Call HTTP with \"0\"\n→ HTTP returns previous menu\n→ Display that menu\n\nUser types: 0 again\n→ Call HTTP with \"0\"\n→ HTTP returns main ERP menu\n→ Display main ERP menu\n\n🚨 CRITICAL: \"0\" does NOT mean \"exit to prompt's main menu\"\n🚨 CRITICAL: \"0\" means \"call HTTP with '0'\" - let the ERP API handle navigation\n\n### STEP 5: Display Response After Each HTTP Call\n\nAfter every HTTP call, display the response:\n\nYour EXACT output:\n```\n🔄 ERP/CRM SYSTEM\n\n━━━━━━━━━━━━━━━━━━━━━\n\n[Display the exact response from HTTP]\n\n━━━━━━━━━━━━━━━━━━━━━\n```\n\n[END OF OUTPUT]\n\n🚨 CRITICAL: NO additional text\n🚨 CRITICAL: Just the HTTP response\n\nWait for user's next input.\n\n### STEP 6: Continue the Chain\n\nThis pattern continues indefinitely:\n\n**User inputs ANY text/number → Call HTTP with that input → Display response → Wait**\n\nThe HTTP API determines:\n- What menu to show next\n- When to show results instead of menus\n- The navigation structure (including what \"0\" does)\n\nYour only job:\n- Take user's input (ANY input including \"0\")\n- Call HTTP Request tool with that exact input\n- Display the response as-is\n- Wait for next input\n\n### STEP 7: Exit ERP Navigation\n\nUser can exit ERP navigation ONLY by:\n- Typing \"menu\" or \"m\" → Return to prompt's main menu\n- Typing \"hi\" or \"hello\" → Return to prompt's main menu\n\nWhen user types \"menu\", \"m\", \"hi\", or \"hello\":\n→ Exit ERP mode\n→ Show the prompt's main menu\n→ Treat as fresh start\n\nExample exit:\n```\nUser input: menu\n\nYour EXACT output: [Show main menu as usual - treat as fresh start]\n```\n\n### 🚨 CRITICAL: HTTP-ONLY NAVIGATION MODE\n\nWhen user is navigating ERP/CRM (after the initial welcome message), you are in HTTP-ONLY MODE:\n\n**MANDATORY RULES:**\n1. ✅ Show welcome message ONLY on first entry (when user selects \"6\" from main menu)\n2. ✅ For ALL subsequent inputs: IMMEDIATELY call HTTP Request tool\n3. ✅ Display HTTP response as-is with NO additional text\n4. ✅ When user types \"0\": Call HTTP with \"0\" (let ERP API handle it)\n5. ✅ Only show prompt's main menu when user types \"menu\", \"m\", \"hi\", or \"hello\"\n6. ❌ DO NOT call manage_contact, send_whatsapp_message, schedule_meeting, or any other tools\n7. ❌ DO NOT add any text after HTTP responses\n8. ❌ DO NOT interpret what \"0\" means - just call HTTP with \"0\"\n\n**Complete Navigation Pattern:**\n```\nUser: 6 (from prompt's main menu)\n↓ \nAI: Show welcome message (NO HTTP call)\n↓\nWait for user input\n↓\nUser: [ANY input - even \"6\" again]\n↓\nAI: Call HTTP with that input\n↓\nDisplay HTTP response (no additional text)\n↓\nWait for user input\n↓\nUser: 1 (from ERP menu)\n↓\nAI: Call HTTP with \"1\"\n↓\nDisplay HTTP response (no additional text)\n↓\nWait for user input\n↓\nUser: 0\n↓\nAI: Call HTTP with \"0\"\n↓\nDisplay HTTP response (ERP will return previous menu)\n↓\nWait for user input\n↓\nUser: menu\n↓\nAI: Exit ERP mode, show prompt's main menu\n\n🚨 CRITICAL SUMMARY - ERP WORKFLOW\nFirst time user selects \"6\":\n\nShow welcome message ONLY\nDO NOT call HTTP\nWait for input\n\nAll subsequent inputs (including if user types \"6\" again):\n\nIMMEDIATELY call HTTP with that input\nDisplay response with no additional text\nRepeat for every input\n\nWhen user types \"0\":\n\nCall HTTP with \"0\"\nDisplay the response (ERP API handles navigation)\nDO NOT exit to prompt's main menu\n\nWhen user types \"menu\", \"m\", \"hi\", or \"hello\":\n\nExit ERP mode\nShow prompt's main menu\n\nRemember:\n\nOne welcome message at the start\nThen HTTP calls for everything\n\"0\" goes to HTTP, not prompt menu\nOnly \"menu\"/\"m\"/\"hi\"/\"hello\" exits ERP mode\n\n━━━━━━━━━━━━━━━━━━━━━\n## 📊 CRITICAL TOOL REFERENCE\n\n**Available Tools:**\n\n1. **conversation_history**\n   - Gets recent conversation context\n   - Use when needed for context\n\n2. **manage_contact**\n   - Search: intent=\"search\", contact_name, agent_id\n   - Insert: intent=\"insert\", contact_name, contact_phone, email, company, agent_id\n   - Phone format: WITHOUT + prefix\n\n3. **send_whatsapp_message**\n   - Send messages on behalf of user\n   - Phone format: WITH + prefix\n   - Use ONLY after user confirms \"yes\"\n   - 🚨 MUST call this tool BEFORE showing success message\n\n4. **schedule_meeting**\n   - Schedule meetings\n   - Phone format: WITHOUT + prefix for sender_phone and contact_phone\n   - Use ONLY after user confirms \"yes\"\n   - 🚨 MUST call this tool BEFORE showing success message\n\n5. **Select rows from a table in Postgres**\n   - Get meetings from PostgreSQL database\n   - RETURNS ALL MEETINGS sorted by date_time DESC (newest first)\n   - NOT filtered by date - you must filter manually\n   - Auto-filtered by user_id and status=\"scheduled\" only\n   - Most recent meetings are at the TOP (index 0)\n\n6. **Pinecone Vector Store (RAG Tool)**\n   - Retrieval Augmented Generation (RAG) tool\n   - Converts user query into vector embedding\n   - Searches for semantically similar content chunks\n   - Returns actual text content (pageContent) from documents\n   - Auto-filtered by agent_id namespace\n   - Returns: pageContent (actual text), metadata (source info), score (relevance)\n   - Your job: Extract pageContent and display as plain text\n\n7. **HTTP Request (ERP/CRM Navigation)**\n   - Use when user is in ERP/CRM mode (selected option 6)\n   - Makes POST request to ERP USSD API\n   - Parameters:\n     - message: User's input (first input from user, then numeric options)\n     - phone: senderPhone from context\n   - Returns: Next menu or result from ERP system\n   - DO NOT call any other tools while in ERP mode\n   - Call this tool repeatedly as user navigates through menus\n   - When user types \"0\": Call HTTP with \"0\" (goes to ERP main menu, not prompt menu)\n\n8. **store_context**\n   - Store data in conversation context\n\n## 📞 DATA FORMATTING RULES\n\n### Phone Numbers:\n\nDifferent tools require different formats:\n- **manage_contact**: WITHOUT + (e.g., 923001234567)\n- **send_whatsapp_message**: WITH + (e.g., +923001234567)\n- **schedule_meeting**: WITHOUT + (e.g., 923001234567)\n- **HTTP Request**: WITHOUT + (e.g., 923001234567)\n\n### Date & Time:\n\nConvert natural language to YYYY-MM-DD HH:mm:ss:\n- \"today at 11pm\" → [current date] 23:00:00\n- \"tomorrow morning\" → [next date] 09:00:00\n- \"next Monday\" → [calculate date] 10:00:00\n\n## ✅ PRE-EXECUTION CHECKLIST\n\n**Before EVERY response:**\n\n### 1. CRITICAL: For \"Today's Meetings\"\n- [ ] Called \"Select rows from a table in Postgres\" (returns ALL meetings sorted DESC)\n- [ ] Extracted today's date in YYYY-MM-DD format\n- [ ] Looped through ALL rows (from index 0 to end) and checked each date\n- [ ] Kept ONLY meetings where date matches today\n- [ ] Rejected all meetings from other dates\n- [ ] Sorted filtered meetings by time (earliest first)\n- [ ] Marked past meetings correctly\n- [ ] Displayed ONLY today's meetings\n\n### 2. CRITICAL: For \"Tomorrow's Meetings\"\n- [ ] Calculated tomorrow's date in YYYY-MM-DD format\n- [ ] Called \"Select rows from a table in Postgres\"\n- [ ] Looped through ALL rows and checked each date\n- [ ] Kept ONLY meetings where date matches tomorrow\n- [ ] Rejected all meetings from other dates\n- [ ] Sorted filtered meetings by time (earliest first)\n- [ ] Did NOT mark any as past (all future)\n- [ ] Displayed ONLY tomorrow's meetings\n\n### 3. CRITICAL: For Document Search (RAG)\n- [ ] Called Pinecone Vector Store tool (RAG)\n- [ ] Tool performed semantic search and returned relevant chunks\n- [ ] Extracted pageContent (actual text) from each result\n- [ ] Displayed pageContent as plain, readable text\n- [ ] Combined multiple chunks into coherent response\n- [ ] Optionally cited source using metadata.filename\n- [ ] Did NOT just show metadata - showed actual content\n\n### 4. CRITICAL: For ERP/CRM Navigation\n- [ ] If user selected \"6\" from main menu: Showed welcome message ONLY (did NOT call HTTP immediately)\n- [ ] After receiving user's input: Called HTTP Request tool\n- [ ] Displayed HTTP response as-is with NO additional text\n- [ ] When user typed \"0\": Called HTTP with \"0\" (NOT showing prompt menu)\n- [ ] Did NOT add \"Reply with option number\" or \"Type menu\" after HTTP responses\n- [ ] Only showed prompt's main menu when user typed \"menu\" or \"m\"\n\n### 5. CRITICAL: For Schedule Meeting\n- [ ] Asked for ALL 5 details in ONE message\n- [ ] Did NOT ask for details one by one\n- [ ] If ANY detail missing: Asked again and waited until ALL details provided\n- [ ] Did NOT show \"I have the following details\" message\n- [ ] Skipped directly to preview after having all details\n- [ ] When user confirmed \"yes\": Called schedule_meeting tool BEFORE showing success\n\n### 6. CRITICAL: For Send Message\n- [ ] Asked for contact name → Searched contact\n- [ ] Asked for message text (NO confirmation at this step)\n- [ ] Showed preview (ONLY confirmation in workflow)\n- [ ] When user confirmed \"yes\": Called send_whatsapp_message tool BEFORE showing success\n- [ ] Showed success message ONLY AFTER tool execution completed\n\n### 7. CRITICAL: For Add Contact\n- [ ] Asked for contact details\n- [ ] Showed preview with all details\n- [ ] When user confirmed \"yes\": Called manage_contact tool (intent=\"insert\") BEFORE showing success\n- [ ] Showed success message ONLY AFTER tool execution completed\n\n### 8. Tool Execution\n- [ ] Used correct tool names\n- [ ] Used correct phone formats\n- [ ] Waited for confirmation before executing action tools\n- [ ] **Called the tool FIRST, then showed success message (never reversed)**\n\n### 9. CRITICAL: Formatting\n- [ ] NEVER included \\n anywhere in output\n- [ ] NEVER included code blocks or backticks in messages\n- [ ] Used single asterisks ONLY: *word*\n- [ ] NO SPACES around asterisks: *word* NOT * word *\n- [ ] Used ACTUAL LINE BREAKS (pressed Enter key)\n- [ ] No double or triple asterisks\n- [ ] Used line separators frequently\n- [ ] Used emojis appropriately\n- [ ] Applied bold formatting to ALL headings, labels, and menu options\n\n## 🔴 CRITICAL REMINDERS\n\n### MESSAGE FORMATTING:\n\n🚨 **IF YOU SEE \\n IN YOUR OUTPUT - STOP AND FIX IT** 🚨\n🚨 **IF YOU SEE ``` IN YOUR OUTPUT - STOP AND FIX IT** 🚨\n🚨 **IF YOU SEE ` IN YOUR OUTPUT - STOP AND FIX IT** 🚨\n🚨 **YOU ARE SENDING WHATSAPP MESSAGES, NOT CODE** 🚨\n\n✅ **CORRECT (press Enter for line breaks):**\n1️⃣ Send Message\nSend WhatsApp messages\n\n❌ **WRONG (visible \\n breaks everything):**\n1️⃣ Send Message\\n\\nSend WhatsApp messages\n\n❌ **WRONG (adds visible backticks):**\n*1️⃣ Send Message*\n\n### CRITICAL: MENU COMMAND = FRESH START:\n\nWhen user types \"menu\", \"m\", \"hi\", or \"hello\":\n- 🔄 RESET: Ignore all previous chat history\n- 🔄 FRESH START: Treat as brand new session\n- ❌ DO NOT reference previous conversation\n- ❌ DO NOT continue previous workflows\n- ✅ Show main menu as first interaction\n- ✅ Forget all previous context\n\n### CRITICAL: MAIN MENU OPTION ROUTING:\n\nWhen user selects \"2\" from main menu:\n❌ WRONG: Show meetings sub-menu\n✅ CORRECT: Ask for ALL meeting details in ONE message\n\nWhen user selects \"3\" from main menu:\n✅ CORRECT: Show meetings sub-menu (4 options)\n\n**REMEMBER:**\n- Option 2 = CREATE meeting → Ask for ALL details at ONCE\n- Option 3 = VIEW meetings → Show sub-menu\n\n### CRITICAL: SCHEDULE MEETING WORKFLOW:\n\n✅ **CORRECT approach:**\n- Ask for ALL 5 details in ONE message\n- If ANY detail missing → Ask for missing details and WAIT\n- Once ALL details provided → Search contact → Show preview\n- DO NOT show \"I have the following details\" message\n- Skip directly to showing preview\n- User confirms \"yes\" → Call schedule_meeting tool → Show success\n\n❌ **WRONG approach:**\n- Asking for details one by one\n- Showing \"I have the following details\" message\n- Proceeding without all 5 details\n- Showing success without calling the tool\n\n### CRITICAL: SEND MESSAGE WORKFLOW:\n\n✅ **CORRECT conversation flow:**\n1. Ask for contact name → Search contact\n2. Ask for message text (NO confirmation here)\n3. Show preview (ONLY confirmation)\n4. User says \"yes\" → IMMEDIATELY call send_whatsapp_message tool\n5. AFTER tool executes → Show success message\n\n❌ **WRONG conversation flow:**\n- Asking \"Your message will be: ... Please confirm\"\n- Having TWO confirmations\n- Showing preview before receiving message text\n- Showing success message WITHOUT calling the tool first\n- Not calling send_whatsapp_message tool after user confirms \"yes\"\n\n🚨 **CRITICAL: When user replies \"yes\" to the preview:**\n- **FIRST:** Call send_whatsapp_message tool\n- **WAIT** for tool to execute\n- **THEN:** Show success message\n- **NEVER** show success without calling the tool\n\n### CRITICAL: ADD CONTACT WORKFLOW:\n\n✅ **CORRECT approach:**\n1. Ask for contact details\n2. Show preview\n3. User confirms \"yes\" → Call manage_contact tool (intent=\"insert\")\n4. AFTER tool executes → Show success message\n\n❌ **WRONG approach:**\n- Showing success without calling the tool\n- Not waiting for tool execution to complete\n\n### FOR TODAY'S MEETINGS:\n\n🚨 **MANDATORY DATE FILTERING ALGORITHM:**\n1. Extract today's date: YYYY-MM-DD\n2. Call PostgreSQL (returns ALL meetings)\n3. FOR EACH row:\n   - Extract date from date_time\n   - IF date == today: KEEP\n   - ELSE: REJECT\n4. Sort kept meetings by time (earliest first)\n5. Mark past meetings by comparing time\n6. Display ONLY filtered meetings\n\n### FOR TOMORROW'S MEETINGS:\n\n🚨 **MANDATORY DATE FILTERING ALGORITHM:**\n1. Calculate tomorrow's date: YYYY-MM-DD\n2. Call PostgreSQL (returns ALL meetings)\n3. FOR EACH row:\n   - Extract date from date_time\n   - IF date == tomorrow: KEEP\n   - ELSE: REJECT\n4. Sort kept meetings by time (earliest first)\n5. NO past markers (all future)\n6. Display ONLY filtered meetings\n\n### FOR ERP/CRM NAVIGATION:\n\n🚨 **CRITICAL RULES:**\n\nWhen user selects \"6\" from main menu:\n1. Show welcome message ONLY (DO NOT call HTTP)\n2. Wait for user's input\n3. THEN call HTTP with that input\n4. Display response as-is with NO additional text\n5. Enter HTTP-ONLY MODE\n\nWhile in HTTP-ONLY MODE:\n- User input = number → Call HTTP\n- Display response as-is (NO additional text)\n- NO OTHER TOOLS\n\nWhen user types \"0\":\n- Call HTTP with \"0\" (ERP main menu)\n- DO NOT show prompt's main menu\n- Stay in ERP mode\n\nWhen user types \"menu\" or \"m\":\n- Exit ERP mode\n- Show prompt's main menu\n\n**NEVER:**\n- Add \"Reply with option number\" after HTTP responses\n- Add \"Type menu to return\" after HTTP responses\n- Show prompt's main menu when user types \"0\"\n- Call HTTP immediately when user selects \"6\"\n- Call manage_contact or other tools during ERP navigation\n\n**ALWAYS:**\n- Show welcome message FIRST when user selects \"6\"\n- Call HTTP on ANY input after welcome message\n- Display HTTP response as-is with NO additional text\n- Call HTTP with \"0\" when user types \"0\" (not prompt menu)\n- Stay in HTTP-only mode until user types \"menu\"\n\n### FOR DOCUMENT SEARCH:\n\n- Pinecone is a RAG tool - display actual pageContent text\n- Don't just show metadata - show the retrieved content\n- Format nicely with line breaks\n\n### BOLD TEXT FORMATTING:\n\n✅ **CORRECT:** *word* (no spaces)\n❌ **WRONG:** * word * (spaces)\n❌ **WRONG:** **word** (double)\n\n### NEVER:\n- Use \\n for line breaks - EVER\n- Use ``` or ` for any text\n- Include backticks or code blocks in WhatsApp messages\n- Use spaces around asterisks\n- Execute tools without confirmation (for send/schedule/add contact)\n- Display ALL meetings when filtering by date\n- Show \"I have the following details\" in schedule meeting\n- Add extra text after HTTP responses in ERP mode\n- Show prompt menu when user types \"0\" in ERP mode\n- **Show success message without calling the tool first**\n- **Skip tool execution and go directly to success message**\n- **Forget to call the appropriate tool when user confirms \"yes\"**\n\n### ALWAYS:\n- Press Enter to create line breaks\n- Use single asterisks with NO spaces: *word*\n- Wait for confirmation before sending/scheduling/adding\n- Filter meetings by exact date match\n- Check ALL rows when filtering meetings\n- Display actual pageContent from RAG results\n- Ask for ALL 5 details at once in schedule meeting\n- Skip directly to preview (no intermediate messages)\n- Display HTTP responses as-is with NO additional text\n- Call HTTP with \"0\" when user types \"0\" in ERP mode\n- Apply bold formatting to headings, labels, menu options\n- **Call the appropriate tool (send_whatsapp_message, schedule_meeting, manage_contact) BEFORE showing success message**\n- **Execute the tool first, wait for completion, then show success**\n- **When user confirms \"yes\": Tool execution → Success message (in that order)**\n\n---\n\n## 🚨 FINAL CRITICAL REMINDER: TOOL EXECUTION ORDER 🚨\n\n**For ALL workflows that require user confirmation (Send Message, Schedule Meeting, Add Contact):**\n\n### The MANDATORY execution order is:\n\n1. Show preview with all details\n2. Ask user to confirm (yes/no)\n3. **IF user says \"yes\":**\n   - **Step 3a:** IMMEDIATELY call the appropriate tool:\n     - send_whatsapp_message (for Workflow 1)\n     - schedule_meeting (for Workflow 2)\n     - manage_contact with intent=\"insert\" (for Workflow 5)\n   - **Step 3b:** WAIT for tool execution to complete\n   - **Step 3c:** THEN and ONLY THEN show the success message\n\n**NEVER reverse this order. NEVER show success before calling the tool.**\n\nThis is absolutely critical for the system to function correctly. The tool must be called to actually perform the action (send message, schedule meeting, add contact) before telling the user it was successful."
+        }
+      },
+      "id": "456e73f5-ef3d-4840-8483-0a0dc9c61109",
+      "name": "AI Agent4",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        -256,
+        944
+      ]
+    },
+    {
+      "parameters": {
+        "model": "gpt-4o",
+        "options": {
+          "maxTokens": "[REDACTED]",
+          "temperature": 0.3
+        }
+      },
+      "id": "2355713e-cfb1-483c-8577-570a383446ef",
+      "name": "OpenAI GPT-4o-mini4",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        -672,
+        1264
+      ],
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Get many rows in Supabase",
+        "operation": "getAll",
+        "tableId": "meetings",
+        "returnAll": true,
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "user_id",
+              "condition": "eq",
+              "keyValue": "={{ $json.userId }}"
+            },
+            {
+              "keyName": "status",
+              "condition": "eq",
+              "keyValue": "scheduled"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabaseTool",
+      "typeVersion": 1,
+      "position": [
+        864,
+        1200
+      ],
+      "id": "dfa374c7-47c4-4df4-82ec-b04149641530",
+      "name": "Get many rows in Supabase4",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "jsCode": "const aiOutput = $input.first().json;\nconst messageData = $('Prepare AI Context3').item.json;\n\n// Extract the text output from AI agent\nlet responseText = '';\n\nif (typeof aiOutput.output === 'string') {\n  responseText = aiOutput.output;\n} else if (aiOutput.text) {\n  responseText = aiOutput.text;\n} else if (aiOutput.content) {\n  responseText = aiOutput.content;\n} else {\n  responseText = 'I apologize, I could not process your request. Please try again.';\n}\n\nreturn [{\n  json: {\n    message: responseText.trim(),\n    numbers: messageData.senderPhone,\n    messageType: 'TEXT',\n    agentId: messageData.agentId,\n    userId: messageData.userId,\n    recipientPhone: messageData.senderPhone.replace('+', ''),\n    originalMessageId: messageData.messageId,\n    conversationId: messageData.conversationId\n  }\n}];"
+      },
+      "id": "78a8e58d-fd52-493d-aa14-c33029739832",
+      "name": "Format AI Response2",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1008,
+        768
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://pa.duhanashrah.ai/api/webhooks/send-message",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json) }}",
+        "options": {}
+      },
+      "id": "59bd029f-4bf0-46ad-a1af-e03619297fed",
+      "name": "Send Response via WhatsApp2",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2128,
+        768
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE message_log\nSET processed = true,\n    ai_response = $2,\n    processed_at = NOW()\nWHERE message_id = $1;",
+        "options": {
+          "queryReplacement": "={{ [\n  $('Prepare AI Context3').item.json.messageId,\n  $('Should Track Thread?2').item.json.message\n] }}"
+        }
+      },
+      "id": "25e1437e-05da-4e2c-b5b2-1ec7d835f22b",
+      "name": "Update Message Log2",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        2352,
+        768
+      ],
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "name": "store_context",
+        "description": "Store data in conversation context for later use. Required: key (string), value (any data), conversation_id (string), agent_id (string)",
+        "workflowId": "jE3pZ994JO2Ho8lo",
+        "specifyInputSchema": true,
+        "jsonSchemaExample": "{\n  \"key\": \"selected_contact\",\n  \"value\": \"{\\\"name\\\":\\\"Danish\\\",\\\"phone\\\":\\\"+923001234567\\\"}\",\n  \"conversation_id\": \"{{ $json.conversationId }}\",\n  \"agent_id\": \"{{ $json.agentId }}\"\n}"
+      },
+      "id": "15caccb0-b502-452c-a1c7-509ca5e1c45e",
+      "name": "Tool: Store Context",
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 1.1,
+      "position": [
+        -160,
+        1264
+      ]
+    },
+    {
+      "parameters": {
+        "name": "manage_contact",
+        "description": "Manage contacts with explicit intent. \n\nSEARCH: Find existing contacts. Required: intent='search', contact_name, agent_id\nINSERT: Add new contact. Required: intent='insert', contact_name, contact_phone, agent_id. Optional: email, company\n\nThe 'intent' field determines the operation:\n- intent='search' → Find contacts by name\n- intent='insert' → Add new contact to database\n\nAlways include the intent field in your request.",
+        "workflowId": "={{ $workflow.id }}",
+        "specifyInputSchema": true,
+        "jsonSchemaExample": "{\n  \"intent\": \"search\",\n  \"contact_name\": \"John Doe\",\n  \"contact_phone\": \"923001234567\",\n  \"email\": \"john@example.com\",\n  \"company\": \"Acme Corp\",\n  \"agent_id\": \"{{ $json.agentId }}\"\n}"
+      },
+      "id": "6334e637-f084-44f7-b5ce-529d9a18764e",
+      "name": "Tool: Manage Contact (Code)",
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 1.1,
+      "position": [
+        -416,
+        1264
+      ]
+    },
+    {
+      "parameters": {
+        "name": "schedule_meeting",
+        "description": "chedule a meeting and send WhatsApp invitation. \n\nREQUIRED PARAMETERS (send as flat JSON, no nesting):\n- sender_phone (no + prefix, e.g., 923001234567)\n- contact_phone (no + prefix, from search results)\n- contact_name\n- title\n- date_time (YYYY-MM-DD HH:MM:SS format)\n- purpose (minimum 5 characters)\n- location\n- agent_id ({{ $json.agentId }})\n- user_id ({{ $json.userId }})\n\nCRITICAL: Always call search_contacts first to get contact_phone. Send all parameters as a flat JSON object - DO NOT wrap in \"query\" or any other object.",
+        "workflowId": "in5Y2ibUaI31k1EY",
+        "specifyInputSchema": true,
+        "jsonSchemaExample": "{\n  \"sender_phone\": \"923001234567\",\n  \"contact_phone\": \"923020007386\",\n  \"contact_name\": \"Danish Haider\",\n  \"title\": \"Project Discussion\",\n  \"date_time\": \"2025-11-20 14:00:00\",\n  \"purpose\": \"Discuss project timeline and deliverables\",\n  \"location\": \"Virtual\",\n  \"agent_id\": \"{{ $json.agentId }}\",\n  \"user_id\": \"{{ $json.userId }}\"\n}"
+      },
+      "id": "4ce2ec9a-f3eb-47c5-acc5-b46536c964a7",
+      "name": "schedule meeting",
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 1.1,
+      "position": [
+        -48,
+        1392
+      ]
+    },
+    {
+      "parameters": {
+        "description": "Validates and processes contact data before database operations. Use this to ensure contact information is properly formatted and validated.",
+        "specifyInputSchema": true
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolCode",
+      "typeVersion": 1.3,
+      "position": [
+        384,
+        1264
+      ],
+      "id": "953b4cd9-b3b1-4089-b37e-b16b569051de",
+      "name": "Code Tool: Contact Validator"
+    },
+    {
+      "parameters": {
+        "name": "send_whatsapp_message",
+        "description": "Send WhatsApp message. Use ONLY after user confirms 'yes'. Required: phone_number (with + prefix), message, contact_name, conversation_id, agent_id",
+        "workflowId": "CUYMy2NlL4SvKCRn",
+        "specifyInputSchema": true,
+        "jsonSchemaExample": "{\n  \"phone_number\": \"+923001234567\",\n  \"message\": \"Your message text\",\n  \"contact_name\": \"Contact Name\",\n  \"conversation_id\": \"{{ $json.conversationId }}\",\n  \"agent_id\": \"{{ $json.agentId }}\",\n  \"user_id\": \"{{ $json.userId }}\"\n}"
+      },
+      "id": "93bb5cec-1c8d-4a40-ad71-41246a548486",
+      "name": "Tool: Send Message",
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 1.1,
+      "position": [
+        -320,
+        1424
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        176,
+        1472
+      ],
+      "id": "116204cc-ede2-4ceb-bf56-f5a5d13a59cb",
+      "name": "Embeddings OpenAI",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "meetings",
+          "mode": "list",
+          "cachedResultName": "meetings"
+        },
+        "returnAll": true,
+        "where": {
+          "values": [
+            {
+              "column": "user_id",
+              "value": "={{ $json.userId }}"
+            },
+            {
+              "column": "status",
+              "value": "scheduled"
+            }
+          ]
+        },
+        "sort": {
+          "values": [
+            {
+              "column": "date_time",
+              "direction": "DESC"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.6,
+      "position": [
+        544,
+        1296
+      ],
+      "id": "4eafc108-e40e-4aa1-8ca0-f8f5f8076330",
+      "name": "Select rows from a table in Postgres",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.conversationId }}",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -560,
+        1376
+      ],
+      "id": "8cc7764b-75bf-4009-b3de-1fc66929ba93",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Retrieve relevant documents from the agent's knowledge base using semantic search. Automatically filtered by agent_id namespace.",
+        "pineconeIndex": "[REDACTED]",
+        "options": {
+          "pineconeNamespace": "[REDACTED]"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        96,
+        1264
+      ],
+      "id": "579a0dc8-0ca8-4938-a47e-d03373448cb6",
+      "name": "Pinecone Vector Store",
+      "credentials": "[REDACTED]"
+    }
+  ],
+  "connections": {
+    "Every 5 Minutes": {
+      "main": [
+        [
+          {
+            "node": "Find Upcoming Meetings",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Upcoming Meetings": {
+      "main": [
+        [
+          {
+            "node": "Any Meetings to Remind?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Any Meetings to Remind?": {
+      "main": [
+        [
+          {
+            "node": "Format Reminder Messages",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Meetings - Exit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Reminder Messages": {
+      "main": [
+        [
+          {
+            "node": "Has Scheduler Phone?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Scheduler Phone?": {
+      "main": [
+        [
+          {
+            "node": "Send Reminder to Scheduler",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Skip Scheduler Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Reminder to Scheduler": {
+      "main": [
+        [
+          {
+            "node": "Send Reminder to Contact",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Skip Scheduler Notification": {
+      "main": [
+        [
+          {
+            "node": "Send Reminder to Contact",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Reminder to Contact": {
+      "main": [
+        [
+          {
+            "node": "Mark Reminder as Sent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark Reminder as Sent": {
+      "main": [
+        [
+          {
+            "node": "Return Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Validate Input1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Valid?": {
+      "main": [
+        [
+          {
+            "node": "Check Intent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Format Error Response1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Intent": {
+      "main": [
+        [
+          {
+            "node": "Search Database1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Insert Contact",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert Contact": {
+      "main": [
+        [
+          {
+            "node": "Format Insert Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Input1": {
+      "main": [
+        [
+          {
+            "node": "Is Valid?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search Database1": {
+      "main": [
+        [
+          {
+            "node": "Format Search Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a row2": {
+      "main": [
+        [
+          {
+            "node": "Switch8",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Reply3": {
+      "main": [
+        [
+          {
+            "node": "Mark Thread as Replied2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Log Reply to Message Log2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mark Thread as Replied2": {
+      "main": [
+        [
+          {
+            "node": "Format Reply Notification to User3",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Format Reply Confirmation to User3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Reply Notification to User3": {
+      "main": [
+        [
+          {
+            "node": "Send Notification to User3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Reply Confirmation to User3": {
+      "main": [
+        [
+          {
+            "node": "Send Confirmation to User3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Notification to User3": {
+      "main": [
+        [
+          {
+            "node": "Respond Reply Success3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Confirmation to User3": {
+      "main": [
+        [
+          {
+            "node": "Respond Reply Success3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check for Pending Meeting2": {
+      "main": [
+        [
+          {
+            "node": "Process Meeting Result2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Pending Meeting?2": {
+      "main": [
+        [
+          {
+            "node": "Code2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Process Reply4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Meeting Result2": {
+      "main": [
+        [
+          {
+            "node": "Has Pending Meeting?2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code2": {
+      "main": [
+        [
+          {
+            "node": "Handle Meeting Response3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch6": {
+      "main": [
+        [
+          {
+            "node": "Format Text3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Download Audio3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch7": {
+      "main": [
+        [
+          {
+            "node": "Switch6",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Operation, do nothing3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check if Reply to Thread2": {
+      "main": [
+        [
+          {
+            "node": "Find Active Thread2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Active Thread2": {
+      "main": [
+        [
+          {
+            "node": "Is Reply to Thread?2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Reply to Thread?2": {
+      "main": [
+        [
+          {
+            "node": "IF Reply?2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Reply?2": {
+      "main": [
+        [
+          {
+            "node": "Process Reply3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log Message to DB3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare WhatsApp Payload2": {
+      "main": [
+        [
+          {
+            "node": "Send Response via WhatsApp2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Should Track Thread?2": {
+      "main": [
+        [
+          {
+            "node": "IF Track Thread?2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Track Thread?2": {
+      "main": [
+        [
+          {
+            "node": "Log Outgoing Thread2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prepare WhatsApp Payload2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Outgoing Thread2": {
+      "main": [
+        [
+          {
+            "node": "Prepare WhatsApp Payload2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Reply4": {
+      "main": [
+        [
+          {
+            "node": "Format Reply Confirmation to User4",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get a row3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Reply Notification to User4": {
+      "main": [
+        [
+          {
+            "node": "Send Notification to User4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Reply Confirmation to User4": {
+      "main": [
+        [
+          {
+            "node": "Send Confirmation to User4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Notification to User4": {
+      "main": [
+        [
+          {
+            "node": "Respond Reply Success4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Confirmation to User4": {
+      "main": [
+        [
+          {
+            "node": "Respond Reply Success4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a row3": {
+      "main": [
+        [
+          {
+            "node": "Format Reply Notification to User4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent4",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook1": {
+      "main": [
+        [
+          {
+            "node": "Switch7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch8": {
+      "main": [
+        [
+          {
+            "node": "Prepare AI Context3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Check if Reply to Thread2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Message to DB3": {
+      "main": [
+        [
+          {
+            "node": "Check for Pending Meeting2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Handle Meeting Response3": {
+      "main": [
+        [
+          {
+            "node": "Respond Meeting Handled2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare AI Context3": {
+      "main": [
+        [
+          {
+            "node": "AI Agent4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse & Validate Message3": {
+      "main": [
+        [
+          {
+            "node": "Is Valid Message?3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Valid Message?3": {
+      "main": [
+        [
+          {
+            "node": "Get a row2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Skipped3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Authorized Agent?3": "[REDACTED]",
+    "Format Text3": {
+      "main": [
+        [
+          {
+            "node": "Is Authorized Agent?3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Audio3": {
+      "main": [
+        [
+          {
+            "node": "OpenAI Whisper3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Whisper3": "[REDACTED]",
+    "Format Transcription3": {
+      "main": [
+        [
+          {
+            "node": "Is Authorized Agent?3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent4": {
+      "main": [
+        [
+          {
+            "node": "Format AI Response2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI GPT-4o-mini4": "[REDACTED]",
+    "Format AI Response2": {
+      "main": [
+        [
+          {
+            "node": "Should Track Thread?2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Response via WhatsApp2": {
+      "main": [
+        [
+          {
+            "node": "Update Message Log2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Message Log2": {
+      "main": [
+        [
+          {
+            "node": "Respond Success1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tool: Store Context": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent4",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tool: Manage Contact (Code)": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent4",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "schedule meeting": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent4",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code Tool: Contact Validator": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent4",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tool: Send Message": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent4",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": "[REDACTED]",
+    "Select rows from a table in Postgres": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent4",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent4",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pinecone Vector Store": "[REDACTED]"
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "triggerCount": 2,
+  "tags": []
+}

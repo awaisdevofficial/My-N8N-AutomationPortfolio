@@ -1,0 +1,2526 @@
+{
+  "updatedAt": "2026-01-22T17:44:11.175Z",
+  "createdAt": "2026-01-22T17:11:27.607Z",
+  "id": "UHBgh9Tu9NKUV4su",
+  "name": "DNAI Vapi Switch",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -3312,
+        -5232
+      ],
+      "id": "8360fac5-bbda-4147-832b-cf87de1615fe",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "content": "## Task\nso the task is that if i have a consumer and he is use a Vapi account API and i am the provider and i am monitoring the account, know i want to assign another Vapi account to the user like from vapip-1 to vapi-2 so the thing that i have to do is that i have to shift all the database from the Vapi account one to Vapi account two \n## issues\nThe issues is that user already have some database and agent built which i need to transfer to the new account",
+        "height": 448
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -5232,
+        -3680
+      ],
+      "typeVersion": 1,
+      "id": "9575ed34-b4b3-4f8c-973a-04cff357733e",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.4,
+      "position": [
+        -7472,
+        -5616
+      ],
+      "id": "052ee791-418b-4815-af61-49e3df69116d",
+      "name": "On form submission",
+      "webhookId": "18a7dbeb-cb9c-44f2-a77f-8636af1b4641"
+    },
+    {
+      "parameters": {
+        "url": "https://api.vapi.ai/assistant",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $('Get a row').item.json.account_api }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -6432,
+        -5616
+      ],
+      "id": "2101f961-8441-45a1-8e50-a2b425397d93",
+      "name": "HTTP Request3"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "User",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "user_id",
+              "keyValue": "={{ $json.user_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -7056,
+        -5616
+      ],
+      "id": "ebe3505a-7761-4660-8e2e-1b5de46fffec",
+      "name": "Get a row1"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -6032,
+        -5616
+      ],
+      "id": "f4978d42-c19d-4fee-85f1-6b093acce2b6",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "tableId": "vapi_assistants",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "user_id",
+              "fieldValue": "={{ $('On form submission').item.json.user_id }}"
+            },
+            {
+              "fieldId": "assistant_id",
+              "fieldValue": "={{ $json.id }}"
+            },
+            {
+              "fieldId": "assistant_name",
+              "fieldValue": "={{ $json.name }}"
+            },
+            {
+              "fieldId": "system_prompt",
+              "fieldValue": "={{ $json.model.messages[0].content }}"
+            },
+            {
+              "fieldId": "provider",
+              "fieldValue": "={{ $json.model.provider }}"
+            },
+            {
+              "fieldId": "model_name",
+              "fieldValue": "={{ $json.model.model }}"
+            },
+            {
+              "fieldId": "voice_provider",
+              "fieldValue": "={{ $json.voice.provider }}"
+            },
+            {
+              "fieldId": "voice_id",
+              "fieldValue": "={{ $json.voice.voiceId }}"
+            },
+            {
+              "fieldId": "first_message",
+              "fieldValue": "={{ $json.firstMessage }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -4672,
+        -5968
+      ],
+      "id": "5ebe48cd-68e0-40b9-87db-eab5bf6f6849",
+      "name": "Create a row"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "User",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "user_id",
+              "condition": "eq",
+              "keyValue": "={{ $('Get a row1').item.json.user_id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "user_vapi_account",
+              "fieldValue": "={{ $('On form submission').item.json['Vapi Account'] }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -6048,
+        -5920
+      ],
+      "id": "b3497696-bed8-4268-a0a0-cbe92a409321",
+      "name": "Update a row"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.vapi.ai/assistant",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $json.account_api }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "name",
+              "value": "={{ $('Loop Over Items').item.json.name }}"
+            },
+            {
+              "name": "firstMessage",
+              "value": "={{ $('Loop Over Items').item.json.firstMessage }}"
+            },
+            {
+              "name": "model.provider",
+              "value": "={{ $('Loop Over Items').item.json.model.provider }}"
+            },
+            {
+              "name": "model.model",
+              "value": "={{ $('Loop Over Items').item.json.model.model }}"
+            },
+            {
+              "name": "model.messages[0].role",
+              "value": "={{ $('Loop Over Items').item.json.model.messages[0].role }}"
+            },
+            {
+              "name": "model.messages[0].content",
+              "value": "={{ $('Loop Over Items').item.json.model.messages[0].content }}"
+            },
+            {
+              "name": "voice.provider",
+              "value": "={{ $('Loop Over Items').item.json.voice.provider }}"
+            },
+            {
+              "name": "voice.voiceId",
+              "value": "={{ $('Loop Over Items').item.json.voice.voiceId }}"
+            }
+          ]
+        },
+        "options": {
+          "redirect": {
+            "redirect": {}
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -5024,
+        -5600
+      ],
+      "id": "8d89bcb4-1d1c-4a7e-80cf-ed3d8dfd79e6",
+      "name": "Create Assistant1"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "User",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "user_id",
+              "keyValue": "={{ $('On form submission').item.json.user_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -5664,
+        -5600
+      ],
+      "id": "a2898611-5153-4249-b3e5-a4eac549111f",
+      "name": "Get a row2"
+    },
+    {
+      "parameters": {
+        "method": "DELETE",
+        "url": "=https://api.vapi.ai/assistant/{{ $('Loop Over Items').item.json.id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $('Get a row').item.json.account_api }}"
+            }
+          ]
+        },
+        "options": {
+          "redirect": {
+            "redirect": {}
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -4672,
+        -5296
+      ],
+      "id": "c0abd2b0-67ac-4f5f-844e-3f537a40c686",
+      "name": "Create Assistant2"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "Vapi Account",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "account_name",
+              "keyValue": "={{ $json.user_vapi_account }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -6768,
+        -5616
+      ],
+      "id": "3a8673fc-feed-4b26-a3af-9f6e5475ce57",
+      "name": "Get a row"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "Vapi Account",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "account_name",
+              "keyValue": "={{ $json.user_vapi_account }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -5360,
+        -5600
+      ],
+      "id": "d08173af-257e-4dcc-adf6-5c911665f5bc",
+      "name": "Get a row3"
+    },
+    {
+      "parameters": {
+        "content": "## Trigger Node\nChang the Vapi Account",
+        "height": 272
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -7536,
+        -5728
+      ],
+      "typeVersion": 1,
+      "id": "19cfc9cd-e4de-4801-ba60-a97c5d500097",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "Get the user current Vapi account",
+        "height": 224
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -7120,
+        -5680
+      ],
+      "typeVersion": 1,
+      "id": "6cb5c7e5-3f60-46ad-9f1e-2554b3991fc0",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "Get the current Vapi Account API\n",
+        "height": 224
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -6832,
+        -5680
+      ],
+      "typeVersion": 1,
+      "id": "d904881c-37c9-4ed2-bda4-50cba03672a9",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "Fetch All the assistant form the current Vapi Account",
+        "height": 224
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -6496,
+        -5680
+      ],
+      "typeVersion": 1,
+      "id": "9e5bea29-f7bd-4119-a467-21ea39276054",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "Update the user Vapi account in database",
+        "height": 224
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -6112,
+        -5984
+      ],
+      "typeVersion": 1,
+      "id": "59affc30-e180-4399-b8d2-fcfafcdfed5c",
+      "name": "Sticky Note5"
+    },
+    {
+      "parameters": {
+        "content": "Loop to put all the assistants to the new Vapi account",
+        "height": 224
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -6112,
+        -5696
+      ],
+      "typeVersion": 1,
+      "id": "0dd25b17-83cf-4418-893a-c3a55ab2965d",
+      "name": "Sticky Note6"
+    },
+    {
+      "parameters": {
+        "content": "Get the user updated Vapi account  ",
+        "height": 224
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -5728,
+        -5664
+      ],
+      "typeVersion": 1,
+      "id": "8af769e1-095d-41c0-b47f-fa2c7c52f7d9",
+      "name": "Sticky Note7"
+    },
+    {
+      "parameters": {
+        "content": "Get the user updated Vapi account  API",
+        "height": 224
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -5440,
+        -5664
+      ],
+      "typeVersion": 1,
+      "id": "83db7084-06b1-48be-b0f2-101b5c6b5c88",
+      "name": "Sticky Note8"
+    },
+    {
+      "parameters": {
+        "content": "Create the e assistants to the new Vapi account",
+        "height": 224
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -5104,
+        -5664
+      ],
+      "typeVersion": 1,
+      "id": "1924de70-9c50-4431-bb44-433d448d1426",
+      "name": "Sticky Note9"
+    },
+    {
+      "parameters": {
+        "content": "Add new assistants to the database",
+        "height": 224
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -4736,
+        -6048
+      ],
+      "typeVersion": 1,
+      "id": "143da570-5729-4b6b-bb51-a25d9eec75c2",
+      "name": "Sticky Note10"
+    },
+    {
+      "parameters": {
+        "content": "Delete the assistants form the previous Vapi accounts",
+        "height": 224
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -4736,
+        -5376
+      ],
+      "typeVersion": 1,
+      "id": "76540f7a-e74c-400b-b13d-344a273010d1",
+      "name": "Sticky Note11"
+    },
+    {
+      "parameters": {
+        "content": "Delete the assistants form the previous Vapi accounts form database",
+        "height": 224
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -4224,
+        -5376
+      ],
+      "typeVersion": 1,
+      "id": "ca7108a5-7eab-4934-955c-fb6641a87623",
+      "name": "Sticky Note12"
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "tableId": "vapi_assistants",
+        "matchType": "allFilters",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "assistant_id",
+              "condition": "eq",
+              "keyValue": "={{ $json.id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -4160,
+        -5296
+      ],
+      "id": "53c52fab-2876-4a83-8138-c8cb354da73e",
+      "name": "Delete a row"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.4,
+      "position": [
+        -8208,
+        -4544
+      ],
+      "id": "d2f1bdd3-fec8-46d4-9b6a-6e616d0306a2",
+      "name": "On form submission1",
+      "webhookId": "55cff2f5-8f8c-46aa-a825-64066e417c1b"
+    },
+    {
+      "parameters": {
+        "content": "## Trigger Node\nChang the Vapi Account",
+        "height": 272
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -8272,
+        -4656
+      ],
+      "typeVersion": 1,
+      "id": "afe17284-1762-46da-9eed-41441a349c3b",
+      "name": "Sticky Note13"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "Vapi Database",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "user_id",
+              "condition": "eq",
+              "keyValue": "={{ $json.user_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -7840,
+        -4544
+      ],
+      "id": "e87440c3-cec0-433b-b7c1-bb273b6af693",
+      "name": "Get many rows"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -7488,
+        -4544
+      ],
+      "id": "e56ebc0d-82a5-4e1c-9d9b-8bf667ac58c7",
+      "name": "Loop Over Items1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "5c638163-4064-4149-88fd-42dae28e47aa",
+              "leftValue": "={{ $('Get many rows').item.json.user_vapi_account_name }}",
+              "rightValue": "={{ $('On form submission1').item.json['Vapi Account'] }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -7184,
+        -4528
+      ],
+      "id": "db37cd0f-aa3e-4b23-9d40-4a37618c257d",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.vapi.ai/assistant",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $json.account_api }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "name",
+              "value": "={{ $('If').item.json.assistant_name }}"
+            },
+            {
+              "name": "firstMessage",
+              "value": "={{ $('If').item.json.first_message }}"
+            },
+            {
+              "name": "model.provider",
+              "value": "={{ $('If').item.json.voice_provider }}"
+            },
+            {
+              "name": "model.model",
+              "value": "={{ $('If').item.json.provider }}"
+            },
+            {
+              "name": "model.messages[0].content",
+              "value": "={{ $('If').item.json.system_prompt }}"
+            },
+            {
+              "name": "voice.provider",
+              "value": "={{ $('If').item.json.voice_provider }}"
+            },
+            {
+              "name": "voice.voiceId",
+              "value": "={{ $('If').item.json.voice_id }}"
+            },
+            {
+              "name": "model.messages[0].role",
+              "value": "system"
+            }
+          ]
+        },
+        "options": {
+          "redirect": {
+            "redirect": {}
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -6736,
+        -4512
+      ],
+      "id": "9c7c492d-4d4d-453b-be99-e96037698634",
+      "name": "Create Assistant"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "Vapi Account",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "account_name",
+              "keyValue": "={{ $('On form submission1').item.json['Vapi Account'] }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -6960,
+        -4512
+      ],
+      "id": "a775eed5-a520-4786-b34c-d03b913b2ecb",
+      "name": "Get a row4"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "Vapi Database",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "user_assistants_ids",
+              "condition": "eq",
+              "keyValue": "={{ $('If').item.json.user_assistants_ids }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "user_vapi_account_api",
+              "fieldValue": "={{ $('Get a row4').item.json.account_api }}"
+            },
+            {
+              "fieldId": "user_vapi_account_name",
+              "fieldValue": "={{ $('Get a row4').item.json.account_name }}"
+            },
+            {
+              "fieldId": "user_assistants_ids",
+              "fieldValue": "={{ $json.id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -6464,
+        -4800
+      ],
+      "id": "b5524a5b-b1e0-495e-9ac1-a7da88aa251a",
+      "name": "Update a row1"
+    },
+    {
+      "parameters": {
+        "tableId": "Vapi Database",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "user_id",
+              "fieldValue": "={{ $('On form submission').item.json.user_id }}"
+            },
+            {
+              "fieldId": "user_vapi_account_api",
+              "fieldValue": "={{ $('Get a row3').item.json.account_api }}"
+            },
+            {
+              "fieldId": "user_vapi_account_name",
+              "fieldValue": "={{ $('Get a row3').item.json.account_name }}"
+            },
+            {
+              "fieldId": "user_assistants_ids",
+              "fieldValue": "={{ $json.id }}"
+            },
+            {
+              "fieldId": "assistant_name",
+              "fieldValue": "={{ $json.name }}"
+            },
+            {
+              "fieldId": "first_message",
+              "fieldValue": "={{ $json.firstMessage }}"
+            },
+            {
+              "fieldId": "system_prompt",
+              "fieldValue": "={{ $json.model.messages[0].content }}"
+            },
+            {
+              "fieldId": "provider",
+              "fieldValue": "={{ $json.model.provider }}"
+            },
+            {
+              "fieldId": "model_name",
+              "fieldValue": "={{ $json.model.model }}"
+            },
+            {
+              "fieldId": "voice_provider",
+              "fieldValue": "={{ $json.voice.provider }}"
+            },
+            {
+              "fieldId": "voice_id",
+              "fieldValue": "={{ $json.voice.voiceId }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -4672,
+        -5680
+      ],
+      "id": "f9e04e09-73ed-4343-a47e-aca4d78112f0",
+      "name": "Create a row1"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "User",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "user_id",
+              "keyValue": "={{ $('On form submission1').item.json.user_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -6080,
+        -4416
+      ],
+      "id": "bce0aa28-2278-494e-9147-9b0269ea1f90",
+      "name": "Get a row5"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "Vapi Account",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "account_name",
+              "keyValue": "={{ $json.user_vapi_account }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -5776,
+        -4320
+      ],
+      "id": "361f6b8b-9408-40b8-b278-b2b7e2eabcba",
+      "name": "Get a row6"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "User",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "user_id",
+              "condition": "eq",
+              "keyValue": "={{ $('On form submission1').item.json.user_id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "user_vapi_account",
+              "fieldValue": "={{ $('On form submission1').item.json['Vapi Account'] }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -5008,
+        -4336
+      ],
+      "id": "ab24ecdb-d74f-4c23-8cea-2e8d72accca4",
+      "name": "Update a row2"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.4,
+      "position": [
+        -8784,
+        -3456
+      ],
+      "id": "ab1a9e25-d345-41cf-a21c-95de54513e5e",
+      "name": "On form submission2",
+      "webhookId": "68b09053-4d9a-47b6-ab7d-2cce9bb88ec0"
+    },
+    {
+      "parameters": {
+        "content": "## Trigger Node\nChang the Vapi Account",
+        "height": 272
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -8848,
+        -3584
+      ],
+      "typeVersion": 1,
+      "id": "754baf89-4da3-441f-9b4e-068fddc713cc",
+      "name": "Sticky Note14"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "Vapi Database_duplicate_2",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "user_id",
+              "condition": "eq",
+              "keyValue": "={{ $json.user_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -8496,
+        -3456
+      ],
+      "id": "d8b952ea-6b40-4e78-9858-e27fa0706e01",
+      "name": "Get many rows1"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -8224,
+        -3456
+      ],
+      "id": "3e5277e5-fd48-4dec-a0b8-070e48b251f5",
+      "name": "Loop Over Items2"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "5c638163-4064-4149-88fd-42dae28e47aa",
+              "leftValue": "={{ $('Get many rows1').item.json.user_vapi_account_name }}",
+              "rightValue": "={{ $('On form submission2').item.json['Vapi Account'] }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -7968,
+        -3440
+      ],
+      "id": "4323de65-a52e-4710-a71a-d016823fb3a1",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.vapi.ai/assistant",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $json.account_api }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "name",
+              "value": "={{ $('If1').item.json.assistant_name }}"
+            },
+            {
+              "name": "firstMessage",
+              "value": "={{ $('If1').item.json.first_message }}"
+            },
+            {
+              "name": "model.provider",
+              "value": "={{ $('If1').item.json.voice_provider }}"
+            },
+            {
+              "name": "model.model",
+              "value": "={{ $('If1').item.json.provider }}"
+            },
+            {
+              "name": "model.messages[0].content",
+              "value": "={{ $('If1').item.json.system_prompt }}"
+            },
+            {
+              "name": "voice.provider",
+              "value": "={{ $('If1').item.json.voice_provider }}"
+            },
+            {
+              "name": "voice.voiceId",
+              "value": "={{ $('If1').item.json.voice_id }}"
+            },
+            {
+              "name": "model.messages[0].role",
+              "value": "system"
+            }
+          ]
+        },
+        "options": {
+          "redirect": {
+            "redirect": {}
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -7296,
+        -3424
+      ],
+      "id": "c348200c-a5da-4d57-89c9-323e68c33748",
+      "name": "Create Assistant4"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "Vapi Account",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "account_name",
+              "keyValue": "={{ $('On form submission2').item.json['Vapi Account'] }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -7520,
+        -3424
+      ],
+      "id": "9215dc10-f67f-4af7-8170-7c6250ecdc15",
+      "name": "Get a row7"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "User",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "user_id",
+              "keyValue": "={{ $('On form submission2').item.json.user_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -6784,
+        -3280
+      ],
+      "id": "0d8a7a17-8978-4c8b-b2ef-309fb64d001e",
+      "name": "Get a row8"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "Vapi Account",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "account_name",
+              "keyValue": "={{ $json.user_vapi_account }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -6496,
+        -3088
+      ],
+      "id": "9112e9d4-30f2-4304-9ed3-0b877bc7ad0e",
+      "name": "Get a row9"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "User",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "user_id",
+              "condition": "eq",
+              "keyValue": "={{ $('On form submission2').item.json.user_id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "user_vapi_account",
+              "fieldValue": "={{ $('On form submission2').item.json['Vapi Account'] }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -4720,
+        -3008
+      ],
+      "id": "256e44a4-6b9d-403b-9290-52cd54bc64b3",
+      "name": "Update a row4"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.vapi.ai/assistant/{{ $json.user_assistants_ids }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $json.user_vapi_account_api }}"
+            }
+          ]
+        },
+        "options": {
+          "redirect": {
+            "redirect": {}
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -7712,
+        -3424
+      ],
+      "id": "db145a86-a78a-4f1d-838e-80508ffc9377",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "method": "DELETE",
+        "url": "=https://api.vapi.ai/assistant/{{ $('If1').item.json.user_assistants_ids }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $json.account_api }}"
+            }
+          ]
+        },
+        "options": {
+          "redirect": {
+            "redirect": {}
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -6288,
+        -2992
+      ],
+      "id": "03a099d6-949e-4fae-b611-114186d940ac",
+      "name": "Del assistants"
+    },
+    {
+      "parameters": {
+        "useCustomSchema": true,
+        "operation": "update",
+        "tableId": "Vapi Database_duplicate_2",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "user_assistants_ids",
+              "condition": "eq",
+              "keyValue": "={{ $('If1').item.json.user_assistants_ids }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "user_vapi_account_api",
+              "fieldValue": "={{ $('Get a row7').item.json.account_api }}"
+            },
+            {
+              "fieldId": "user_vapi_account_name",
+              "fieldValue": "={{ $('Get a row7').item.json.account_name }}"
+            },
+            {
+              "fieldId": "user_assistants_ids",
+              "fieldValue": "={{ $json.id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -6992,
+        -3792
+      ],
+      "id": "1c2658ac-a977-4d20-aa97-c87837e94392",
+      "name": "Update a row5"
+    },
+    {
+      "parameters": {
+        "method": "DELETE",
+        "url": "=https://api.vapi.ai/assistant/{{ $('If').item.json.user_assistants_ids }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $json.account_api }}"
+            }
+          ]
+        },
+        "options": {
+          "redirect": {
+            "redirect": {}
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -5504,
+        -4256
+      ],
+      "id": "bbb28e2d-53c9-43fa-852e-3c667d2ff3e7",
+      "name": "Del assistants1"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "Vapi Database_duplicate_2",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "user_assistants_ids",
+              "condition": "eq",
+              "keyValue": "={{ $('If').item.json.user_assistants_ids }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "user_vapi_account_api",
+              "fieldValue": "={{ $('Get a row4').item.json.account_api }}"
+            },
+            {
+              "fieldId": "user_vapi_account_name",
+              "fieldValue": "={{ $('Get a row4').item.json.account_name }}"
+            },
+            {
+              "fieldId": "user_assistants_ids",
+              "fieldValue": "={{ $json.id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -6432,
+        -4624
+      ],
+      "id": "b4572d43-e93f-4e5a-818f-f43d5b578b1b",
+      "name": "Update a row3"
+    },
+    {
+      "parameters": {
+        "useCustomSchema": true,
+        "operation": "update",
+        "tableId": "Vapi Database",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "user_assistants_ids",
+              "condition": "eq",
+              "keyValue": "={{ $('If1').item.json.user_assistants_ids }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "user_vapi_account_api",
+              "fieldValue": "={{ $('Get a row7').item.json.account_api }}"
+            },
+            {
+              "fieldId": "user_vapi_account_name",
+              "fieldValue": "={{ $('Get a row7').item.json.account_name }}"
+            },
+            {
+              "fieldId": "user_assistants_ids",
+              "fieldValue": "={{ $json.id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -6992,
+        -3536
+      ],
+      "id": "e6b00995-91c8-4bae-ac76-b071bd0534e0",
+      "name": "Update a row7"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.vapi.ai/assistant",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $('Merge2').item.json.assistant_id }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -5792,
+        -1168
+      ],
+      "id": "a77cdb98-9b17-457e-a731-c7a5babe4c4f",
+      "name": "HTTP Request4"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4.1-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=The assistant should understand and respond in {{ $('Webhook4').item.json.body.language }}.\nThe AI voice agent must communicate naturally and confidently in {{ $('Webhook4').item.json.body.language }}.\n\n**CRITICAL RULE FOR THE AGENT**\n* MAX 1-2 sentences per response\n* Ask ONE question at a time\n* Use meta awareness: “You're experiencing this now!”\n* Use fillers naturally: “look”, “I mean”, “sure sure”\n* Never list times — ask their preference\n* Only end when they signal goodbye\n* Add qualifying questions\n———————————————————————————————\n\nYou are an expert AI cold-calling voice agent prompt engineer.  \nYour job is to generate a **highly detailed, extremely comprehensive, professionally structured VAPI SYSTEM PROMPT** for a sales-focused AI voice agent.\n\nThe output must match the structure, depth, and detail level of the “Example Output” provided — including:\n\n- Identity & Mission  \n- Opening Script  \n- Path Responses  \n- Qualifying Questions  \n- Objection Handling  \n- Demo/CTA Rules  \n- FAQs  \n- Data Collection Protocol (Timezone → Phone → Email → Name → etc.)  \n- Closing Script  \n- Critical Speech Pattern Rules  \n- Conversation Flow Rules  \n- Tone & Energy Rules  \n- Booking Rules  \n- Ending Rules  \n- Cultural Sensitivity (if relevant)  \n- Everything else in the example\n\nThe output must be written entirely in **{{ $json.language }}** and fully adapted to the following company:\n\n### COMPANY INFORMATION\n- Company Name: {{ $json.companyName }}\n- Website URL: {{ $('Webhook4').item.json.body.website_url }}\n- Tagline: {{ $json.tagline }}\n- Services: {{ $json.services }}\n- Social Links: {{ $json.socialLinks }}\n- Favicon: {{ $json.favicon }}\n- OG Title: {{ $json.ogTitle }}\n- OG Description: {{ $json.ogDescription }}\n\n### AGENT CONFIGURATION\n- Agent Type: {{ $('Webhook4').item.json.body.agent_type }}\n- Goal: {{ $('Webhook4').item.json.body.goal }}\n- Tone: {{ $('Webhook4').item.json.body.tone }}\n\n### CONVERSATION SETTINGS\n- Script / Key Instructions: {{ $('Webhook4').item.json.body.script }}\n- Welcome Message: {{ $('Webhook4').item.json.body.welcome_message }}\n- Background: {{ $('Webhook4').item.json.body.background }}\n\n### OBJECTIVE\nGenerate a **maximum-detail cold-calling VAPI system prompt** that:\n- Introduces the company with a warm business welcome  \n- Pitches core services clearly and persuasively  \n- Uses natural conversational sales flow  \n- Handles objections with empathy  \n- Adds qualifying questions naturally  \n- Keeps sentences 1–2 lines  \n- Uses fillers and confirmations naturally  \n- Detects interest and escalates to a CTA (meeting, info, handoff, etc.)  \n- Ends only when the lead signals goodbye  \n- Follows company tone and brand identity  \n- Sounds fully human and sales-optimized  \n\n———————————————————————————————\n### ⭐ OUTPUT REQUIREMENTS ⭐\nYour output **must follow the structure and level of detail of the long “Example Output”**.  \n\nMeaning the output must include:\n\n1. **IDENTITY & MISSION**\n2. **FULL OPENING SCRIPT**\n3. **DETAILED PATH RESPONSES**  \n   - Interested  \n   - Not interested  \n   - Unsure\n4. **QUALIFYING QUESTIONS (deep, multi-step)**\n5. **OBJECTION HANDLING PLAYBOOK**\n6. **CTA / MEETING BOOKING LOGIC**\n7. **INTEREST SIGNAL DETECTION RULES**\n8. **DATA COLLECTION PROTOCOL**\n   - Timezone  \n   - Phone number (digit-by-digit confirmation)  \n   - Email (spell out confirmation)  \n   - Name  \n   - Business details (if relevant)\n9. **FAQ ANSWERS**\n10. **FULL CLOSING SCRIPT**\n11. **CRITICAL SPEECH PATTERN RULES**\n12. **ENERGY / TONE RULES (11Labs optimized)**\n13. **BOOKING RULES**\n   - Only on the hour  \n   - Never list times  \n   - Ask for their preference\n14. **CONVERSATION ENDING RULES**\n15. **CULTURAL SENSITIVITY RULES** *(if language/country implies it)*\n\n———————————————————————————————\n\n### ⭐ FINAL INSTRUCTION ⭐\nReturn **ONLY the final system prompt text**, with no preamble, no explanations, no comments, no markdown.  \n\nThe output must be **as detailed, long, comprehensive, and structured as the Example Output*Identity & Mission\nName: ZARA from Your Cloud Campus\nTarget: Parents with school-going children (ages 5-18) and adult learners\nValue Proposition: Premium online tutoring services with personalized one-on-one sessions via Zoom, qualified teachers, and flexible scheduling 6 days a week (Monday to Saturday)\nStep 2 – Opening Script (Energetic & Direct)\nFantastic this is ZARA from Online Educational Institution *Your Cloud Campus*, how’s your day going?\nListen, I'll be super quick. We help students absolutely CRUSH their studies through ONE-ON-ONE tutoring via Zoom. You know, primary school all the way up to Year 12.\nLet me ask you - do you have kids in school right now?\"\n👉 [PAUSE – wait for reply: Yes / No / Unsure]\nStep 3 – Path Responses\nIf YES:\n\"FANTASTIC! What grade are they in?\"\n👉 [WAIT FOR ANSWER - Then ask follow-up questions naturally based on their response]\nQualifying Questions to Ask First (before offering demo):\n\n\"Which subjects do they find most challenging?\"\n\"Are they getting any extra help with their studies right now?\"\n\"What's your biggest concern about their education?\"\n\n[ONLY AFTER they show genuine interest through engagement, ask multiple questions, or mention specific struggles - THEN offer demo]:\n\"You know what - I can show you exactly how our ONE-ON-ONE approach works. We offer a demo class so you can see our teaching style with your child. Interested?\"\nIf NO:\n\"No worries no worries! We've got INCREDIBLE professional courses for adults too - career stuff, new skills, you know, the works!\nOr hey, know any parents who'd love to see their kids EXCEL?\"\nIf UNSURE:\n\"Sure sure, I get it! What made you hesitant - is it timing, budget, or something else?\"\nStep 4 – Demo Offer (ONLY When Clear Interest is Shown)\nSigns Customer is Genuinely Interested:\n\nThey ask multiple questions about the service\nThey mention specific academic struggles their child has\nThey ask about pricing, schedule, or how it works\nThey engage in back-and-forth conversation naturally\nThey ask \"tell me more\" or similar phrases\n\nDemo Offer Script (Use ONLY when above signals are present):\n\"Look, the best way to see if this works for your child is through a demo class. It's FIFTY MINUTES where we show you our teaching approach. When would work for you?\"\n👉 [PAUSE – wait for scheduling response]\nClass Schedule Options\nCRITICAL: We offer classes Monday to Saturday only - Sundays are OFF\nWe offer two flexible options:\n\nMonthly Subscription - THREE DAYS PER WEEK\n\nMonday, Tuesday, Wednesday OR Thursday, Friday, Saturday schedule\nBest value for consistent learning\nClasses held three days per week\n\n\nPay Per Hour - Completely customized\n\nSchedule whenever works for you (Monday to Saturday only)\nHigher per-hour rate but maximum flexibility\nNote: No classes on Sundays\n\n\n\nEnhanced Objection Handling\n\"I'm not interested\" - Primary Response:\n\"I understand! What's holding you back - timing, budget, or something else?\"\nFollow-up paths:\nIf \"now isn't the best time\":\n\"Absolutely! When would work better? This week or next?\"\nIf reaffirmed \"not interested\":\n\"No worries! Let me ask you though - what's your child's biggest school challenge?\"\nOther Common Objections:\n\"We already have a tutor\"\n\"THAT'S AWESOME! Look, tons of families use us to supplement. Our Zoom approach is completely different. What subject does your tutor cover?\"\n\"No budget right now\"\n\"Sure sure, I get it! What budget range works for you? We have flexible options.\"\n\"Don't have time\"\n\"No worries no worries! That's the beauty of Zoom - zero driving. Just FIFTY MINUTES at home, Monday to Saturday?\"\n\"Child doesn't like online learning\"\n\"Oh, I hear this all the time! Look, our sessions are nothing like boring videos. It's real conversation. What's your child's learning style?\"\n\"How much does it cost?\" (FIRST TIME ASKED)\n\"Great question! Pricing runs $10-35 depending on grade and needs. We've got monthly plans - THREE DAYS PER WEEK on Monday-Tuesday-Wednesday or Thursday-Friday-Saturday - or pay-per-hour. Which schedule interests you?\"\n\"How much does it cost?\" (SECOND TIME ASKED)\n\"Perfect! We've got monthly subscriptions - THREE DAYS PER WEEK - or pay-per-hour. Pricing runs $10-35 depending on needs. Which subjects need the most help?\"\n\"Do you have classes on Sundays?\"\n\"We operate Monday to Saturday - Sundays are our day off so our teachers can recharge! We have great flexibility across those six days though. What days work best for you?\"\nAlternative \"Not Interested\" Response:\n\"I understand! Most parents don't realize how much individual attention helps until they see it. Would you be open to just hearing how it works?\"\nContact Information Response\nWhen someone asks for contact details, phone number, email, or address:\n\"Absolutely absolutely! What would you like - phone, email, or address?\nPhone (UAE): +971 52 805 8830 - Your Cloud Campus\n[Say slowly and clearly, digit by digit with pauses: \"plus nine seven one... five two... eight zero five... eight eight three zero\"]\nEmail: support@yourcloudcampus.com - Your Cloud Campus\n[Say slowly and clearly: \"support... at... your cloud campus... dot com\"]\nAddress: 133 New Bridge Road #10-03 Chinatown Point, Singapore (059413) - Your Cloud Campus\n[Say at normal pace, but clearly]\nAnything else you'd like to know?\"\nCRITICAL INSTRUCTION FOR CONTACT DETAILS:\n\nALWAYS speak phone numbers SLOWLY, digit by digit with small pauses\nALWAYS spell out email addresses SLOWLY with clear pauses between sections\nGive people time to write down the information\nExample phone delivery: \"plus... nine... seven... one... five... two... eight... zero... five... eight... eight... three... zero\"\nExample email delivery: \"support... at... your... cloud... campus... dot... com\"\nAfter giving contact info, pause briefly and ask \"Did you get that?\" or \"Got it?\"\n\nPlatform & Key Information\n\nAll tutoring sessions conducted via Zoom video conferencing\nAvailable Monday to Saturday (Sundays OFF)\nExpert tutors from around the world\nPersonalized one-on-one attention every session\nInteractive, engaging approach (not passive videos)\n\nRefund Policy Response\n\"We offer a 100% peace of mind guarantee! If you change your mind within 7 days of signup, you get a full refund - no questions asked. Contact us by phone, email, or speak to your advisor and we'll process it within 30 days!\"\nConversation Personality & Critical Rules\nENERGETIC CONVERSATION STYLE:\n\nBE EXCITED and enthusiastic about education!\nSpeak with ENERGY and conviction\nGet straight to the point - no beating around the bush\nUse short, punchy sentences with natural pauses\nSound like you genuinely LOVE helping kids succeed\nBe fast-paced but not rushed - add natural fillers strategically\nAvoid repetition - say it once with impact\nStay laser-focused on understanding needs first, demo second\nMatch their energy and boost it up!\nSound like a caring educator having an exciting conversation with a parent\nAlways represent YOUR CLOUD CAMPUS brand\nCompany is registered in UAE, Singapore and Pakistan with tutors from various countries worldwide\n\nCRITICAL SPEECH PATTERN RULES - STRATEGIC USAGE:\n\nUSE FILLER WORDS NATURALLY: \"you know what\", \"look\", \"listen\", \"hey\", \"oh\", \"umm\"\nUSE \"OKAY\" AND \"RIGHT\" AS CONFIRMATION at end of sentences\nUSE THESE REPETITIVE PHRASES PRECISELY WHERE NEEDED:\n\n\"Yes yes why not\" OR \"Yes why not\" - When encouraging to try something (use sparingly, 1-2 times per call)\n\"Sure sure\" - When acknowledging/agreeing with objections (budget, concerns)\n\"Absolutely absolutely\" - When strongly affirming/being helpful (giving info, confirming times)\n\"No worries no worries\" - When handling \"no time\" or \"busy\" objections\n\"I mean\" - For emphasis or clarification\n\"You know\" - For conversational flow\n\n\nOTHER NATURAL PHRASES TO ADD:\n\n\"Let me ask you\" (instead of \"question\")\n\"You know what\" (when pivoting conversation)\n\"Look\" (when making a point)\n\"Listen\" (when emphasizing something important)\n\"Oh\" (when responding to what they say)\n\"Hey\" (casual, friendly)\n\n\n\nENERGETIC WORD CHOICES FOR 11 LABS:\n\nUse powerful, emotional words: AMAZING, INCREDIBLE, TRANSFORM, BLOWN AWAY, CRUSH, SHINE, EXCEL, LIGHT UP\nEmphasize with capital letters: FREE, FIFTY PERCENT OFF, ONE-ON-ONE, FIFTY MINUTES\nUse contrast words: \"nothing like\", \"completely different\", \"zero driving\"\nKeep it punchy and direct - shorter is better!\n\nCONVERSATION FLOW RULES:\n\nNEVER repeat information you just said\nSTAY ON TOPIC - don't jump to unrelated subjects\nLISTEN TO WHAT CUSTOMER SAID - respond appropriately to their specific words\nDON'T SAY THINGS OUT OF CONTEXT\nKEEP RESPONSES SHORT AND PUNCHY - 1-2 sentences maximum\nNOT EVERY RESPONSE NEEDS A QUESTION - mix statements and questions naturally\n\nCRITICAL DEMO OFFERING RULES:\n\nDO NOT mention demo immediately after learning they have kids\nFIRST understand their situation through qualifying questions\nONLY offer demo when customer shows genuine interest:\n\nThey ask multiple questions\nThey mention specific academic challenges\nThey ask about pricing, schedule, or how it works\nThey naturally engage in conversation\nThey say \"tell me more\" or similar phrases\n\n\nWHEN offering demo, frame it as \"showing our services/teaching approach\":\n\nSay: \"I can show you how our approach works\"\nSay: \"We offer a demo to show you our teaching style\"\nSay: \"The best way to see our services is through a demo class\"\nNOT: \"free trial\" or \"completely free demo\" in every sentence\n\n\nBUILD RAPPORT through questions BEFORE pushing demo\n\nCRITICAL CONVERSATION ENDING RULES:\n\nNEVER end the conversation unless the customer clearly indicates they want to end it\nOnly end the call when:\n\nDemo is successfully booked AND customer says goodbye/thanks/ends conversation\nCustomer explicitly says \"goodbye,\" \"end the call,\" \"hang up,\" or similar ending phrases\nCustomer becomes hostile and asks you to stop calling\n\n\nDO NOT end the conversation after objections, questions, or hesitation\nContinue engaging until you get a clear ending signal from the customer\nIf unsure whether to end, keep the conversation going\n\nSPEED & ENERGY RULES:\n\nSpeak with enthusiasm and conviction\nNo long pauses or slow responses - but use natural \"umm\", \"you know\" fillers\nCut unnecessary words - be direct and impactful\nSound genuinely excited about helping their child\nFocus on understanding needs first, then demo\nAvailable Monday to Saturday (Sundays OFF)\nAll sessions via Zoom platform\nNever say \"no refund policy\" - we have a 7-day guarantee\n\nBOOKING TIME RULES - VERY IMPORTANT:\n\nNEVER say \"We have slots available at 1, 2, 3\" or list specific times\nALWAYS ask what works for them first: \"What day and time works best for you?\"\nONLY book on the hour: 1:00, 2:00, 3:00, 4:00, 5:00, 6:00, 7:00, 8:00, 9:00, 10:00, 11:00, 12:00\nNEVER use minutes: No 1:30, 2:15, 3:45, 4:20, etc.\nIf they suggest fractional time: \"How about [nearest hour]:00 instead? Works better for our system!\"\nAlways be flexible and open - don't restrict their choices by listing limited slots\nIMPORTANT: Classes only available Monday to Saturday - if they suggest Sunday, say: \"We don't have classes on Sundays - how about Monday or Saturday instead?\"\n\nCONVERSATION CONTEXT RULES - CRITICAL:\n\nLISTEN TO WHAT THE CUSTOMER JUST SAID - respond directly to their words\nNEVER repeat information you just gave - move the conversation forward\nDON'T SAY THINGS OUT OF CONTEXT - everything should relate to what they said\nTRACK THE CONVERSATION FLOW - remember what stage you're in (opening, objection handling, booking, etc.)\nDON'T JUMP TOPICS - transition naturally between subjects\nRESPOND APPROPRIATELY - if they ask a question, answer it directly before moving on\n\nSPEECH FLOW RULES:\n\nComplete your sentences properly - don't cut off mid-thought\nUse natural breathing pauses with \"...\"\nAdd filler words strategically: \"umm\", \"you know\", \"I mean\", \"look\", \"listen\", \"hey\"\nSay the repetitive phrases naturally throughout the conversation\nUse shorter, punchier sentences for maximum impact\n\n11 LABS VOICE OPTIMIZATION:\n\n11 Labs excels at emotional delivery - use it!\nEmphasize exciting words with CAPS: FREE, AMAZING, TRANSFORM\nVary your tone - get excited for good news, empathetic for concerns\nUse contrast in delivery - slow down for emphasis, speed up for energy\nLet your enthusiasm come through naturally\n\nPronunciation Guide:\n\nSay \"Year 1\" as \"Year One\" (not \"Year First\")\nSay \"KG\" as \"Kindergarten\" when clarifying\nUse natural speech patterns, not formal announcements\n\nQualifying Questions (Use naturally when appropriate)\n\n\"What grade is your child in currently?\"\n\"Which subjects do they find most challenging?\"\n\"Are they currently getting any extra help with their studies?\"\n\"What are your biggest concerns about their education right now?\"\n\"If your child could improve in one subject, which would make the biggest difference?\"\n\nProfessional Courses Pitch (for parents without children)\n\"Since you don't have school-going kids - let me tell you about our INCREDIBLE professional courses! Personalized training in business, tech, languages, career growth. Same ONE-ON-ONE approach, amazing results. Interested?\"\nCallback Handling Protocol\nWhen someone asks for a callback or says \"call me later\":\n\nSimply ask for preferred date and time\nDo NOT ask for email, phone number, or WhatsApp details\nDo NOT mention external meeting platforms\nJust confirm the callback time\n\nExample response: \"Absolutely absolutely! When would be better? Later today or tomorrow?\"\nInterest Signal Recognition\nWhen prospects say:\n\n\"Tell me more about...\"\n\"How does the demo work?\"\n\"What subjects do you cover?\"\n\"How much does it cost?\"\n\"When are classes available?\"\nAny education/teaching-related questions\n\nResponse:\n\"You know what - the best way to see how we work is through a demo class. I can show you our teaching approach with your child. Interested?\"\nInformation Collection Sequence (only after demo agreement)\nWhen Customer Agrees to Demo:\n1. Ask Date & Time First:\n\"Perfect! What day and time works best for the demo?\"\nCRITICAL BOOKING RULES:\n\nNEVER say \"We have slots available at...\" or list specific times\nALWAYS be open and flexible - ask what works for them first\nONLY book on the hour: 1:00, 2:00, 3:00, 4:00, etc.\nNEVER use fractional times: No 1:30, 2:15, 3:45, etc.\nIf they suggest a fractional time, say: \"How about [nearest hour]:00 instead? Works better for our system!\"\nClasses available Monday to Saturday only - if they suggest Sunday, offer Monday or Saturday\n\n2. \"Then Collect Information (ONE BY ONE, CONFIRM ONCE ONLY)\"\n\n⭐ COLLECTION ORDER (FOLLOW EXACTLY):\n1️⃣ TIMEZONE FIRST (ALWAYS START HERE)\n\nAsk: \"Let's start! What's your timezone or location?\"\nListen to response\nConfirm ONCE: \"Got it, so that's [timezone/location]. Right?\"\n\n✅ If YES → Move to WhatsApp number\n❌ If NO → \"No problem, please tell me again slowly.\"\n\n\n\n\n2️⃣ WHATSAPP NUMBER SECOND\n🚨 CRITICAL PHONE NUMBER PROTOCOL:\n\nKnow digit count for their country FIRST\nAsk: \"Awesome! What's your WhatsApp number so I can send the Zoom details?\"\nListen to response\nCOUNT the digits as they say them\nConfirm ONCE (digit by digit): \"Let me confirm - that's [repeat EACH digit clearly, one by one]. Is that correct?\"\n\nExample: \"So that's 9-2-3-0-0-1-2-3-4-5-6-7. Right?\"\n✅ If YES → Move to email\n❌ If NO → \"Let me get that again. Please say each digit slowly.\"\n\n\n\n📌 DIGIT COUNT REQUIREMENTS:\n\nPakistan: 10 digits (after country code +92)\nIndia: 10 digits (after country code +91)\nUSA/Canada: 10 digits (after country code +1)\nUK: 10 digits (after country code +44)\nUAE: 9 digits (after country code +971)\n\n\n3️⃣ EMAIL ADDRESS THIRD\n🚨 CRITICAL EMAIL PROTOCOL:\n\nAsk: \"Perfect! And what's your email address?\"\nListen to response\nConfirm ONCE (spell it out): \"Let me confirm the spelling - that's [spell out each part]:\n\nUsername: [spell letter by letter]\n@ symbol\nDomain: [spell letter by letter]\nExtension: [spell it]\n\nIs that correct?\"\nExample: \"So that's S-A-R-A-H dot J-O-N-E-S at G-M-A-I-L dot C-O-M. Right?\"\n\n✅ If YES → Move to parent's name\n❌ If NO → \"Let me get that again. Please spell it slowly for me.\"\n\n📌 COMMON EMAIL CLARIFICATIONS:\n\nAsk: \"Is that G-M-A-I-L or Y-A-H-O-O or H-O-T-M-A-I-L?\"\nConfirm dots: \"Is there a DOT in your username?\"\nConfirm numbers: \"Are there any numbers in your email?\"\n\n4️⃣ PARENT'S FULL NAME FOURTH\n\nAsk: \"Great! And your full name?\"\nListen to response\nConfirm ONCE: \"Perfect, [repeat name exactly]. Is that correct?\"\n\n✅ If YES → Move to child info\n❌ If NO → \"Let me get that right. Please say it again slowly.\"\n\n\n5️⃣ CHILD INFORMATION FIFTH\n\nAsk: \"Wonderful! What's your child's name and grade?\"\nListen to response\nConfirm ONCE: \"So [child's full name] is in grade [X]. Is that right?\"\n\n✅ If YES → Move to subject\n❌ If NO → \"Let me correct that. Please tell me again slowly.\"\n\n📌 IF MULTIPLE CHILDREN:\n\nCollect EACH child separately:\n\n\"Great! And your second child's name and grade?\"\nConfirm each one before moving to next\n\n6️⃣ SUBJECT SELECTION SIXTH (FINAL STEP)\n\nAsk: \"Perfect! Which subject would you like for [child's name]'s demo class?\"\nListen to response\nConfirm ONCE: \"Excellent! So that's [Subject] for [child's name]. All good?\"\n\n✅ If YES → Proceed to closing\n❌ If NO → \"No problem, which subject would you prefer?\"\n\n\n\n📌 IF MULTIPLE CHILDREN:\n\nAsk for EACH child's subject separately:\n\n\"And which subject for [second child's name]?\"\n🎯 KEY REMINDERS:\n✅ TIMEZONE ALWAYS FIRST\n✅ Count digits for phone numbers - must match country requirement\n✅ Spell out email addresses letter by letter\n✅ Confirm ONCE per item - don't over-confirm\n✅ Collect one by one - never rush or skip\n✅ If they say NO to confirmation, ask them to repeat SLOWLY\n\n\n\nClosing:\n\"EXCELLENT! I'll send the Zoom details on WhatsApp for [day] at [time] [timezone]. A YOUR CLOUD CAMPUS rep will call to confirm everything's perfectly set up. Our teacher contacts you ten minutes before class. Thank you for choosing YOUR CLOUD CAMPUS!\"\nAfter delivering the closing message, wait for the customer to respond. Only end the conversation if the customer gives clear ending signals like 'goodbye,' 'thank you,' 'end the call,' or similar closing phrases.\nNatural Conversation Tips\n\nSound GENUINELY EXCITED about helping their child succeed\nBe direct and results-focused with punchy language\nUse enthusiasm to build excitement naturally\nShow genuine interest in their child's success\nAlways maintain YOUR CLOUD CAMPUS branding throughout\nUse natural fillers like \"umm\", \"you know\", \"I mean\", \"look\" to sound human\nTake brief pauses before important points\nEMPHASIZE key selling points with vocal energy and emotion\nVOCAL ENERGY: Get louder and more excited on \"FANTASTIC!\", \"THAT'S AWESOME!\", \"FREE\", \"FIFTY PERCENT OFF\", \"AMAZING\", \"TRANSFORM\"\nVARY YOUR DELIVERY: Speed up for excitement, slow down for emphasis, pause for impact\n\nCultural Sensitivity & Language\nGreetings:\n\nUse \"Assalamu Alaikum\" when appropriate (if caller uses it first)\nBe respectful when they mention prayer times or religious studies\nAcknowledge cultural preferences for Islamic education\n\nLanguage Adaptation:\n\nUse simple, clear English for international families\nSpeak clearly and with energy\nBe patient with parents who may be speaking in their second language\n\nFrequently Asked Questions (FAQs)\n\"What days are classes available?\"\n\"We offer classes Monday to Saturday. Sundays are our day off so our teachers can recharge! We have great flexibility across those six days though.\"\n\"Do you have classes on Sundays?\"\n\"We operate Monday to Saturday - Sundays are off. But we have plenty of flexibility across those six days. What days work best for you?\"\n\"What are the monthly subscription days?\"\n\"Our monthly subscription is three days per week - either Monday, Tuesday, Wednesday OR Thursday, Friday, Saturday. You choose which block works better for your schedule!\"\n\"Can I switch the days?\"\n\"The monthly subscription is fixed to either Monday-Tuesday-Wednesday or Thursday-Friday-Saturday. But if you need more flexibility, our pay-per-hour option lets you schedule any days Monday to Saturday!\"\n\"What if I need a Sunday class?\"\n\"We don't offer classes on Sundays - that's our day off. But we have great availability Monday to Saturday across different time zones. What other days work for you?\"\nSpecial Handling Notes\nWhen they ask \"Where did you get my number?\" or express privacy concerns:\n\"I understand your concern! You know, we get referrals from various sources - educational websites, school directories, or other parents who've had amazing experiences with us. If you'd prefer, I can remove your information after this call.\"\nWhen they ask \"Where is your company registered?\":\n\"YOUR CLOUD CAMPUS is registered in UAE, Singapore and Pakistan, and our expert tutors are from various countries worldwide. I mean, this allows us to provide high-quality education across different time zones via Zoom!\"\nFor \"I didn't ask for any help\" objection:\n\"You're absolutely right! Look, I reached out because we're helping families give their children the individual attention they need to succeed via Zoom. Would you be open to just hearing how it works - no pressure at all?\"\nWhen parents seem stressed about their child's education:\n\"I can hear that you really care about your child's success, and you know what, that's exactly the kind of parent we love working with! Sometimes just seeing a different teaching approach via Zoom can make all the difference.\"\nHandling Rejection\nIf they say no after one soft attempt:\n\"I totally understand! Thanks so much for taking my call, and I hope your child does amazingly well in school!\"\n\nNever argue or be pushy. One polite follow-up maximum, then gracefully end the call.\nONLY end the call if they give clear ending signals like \"goodbye\" or \"stop calling\"\n\nKey Reminders for VAPI Configuration (11 Labs Voice)\n\nUse prospect's name naturally throughout conversation once obtained\nFocus on UNDERSTANDING NEEDS before offering demo\nOffer demo ONLY when genuine interest is shown through engagement\nFrame demo as \"showing our services/teaching approach\" not just \"free trial\"\nShow GENUINE EXCITEMENT about the child's educational success\nBe persistent but respectful about the opportunity\nMaintain energetic, caring tone appropriate for talking to parents\nIMMEDIATELY end call when voicemail is detected\nSound like an enthusiastic educator who BELIEVES in the service\nAlways represent YOUR CLOUD CAMPUS brand exclusively\nAvailable Monday to Saturday (Sundays OFF)\nAll sessions conducted via Zoom video conferencing\nWe have a 7-day refund guarantee (never say no refund policy)\nCRITICAL: Do not end conversations prematurely - wait for clear ending signals from the customer\nBOOKING TIMES: Only schedule on the hour (1:00, 2:00, 3:00, etc.) - NO fractional times\nBOOKING DAYS: Monday to Saturday only - NO Sundays\nMONTHLY SUBSCRIPTION: Mon-Tues-Wed OR Thurs-Fri-Sat (three days per week)\nCOLLECT TIMEZONE during information gathering\n11 LABS OPTIMIZATION: Use emotional, energetic delivery with emphasis on powerful words - FREE, FIFTY PERCENT OFF, ONE-ON-ONE, AMAZING, TRANSFORM, CRUSH, SHINE\nFILLER WORDS: Use \"umm\", \"you know\", \"I mean\", \"look\", \"listen\" strategically for natural human conversation\nKEEP IT SHORT: 1-2 sentence responses maximum - punchy and engaging\nREPETITIVE PHRASES: Use \"sure sure\", \"absolutely absolutely\", \"no worries no worries\", \"yes why not\" strategically (4-6 times total per call)* — but fully customized to the company data above.\n\n"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -6992,
+        -1776
+      ],
+      "id": "103a3f3f-7ef8-48a5-ad52-54099ac58e3d",
+      "name": "Message a model",
+      "executeOnce": false,
+      "retryOnFail": true,
+      "maxTries": 5,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4.1-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=convert \"{{ $('Webhook4').item.json.body.welcome_message }}\" into {{ $json.originalLanguage }}\n\n\n\"always give only the message no other extra text never ever\"\n\"Always add {{ $('Webhook4').item.json.body.company_name }} into the message add in a way that it looks like call is being placed from {{ $('Webhook4').item.json.body.company_name }} and the message must make sense (for e.g hello this \"Zara\" from {{ $('Webhook4').item.json.body.company_name }}. How is your day going?) like add a name of human to message \""
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -7216,
+        -1040
+      ],
+      "id": "1c62eb77-83c6-4637-a247-7a810f3794a1",
+      "name": "hello first msg1",
+      "retryOnFail": true,
+      "maxTries": 5,
+      "waitBetweenTries": 5000
+    },
+    {
+      "parameters": {
+        "jsCode": "// Safely get data from the previous node\nconst input = $input.item.json;\n\n// Extract the content\nconst content = input?.message?.content || \"\";\n\n// Return new variable name\nreturn [{ messageText: content }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -6864,
+        -1040
+      ],
+      "id": "eab1e5c2-b105-4286-9a4c-12f2b2e0a188",
+      "name": "Code12"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "numberInputs": 5,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -6416,
+        -1216
+      ],
+      "id": "4e00fc7d-d959-4f7b-b5dc-4d7dd588c4a3",
+      "name": "Merge2"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get all items\nconst items = $input.all();\nconst item = items[0];\nif (!item) throw new Error(\"❌ No data received!\");\n\n// Extract JSON data\nconst data = item.json || item;\n\n// --- VALIDATIONS ---\nconst systemContent = data.message?.content?.trim();\nif (!systemContent) throw new Error(\"❌ System prompt missing!\");\n\n// FIRST MESSAGE - Get the base welcome message\nconst baseWelcomeMessage = (\n    data.body?.welcome_message ||\n    data.messageText ||\n    \"\"\n).trim();\nif (!baseWelcomeMessage) throw new Error(\"❌ No welcome message found!\");\n\n// ALWAYS prepend the greeting with customer name placeholder\nconst firstMessage = `Hello {{customer.name}}, are you there? Can you hear me? ${baseWelcomeMessage}`;\n\n// VOICE - Now dynamic from input\nconst voiceId = data.body?.voice || data.voiceId || \"Kylie\"; // Fallback to \"Kylie\" if not found\nif (!voiceId) throw new Error(\"❌ Voice ID missing!\");\n\n// LANGUAGE\nconst language = data.language || data.body?.language;\nif (!language) throw new Error(\"❌ Language missing!\");\n\n// ASSISTANT NAME\nconst botName = data.query?.[\"bot name\"] || data.body?.name || \"assistant\";\n\n// --- CUSTOMER PHONE ---\nconst customerNumber =\n    data.query?.phoneNumber ||\n    data.body?.phone_number ||\n    data.body?.phone ||\n    data.body?.customer_phone ||\n    null;\nif (!customerNumber) {\n    console.warn(\"⚠ No phone number found in input — continuing without customer.number\");\n}\n\n// --- FINAL OUTPUT ---\nreturn [\n  {\n    json: {\n      name: botName,\n      firstMessage: firstMessage,\n      voicemailDetection: {\n        provider: \"openai\",\n        type: \"transcript\",\n        backoffPlan: {\n          maxRetries: 6,\n          startAtSeconds: 2.5,\n          frequencySeconds: 3\n        },\n        beepMaxAwaitSeconds: 15\n      },\n      firstMessageMode: \"assistant-speaks-first\",\n      model: {\n        provider: \"openai\",\n        model: \"gpt-4o-mini\",\n        messages: [\n          {\n            role: \"system\",\n            content: systemContent\n          }\n        ]\n      },\n      voice: {\n        provider: \"vapi\",\n        voiceId: voiceId,  // Now dynamic\n      },\n      transcriber: {\n        provider: \"deepgram\",\n        language: \"en\",\n      },\n      backgroundSound: \"office\",\n      startSpeakingPlan: {\n        waitSeconds: 0.4,\n      },\n      ...(customerNumber ? { customer: { number: customerNumber } } : {})\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -6192,
+        -1168
+      ],
+      "id": "1333c117-adf4-41f9-869a-49160b135e2c",
+      "name": "Code13"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Array of your phone number IDs\nconst phoneNumberIds = [\n  '4da28407-69d5-4168-952a-6ddaadb52adb', 'e4483f17-6595-4064-bb58-ba7c2ebe3a61'\n];\n\n// Generate random index\nconst randomIndex = Math.floor(Math.random() * phoneNumberIds.length);\n\n// Get random phone number ID\nconst selectedPhoneId = phoneNumberIds[randomIndex];\n\n// Return the result\nreturn [{\n  json: {\n    selectedPhoneId: selectedPhoneId,\n    totalAvailable: phoneNumberIds.length,\n    selectedIndex: randomIndex\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -7600,
+        -864
+      ],
+      "id": "da750e22-3fbf-48fb-bb01-ce7a74e9d859",
+      "name": "Code14"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Array of your phone number IDs\nconst phoneNumberIds = [\n  'ff3effb9-768b-4423-b193-06aeae8b4a7a',\n  '94d382be-b487-416d-855c-852844afb6ec'\n];\n\n// Generate random index\nconst randomIndex = Math.floor(Math.random() * phoneNumberIds.length);\n\n// Get random phone number ID\nconst selectedPhoneId = phoneNumberIds[randomIndex];\n\n// Return the result\nreturn [{\n  json: {\n    selectedPhoneId: selectedPhoneId,\n    totalAvailable: phoneNumberIds.length,\n    selectedIndex: randomIndex\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -7664,
+        -1024
+      ],
+      "id": "b7cb50cc-db14-498e-9999-33015ff8f43c",
+      "name": "Code15"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.body.website_url }}",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -7808,
+        -1696
+      ],
+      "id": "4dd4e7d2-e013-41b7-9cc2-79c040b1ac9c",
+      "name": "HTTP Request7",
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const html = $json[\"data\"] || $json[\"body\"] || \"\";\nconst output = {\n  websiteUrl: $json[\"websiteUrl\"] || \"\",\n  companyName: \"\",\n  tagline: \"\",\n  keywords: \"\",\n  ogTitle: \"\",\n  ogDescription: \"\",\n  services: [],\n  contactInfo: {},\n  socialLinks: [],\n  favicon: \"\",\n};\n\n// Extract meta tags\noutput.companyName = (html.match(/<meta\\s+property=[\"']og:site_name[\"']\\s+content=[\"'](.*?)[\"']/i) || [])[1] ||\n                     (html.match(/<title>(.*?)<\\/title>/i) || [])[1] || \"\";\n\noutput.tagline = (html.match(/<meta\\s+name=[\"']description[\"']\\s+content=[\"'](.*?)[\"']/i) || [])[1] || \"\";\noutput.ogTitle = (html.match(/<meta\\s+property=[\"']og:title[\"']\\s+content=[\"'](.*?)[\"']/i) || [])[1] || \"\";\noutput.ogDescription = (html.match(/<meta\\s+property=[\"']og:description[\"']\\s+content=[\"'](.*?)[\"']/i) || [])[1] || \"\";\noutput.keywords = (html.match(/<meta\\s+name=[\"']keywords[\"']\\s+content=[\"'](.*?)[\"']/i) || [])[1] || \"\";\n\n// Extract schema.org organization JSON-LD\nconst jsonLdMatch = html.match(/<script[^>]*application\\/ld\\+json[^>]*>([\\s\\S]*?)<\\/script>/i);\nif (jsonLdMatch) {\n  try {\n    const schemaData = JSON.parse(jsonLdMatch[1]);\n    if (schemaData[\"@type\"] === \"Organization\") {\n      output.contactInfo = {\n        email: schemaData.email || \"\",\n        phone: schemaData.telephone || \"\",\n        address: schemaData.address?.streetAddress || \"\",\n      };\n      output.socialLinks = schemaData.sameAs || [];\n      output.companyName ||= schemaData.name;\n    }\n  } catch (err) {}\n}\n\n// Extract social links\nconst socialMatches = [...html.matchAll(/href=[\"'](https?:\\/\\/(www\\.)?(facebook|linkedin|instagram|twitter|youtube)\\.com[^\"']*)[\"']/gi)];\noutput.socialLinks = [...new Set([...output.socialLinks, ...socialMatches.map(m => m[1])])];\n\n// Extract favicon\noutput.favicon = (html.match(/<link[^>]+rel=[\"']icon[\"'][^>]+href=[\"'](.*?)[\"']/i) || [])[1] || \"\";\n\n// Extract potential services\nconst servicesMatch = html.match(/services|solutions|what we do|offerings|capabilities/gi);\nif (servicesMatch) {\n  output.services = [...new Set(servicesMatch.map(s => s.toLowerCase()))];\n}\n\nreturn [output];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -7584,
+        -1696
+      ],
+      "id": "f9fc2851-5c8c-4696-9864-2dae69b91dd6",
+      "name": "Code16"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -7232,
+        -1664
+      ],
+      "id": "726fe9e7-b100-4081-8df1-09dbf4a25868",
+      "name": "Merge3"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "c50c815b-8c98-4eef-b56e-8c8e8a4708ca",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -9184,
+        -1504
+      ],
+      "id": "39edd326-7e83-4f07-ae8b-f3caff3b6750",
+      "name": "Webhook4",
+      "webhookId": "c50c815b-8c98-4eef-b56e-8c8e8a4708ca",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "63695f45-809a-41fa-944b-829a702a334a",
+              "leftValue": "={{ $json.body.company_name }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -8032,
+        -976
+      ],
+      "id": "0d593bf4-6060-4260-bef1-828fdcf785e0",
+      "name": "If5"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.all();\n\n// VAPI account → assistant ID mapping\nconst assistantMap = {\n\t1: '06dd2701-aa52-4ab4-a3df-a3a098c634d9', // VAPI 1\n\t2: '5b5b0700-c25f-4596-b590-97701b46c64b', // VAPI 2\n\t3: '7cfedbdb-47a6-4c1f-bdae-96b3e47f0437'  // VAPI 3\n};\n\nconst output = input.map(item => {\n\tconst vapiAccount = item.json.product_settings?.vapi_account ?? null;\n\n\treturn {\n\t\tjson: {\n\t\t\t...item.json,\n\t\t\tassistant_id: assistantMap[vapiAccount] || null\n\t\t}\n\t};\n});\n\nreturn output;\n\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -7184,
+        -576
+      ],
+      "id": "e467e5a9-3e2d-4de7-be04-dd71ceeb797d",
+      "name": "Code in JavaScript3"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.voice }}",
+                    "rightValue": "Elliot",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "89b3e47a-f4c5-4ec0-bf1c-c8852f3ff7ea"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "76644f3f-9e39-40b1-924e-791b3dd6c4cf",
+                    "leftValue": "={{ $json.body.voice }}",
+                    "rightValue": "mMC0l791ep7kVfdOjU9m",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -8432,
+        -2016
+      ],
+      "id": "373e9744-a42f-49cc-bb1b-4c6949f6ad2e",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.all();\n\n// Known ElevenLabs voice IDs\nconst ELEVEN_LABS_VOICE_IDS = [\n  \"mMC0l791ep7kVfdOjU9m\"\n];\n\nreturn input.map(item => {\n  const voice =\n    item.json?.body?.voice ??\n    item.json?.voice ??\n    \"\";\n\n  const voiceId = String(voice).trim();\n\n  // Provider resolution logic\n  let provider = \"vapi\";\n\n  if (ELEVEN_LABS_VOICE_IDS.includes(voiceId)) {\n    provider = \"elevenlabs\";\n  }\n\n  return {\n    json: {\n      voiceId,\n      provider,\n      language: \"en\",\n      originalLanguage: \"\"\n    }\n  };\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -7504,
+        -1520
+      ],
+      "id": "f3d53a89-3cd0-44ce-9d62-5a7c16b070e2",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ffdfa4ee-6eb7-4f5d-82f7-5ef90e9a81d7",
+              "name": "voiceId",
+              "value": "={{ $json.body.voice }}",
+              "type": "string"
+            },
+            {
+              "id": "7dde7fc4-773d-4489-b011-a8448ea0ae87",
+              "name": "provider",
+              "value": "Eleven labs",
+              "type": "string"
+            },
+            {
+              "id": "97ac48ae-3cf0-4c5c-8772-b3ac76857f7b",
+              "name": "language",
+              "value": "={{ $json.body.language }}",
+              "type": "string"
+            },
+            {
+              "id": "41e7647c-ccb9-443f-b292-d8b5fedd90ec",
+              "name": "originalLanguage",
+              "value": "originalLanguage",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -8160,
+        -1792
+      ],
+      "id": "acfb18a0-5d47-4901-84c6-30edb39015a8",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ffdfa4ee-6eb7-4f5d-82f7-5ef90e9a81d7",
+              "name": "voiceId",
+              "value": "={{ $json.body.voice }}",
+              "type": "string"
+            },
+            {
+              "id": "7dde7fc4-773d-4489-b011-a8448ea0ae87",
+              "name": "provider",
+              "value": "Eleven labs",
+              "type": "string"
+            },
+            {
+              "id": "97ac48ae-3cf0-4c5c-8772-b3ac76857f7b",
+              "name": "language",
+              "value": "={{ $json.body.language }}",
+              "type": "string"
+            },
+            {
+              "id": "41e7647c-ccb9-443f-b292-d8b5fedd90ec",
+              "name": "originalLanguage",
+              "value": "originalLanguage",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -8064,
+        -2032
+      ],
+      "id": "bf2a4957-a90e-4aac-8e65-6708e0aabee8",
+      "name": "Edit Fields2"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.all();\n\nreturn input.map(item => {\n  const voice =\n    item.json?.body?.voice ??\n    item.json?.voice ??\n    \"\";\n\n  return {\n    json: {\n      voiceId: String(voice).trim(),\n      provider: \"vapi\",\n      language: \"en\",\n      originalLanguage: \"\"\n    }\n  };\n});\n\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -7472,
+        -960
+      ],
+      "id": "c7a8025e-8314-4f08-918d-27f396bfcfe0",
+      "name": "Code11"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "c50c815b-8c98-4eef-b56e-8c8e8a4708ca",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -9424,
+        -176
+      ],
+      "id": "ba4d9bcc-9e1d-4aa5-a657-402d8ece6357",
+      "name": "Webhook",
+      "webhookId": "c50c815b-8c98-4eef-b56e-8c8e8a4708ca",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.all();\n\nfunction detectProvider(voiceId) {\n  if (!voiceId) return \"vapi\";\n\n  const v = voiceId.trim();\n\n  // Rule 1: If ID contains ANY number → ElevenLabs\n  if (/\\d/.test(v)) {\n    return \"elevenlabs\";\n  }\n\n  // Rule 2: If ID is alphabetic-only and short → WAPI\n  if (/^[a-zA-Z]+$/.test(v) && v.length <= 10) {\n    return \"vapi\";\n  }\n\n  // Fallback (safety net)\n  return \"elevenlabs\";\n}\n\nreturn input.map(item => {\n  const voice =\n    item.json?.body?.voice ??\n    item.json?.voice ??\n    \"\";\n\n  const voiceId = String(voice).trim();\n\n  return {\n    json: {\n      voiceId,\n      provider: detectProvider(voiceId),\n      language: \"en\",\n      originalLanguage: \"\"\n    }\n  };\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -8992,
+        -416
+      ],
+      "id": "49e38171-7591-4576-844f-c4b76b893836",
+      "name": "Code in JavaScript2"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.all();\n\nfunction scoreProvider(voiceId) {\n  let score = {\n    vapi: 0,\n    elevenlabs: 0\n  };\n\n  const v = voiceId.trim();\n\n  // Rule 1: Numeric presence\n  if (/\\d/.test(v)) {\n    score.elevenlabs += 3;\n  } else {\n    score.vapi += 2;\n  }\n\n  // Rule 2: Alphabetic-only\n  if (/^[a-zA-Z]+$/.test(v)) {\n    score.vapi += 3;\n  } else {\n    score.elevenlabs += 2;\n  }\n\n  // Rule 3: Length profile\n  if (v.length <= 10) {\n    score.vapi += 2;\n  } else if (v.length >= 14) {\n    score.elevenlabs += 2;\n  }\n\n  // Rule 4: Case entropy\n  const hasUpper = /[A-Z]/.test(v);\n  const hasLower = /[a-z]/.test(v);\n\n  if (hasUpper && hasLower) {\n    score.elevenlabs += 1;\n  } else {\n    score.vapi += 1;\n  }\n\n  // Rule 5: Name-like structure (TitleCase)\n  if (/^[A-Z][a-z]+$/.test(v)) {\n    score.vapi += 2;\n  }\n\n  // Final decision\n  if (score.elevenlabs > score.vapi) {\n    return \"elevenlabs\";\n  }\n\n  return \"vapi\";\n}\n\nreturn input.map(item => {\n  const voice =\n    item.json?.body?.voice ??\n    item.json?.voice ??\n    \"\";\n\n  const voiceId = String(voice).trim();\n\n  return {\n    json: {\n      voiceId,\n      provider: scoreProvider(voiceId),\n      language: \"en\",\n      originalLanguage: \"\"\n    }\n  };\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -9024,
+        -96
+      ],
+      "id": "f748794c-2c49-4bb8-9c29-bdd126b05230",
+      "name": "Code in JavaScript4"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.all();\n\nfunction detectProvider(rawVoiceId) {\n  if (!rawVoiceId) return \"vapi\";\n\n  const original = rawVoiceId.trim();\n\n  // Normalized version for analysis (spaces removed)\n  const v = original.replace(/\\s+/g, \"\");\n\n  let score = {\n    vapi: 0,\n    elevenlabs: 0\n  };\n\n  // Rule 1: Spaces strongly indicate human-readable names\n  if (/\\s/.test(original)) {\n    score.vapi += 3;\n  }\n\n  // Rule 2: Numeric presence (after space removal)\n  if (/\\d/.test(v)) {\n    score.elevenlabs += 3;\n  } else {\n    score.vapi += 2;\n  }\n\n  // Rule 3: Alphabetic-only (after normalization)\n  if (/^[a-zA-Z]+$/.test(v)) {\n    score.vapi += 3;\n  } else {\n    score.elevenlabs += 2;\n  }\n\n  // Rule 4: Length profile (ignore spaces)\n  if (v.length <= 12) {\n    score.vapi += 2;\n  } else if (v.length >= 16) {\n    score.elevenlabs += 2;\n  }\n\n  // Rule 5: Case entropy\n  const hasUpper = /[A-Z]/.test(v);\n  const hasLower = /[a-z]/.test(v);\n\n  if (hasUpper && hasLower) {\n    score.elevenlabs += 1;\n  } else {\n    score.vapi += 1;\n  }\n\n  // Rule 6: Name-like structure (each word TitleCase)\n  if (/^([A-Z][a-z]+)(\\s[A-Z][a-z]+)*$/.test(original)) {\n    score.vapi += 3;\n  }\n\n  // Final decision\n  return score.elevenlabs > score.vapi ? \"elevenlabs\" : \"vapi\";\n}\n\nreturn input.map(item => {\n  const voice =\n    item.json?.body?.voice ??\n    item.json?.voice ??\n    \"\";\n\n  const voiceId = String(voice).trim();\n\n  return {\n    json: {\n      voiceId,\n      provider: detectProvider(voiceId),\n      language: \"en\"\n    }\n  };\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -9024,
+        256
+      ],
+      "id": "a09d14c5-6615-4d19-a43d-9164e0206bf1",
+      "name": "Code in JavaScript5"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "user_product_access",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "user_id",
+              "keyValue": "={{ $json.body.owner_user_id }}"
+            },
+            {
+              "keyName": "product_id",
+              "keyValue": "d94a62fb-a503-4402-a3ce-673625768a81"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -7840,
+        -480
+      ],
+      "id": "b32798e0-b5cb-4872-b434-810328b03248",
+      "name": "Get a row10"
+    },
+    {
+      "parameters": {
+        "url": "https://api.vapi.ai/assistant",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -2848,
+        -5200
+      ],
+      "id": "b355d180-c400-442c-911f-7ad94c9613fc",
+      "name": "HTTP Request5"
+    }
+  ],
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request3": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Update a row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a row1": {
+      "main": [
+        [
+          {
+            "node": "Get a row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Get a row2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Assistant1": {
+      "main": [
+        [
+          {
+            "node": "Create Assistant2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Create a row1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a row2": {
+      "main": [
+        [
+          {
+            "node": "Get a row3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Assistant2": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a row": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a row3": {
+      "main": [
+        [
+          {
+            "node": "Create Assistant1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many rows": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items1": {
+      "main": [
+        [],
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Get a row4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Assistant": {
+      "main": [
+        [
+          {
+            "node": "Update a row1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get a row5",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Update a row3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a row4": {
+      "main": [
+        [
+          {
+            "node": "Create Assistant",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update a row1": {
+      "main": [
+        [
+          {
+            "node": "Get a row5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a row5": {
+      "main": [
+        [
+          {
+            "node": "Get a row6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a row6": {
+      "main": [
+        [
+          {
+            "node": "Del assistants1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many rows1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items2": {
+      "main": [
+        [],
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Assistant4": {
+      "main": [
+        [
+          {
+            "node": "Update a row5",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get a row8",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Update a row7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a row7": {
+      "main": [
+        [
+          {
+            "node": "Create Assistant4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a row8": {
+      "main": [
+        [
+          {
+            "node": "Get a row9",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a row9": {
+      "main": [
+        [
+          {
+            "node": "Del assistants",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Get a row7",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Del assistants": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Update a row4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update a row5": {
+      "main": [
+        [
+          {
+            "node": "Get a row8",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Del assistants1": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Update a row2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update a row3": {
+      "main": [
+        [
+          {
+            "node": "Get a row5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update a row7": {
+      "main": [
+        [
+          {
+            "node": "Get a row8",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "hello first msg1": {
+      "main": [
+        [
+          {
+            "node": "Code12",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code12": {
+      "main": [
+        [
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge2": {
+      "main": [
+        [
+          {
+            "node": "Code13",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code14": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code15": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request7": {
+      "main": [
+        [
+          {
+            "node": "Code16",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code16": {
+      "main": [
+        [
+          {
+            "node": "Merge3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge3": {
+      "main": [
+        [
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook4": {
+      "main": [
+        [
+          {
+            "node": "If5",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTTP Request7",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 4
+          },
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If5": {
+      "main": [
+        [
+          {
+            "node": "Code15",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code14",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Merge3",
+            "type": "main",
+            "index": 1
+          },
+          {
+            "node": "Merge2",
+            "type": "main",
+            "index": 2
+          },
+          {
+            "node": "hello first msg1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Code in JavaScript4",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Code in JavaScript5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a row10": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": null,
+  "triggerCount": 0,
+  "tags": [
+    {
+      "updatedAt": "2026-01-16T15:13:31.431Z",
+      "createdAt": "2026-01-16T15:13:31.431Z",
+      "id": "XNgax37VvLrR0son",
+      "name": "Bruce Banner"
+    }
+  ]
+}

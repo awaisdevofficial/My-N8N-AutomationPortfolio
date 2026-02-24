@@ -1,0 +1,74 @@
+{
+  "updatedAt": "2026-01-21T00:02:42.579Z",
+  "createdAt": "2026-01-20T17:49:29.063Z",
+  "id": "C68FOKVoGgTCW8bm",
+  "name": "Automated Update Alerts & Version Control",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "events": [
+          "update"
+        ]
+      },
+      "type": "n8n-nodes-base.n8nTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1200,
+        -1104
+      ],
+      "id": "f7a88e02-2dcb-4b77-982c-31ec8f1f0f0f",
+      "name": "n8n Trigger",
+      "notesInFlow": true
+    },
+    {
+      "parameters": {
+        "url": "=https://auto.nsolbpo.com/api/v1/workflows/{{ $json.workflow_id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "accept",
+              "value": "application/json"
+            },
+            {
+              "name": "X-N8N-API-KEY",
+              "value": "[REDACTED_JWT]"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -944,
+        -1104
+      ],
+      "id": "949f607f-ec7d-4397-a380-6f3be5e2ecfd",
+      "name": "HTTP Request"
+    }
+  ],
+  "connections": {
+    "n8n Trigger": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "triggerCount": 1,
+  "tags": []
+}

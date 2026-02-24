@@ -1,0 +1,1207 @@
+{
+  "updatedAt": "2025-12-17T09:50:20.233Z",
+  "createdAt": "2025-10-30T07:53:58.413Z",
+  "id": "wRvC8WyzmFoOgYS7",
+  "name": "nsol erp start/stop",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "path": "8ed1a8db-9f19-4575-b436-9d5ebc3a332e",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -4912,
+        -784
+      ],
+      "id": "85e5a1d3-3ac0-477c-844f-114523e625f1",
+      "name": "Webhook",
+      "webhookId": "8ed1a8db-9f19-4575-b436-9d5ebc3a332e"
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://erp.nsolbpo.com/api/customers/{{ $json.callId }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"status\": \"completed\",\n  \"call_id\": \"{{ $json.callId }}\",\n  \"recording_url\": \"{{ $('Check Call Status').item.json.recordingUrl || $('Check Call Status').item.json.recording || '' }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -2240,
+        -976
+      ],
+      "id": "8e706bcd-8dac-448f-8433-ffdf2d2d4a48",
+      "name": "HTTP Request5"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://erp.nsolbpo.com/api/customer/{{ $('Process Customer Data2').item.json.originalInput.rawCustomer.id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"status\": \"calling\",\n  \"call_id\": \"{{ $json.id }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -3744,
+        160
+      ],
+      "id": "7aa2ec6b-a9a1-4842-8a7d-7deab23d8227",
+      "name": "HTTP Request6"
+    },
+    {
+      "parameters": {
+        "content": "if namke, email, phone number and meeting date exsist in summary then hit erp end point",
+        "height": 256,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1824,
+        -608
+      ],
+      "id": "f570a59b-4e7a-4302-9ca4-70f997dc67bc",
+      "name": "Sticky Note33"
+    },
+    {
+      "parameters": {
+        "content": "if no name, email, phone number and meeting date then workflow ends ",
+        "height": 256,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -2080,
+        -256
+      ],
+      "id": "138e898b-39e4-473e-a7f1-d07de48b7497",
+      "name": "Sticky Note34"
+    },
+    {
+      "parameters": {
+        "content": "this node see if the summary have email, name and phone number ",
+        "height": 208,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -2128,
+        -576
+      ],
+      "id": "e2013fa2-8961-44aa-a008-55583bc60bcd",
+      "name": "Sticky Note35"
+    },
+    {
+      "parameters": {
+        "content": "if call hasnt been ended go back to wait node and wait for another 60 seconds and then check call status again this process is repeated until call ends and status gets updated",
+        "height": 320,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -2736,
+        -1120
+      ],
+      "id": "c22d27b4-3ac3-4193-bad3-7f07ee960733",
+      "name": "Sticky Note36"
+    },
+    {
+      "parameters": {
+        "content": "update the status of call from calling to completed",
+        "height": 224,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -2400,
+        -592
+      ],
+      "id": "774778fb-ee05-4118-a2a0-07b30296681f",
+      "name": "Sticky Note37"
+    },
+    {
+      "parameters": {
+        "content": "if call is ended it analyzes call summary and look for whether the meeting have been booked or not and gather full name, email and phone number from call transcribtion",
+        "height": 272,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -2416,
+        -320
+      ],
+      "id": "1833f54c-d49d-47b5-adf4-f961c13e9560",
+      "name": "Sticky Note38"
+    },
+    {
+      "parameters": {
+        "content": "this node decide what to do on basis of call status ",
+        "height": 224,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -2736,
+        -544
+      ],
+      "id": "30bff0b4-7a10-431b-9be7-bec613a1b179",
+      "name": "Sticky Note39"
+    },
+    {
+      "parameters": {
+        "content": "check the call status to see if call have ended or not",
+        "height": 240,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -3024,
+        -560
+      ],
+      "id": "c35bf438-882b-4ae4-a054-5965f25e1ddb",
+      "name": "Sticky Note40"
+    },
+    {
+      "parameters": {
+        "content": "this node do exactly nothing just make the workflow to wait for 60 seconds",
+        "height": 240,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -3312,
+        -560
+      ],
+      "id": "f6c2a012-2df7-4cab-8d41-b6cea2a23917",
+      "name": "Sticky Note41"
+    },
+    {
+      "parameters": {
+        "amount": 2,
+        "unit": "minutes"
+      },
+      "id": "7c5290e6-cbb7-4093-940d-e8f5305f109c",
+      "name": "Wait 60 Seconds2",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [
+        -3248,
+        -480
+      ],
+      "webhookId": "f4abb3c3-c205-4168-ad1c-e79e6cffed3f",
+      "notes": "Initial wait before checking call status"
+    },
+    {
+      "parameters": {
+        "content": "stores call details such as call id assistant id phone number id etc\n",
+        "height": 256,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -3152,
+        -160
+      ],
+      "id": "59a1f876-5b74-46c7-a621-a02a55ef0ff0",
+      "name": "Sticky Note42"
+    },
+    {
+      "parameters": {
+        "content": "initiate the vapi by hitting the api\n",
+        "height": 224
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -3824,
+        -464
+      ],
+      "id": "69fca9dd-7530-4215-9d05-2f9fbfbe4878",
+      "name": "Sticky Note20"
+    },
+    {
+      "parameters": {
+        "content": "transfer the collected data into format that is supported by vapi\n"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -3856,
+        -848
+      ],
+      "id": "e788b17b-a30c-45a8-a2fe-00eb7b2f5ac2",
+      "name": "Sticky Note43"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1xaSaW-N6Kkccoh34eIJQQMrTH3Pfj-whZ6dXk1XwLPs",
+          "mode": "list",
+          "cachedResultName": "nsol",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1xaSaW-N6Kkccoh34eIJQQMrTH3Pfj-whZ6dXk1XwLPs/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 986720894,
+          "mode": "list",
+          "cachedResultName": "USN",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1xaSaW-N6Kkccoh34eIJQQMrTH3Pfj-whZ6dXk1XwLPs/edit#gid=986720894"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Number": "={{ $('Process Customer Data2').item.json.originalInput.phone }}",
+            "Status": "calling"
+          },
+          "matchingColumns": [
+            "Number"
+          ],
+          "schema": [
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Company/City",
+              "displayName": "Company/City",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Number",
+              "displayName": "Number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "State",
+              "displayName": "State",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Emails",
+              "displayName": "Emails",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -2400,
+        -1056
+      ],
+      "id": "c96a12b2-86bf-4ef5-8dca-07f830459e90",
+      "name": "Update row in sheet4",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "3599f988-b52e-4fb4-a271-c1eb4395c7b1",
+              "leftValue": "={{ $json.meetingAccepted }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -2064,
+        -496
+      ],
+      "id": "cfa4e73e-c79f-460b-aecf-92103f7b680a",
+      "name": "If2"
+    },
+    {
+      "parameters": {},
+      "id": "344c178f-bd9d-4b69-921b-3ddf1c4a358f",
+      "name": "Success - Data Sent to ERP2",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        -1504,
+        -512
+      ],
+      "notes": "Log successful completion"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://erp.nsolbpo.com/api/nsol/bpoleads",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"firstname\": \"{{ $json.name }}\",\n  \"lastname\": \".\",\n  \"email\": \"{{ $json.email }}\",\n  \"phone\": \"{{ $json.phone }}\",\n  \"demo_datetime\": \"{{ $json.appointmentDate }}\",\n\"industry\": \"realtors\",\n\"source\": \"AI Agent lead\"\n}",
+        "options": {
+          "proxy": ""
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1760,
+        -512
+      ],
+      "id": "4662c8b0-d800-47b2-a5dc-63eab55417d2",
+      "name": "HTTP Request7"
+    },
+    {
+      "parameters": {},
+      "id": "e63a1f23-815d-4f79-a5b3-864feece7af9",
+      "name": "Meeting Declined - Process End2",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        -2016,
+        -160
+      ],
+      "notes": "Log when meeting is declined and end process"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nreturn items.map(item => {\n  const data = item.json;\n  \n  // Get phone number and remove '+' if it exists\n  let phoneNumber = data.customer?.number || '';\n  if (phoneNumber.startsWith('+')) {\n    phoneNumber = phoneNumber.substring(1);\n  }\n  \n  return {\n    json: {\n      callId: data.id,\n      summary: data.summary || \"null\",\n      phoneNumber: phoneNumber,\n      artifact: {\n        recordingUrl: data.artifact?.recordingUrl || null,\n        stereoRecordingUrl: data.artifact?.stereoRecordingUrl || null\n      },\n      // Add pre-formatted data for HTTP request\n      httpRequestData: {\n        status: \"completed\",\n        calling_link: data.artifact?.recordingUrl || null,\n        description: data.summary || \"null\"\n      }\n    }\n  };\n});\n```\n\nThen in your HTTP Request node, reference the pre-built object:\n```\n{{ $json.httpRequestData }}"
+      },
+      "id": "3d03ba63-5835-4690-827c-b80b94244b8d",
+      "name": "Analyze Call Summary2",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2336,
+        -176
+      ],
+      "notes": "Analyzes summary and extracts customer info"
+    },
+    {
+      "parameters": {
+        "amount": 1.5,
+        "unit": "minutes"
+      },
+      "id": "35768bfe-de50-4c19-b13c-921b90ad9242",
+      "name": "Wait & Retry2",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [
+        -2672,
+        -976
+      ],
+      "webhookId": "480f637b-b8f1-4455-ac6c-c462fbc13b93",
+      "notes": "Wait before checking again"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "condition-1",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "ended",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "condition-2",
+              "leftValue": "={{ $('Initiate VAPI Call2').item.json.id }}",
+              "rightValue": "={{ $json.id }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "dc7b9371-1f22-4d86-9945-49089d0fb70e",
+      "name": "Call Completed?2",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -2672,
+        -480
+      ],
+      "notes": "Checks if call is completed"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.vapi.ai/call/{{ $('Initiate VAPI Call2').item.json.id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "7db4abae-22ac-4392-bcc8-432e80a06a11",
+      "name": "Check Call Status2",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        -2944,
+        -480
+      ],
+      "notes": "Checks if call has completed"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Process ALL VAPI responses instead of just first one\nconst allResponses = $input.all();\n\nreturn allResponses.map((item, index) => {\n  const vapiResponse = item.json;\n  \n  console.log(`=== VAPI RESPONSE ${index + 1} ===`);\n  console.log(JSON.stringify(vapiResponse, null, 2));\n  \n  let callId = vapiResponse.id || vapiResponse.callId || vapiResponse.call_id;\n  \n  if (!callId) {\n    throw new Error('Failed to get call ID from VAPI response. Full response: ' + JSON.stringify(vapiResponse));\n  }\n  \n  // Validate UUID format\n  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;\n  if (!uuidRegex.test(callId)) {\n    throw new Error('Call ID is not a valid UUID: ' + callId);\n  }\n  \n  console.log('Valid Call ID extracted:', callId);\n  \n  // Get corresponding customer data\n  const customerData = $('Process Customer Data').all()[index].json;\n  \n  return {\n    json: {\n      callId: callId,\n      callStatus: vapiResponse.status || 'initiated',\n      customerName: customerData.customerName,\n      customerPhone: customerData.customerPhone,\n      customerEmail: customerData.customerEmail,\n      customerId: customerData.originalInput.originalRowData.id,  // Keep DB ID\n      callStartTime: new Date().toISOString()\n    }\n  };\n});"
+      },
+      "id": "3e8a4835-288d-43eb-be8d-11fcf6c9e1c0",
+      "name": "Store Call Details2",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3088,
+        -64
+      ],
+      "notes": "Stores call ID and customer details for later use"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.vapi.ai/call",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"assistantId\": \"ac0dc231-61de-428b-9ff8-271c9d124179\",\n  \"phoneNumberId\": \"{{ (['bbfb4a83-4d6c-4a68-bb43-bdaa47a379ba', '8e87b48a-9357-49e2-ba8e-d07142fca898','4cde2da9-bde0-42ea-91f0-a0224c98046f','259cd193-9439-4118-ba30-90a1982277fd', '64eff168-74bd-4795-bea9-89f9274e7591','46a8cf21-c0de-40de-91d8-453e5703c4e3','fc494df0-e671-413b-9425-975daa9e1513'])[Math.floor(Math.random() * 7)] }}\",\n  \"customer\": {\n    \"number\": \"{{ $json.customerPhone }}\",\n    \"name\": \"{{ $json.customerName }}\"\n  },\n  \"name\": \"{{ $json.customerName || 'Cold Call' }}\"\n}\n",
+        "options": {}
+      },
+      "id": "a55ad2ab-4a85-4dca-9b18-3a67c33e1639",
+      "name": "Initiate VAPI Call2",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        -3760,
+        -384
+      ],
+      "alwaysOutputData": false,
+      "notes": "Makes the call using VAPI API"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Process ALL input items instead of just the first one\nconst allCustomers = $input.all();\n\nreturn allCustomers.map(item => {\n  const inputData = item.json;\n  \n  // Extract customer information\n  let customerName = inputData.name || inputData.customer_name || '';\n  const customerPhone = inputData.phone || inputData.phone_number || inputData.number || '';\n  const customerEmail = inputData.email || inputData.customer_email || '';\n  \n  // Remove quotes and backslashes from names\n  // This converts: Xanexay \\\"Bonzi\\\" Xaykosy -> Xanexay Bonzi Xaykosy\n  customerName = customerName.replace(/\\\\\"/g, '').replace(/\"/g, '');\n  \n  // Validate required fields\n  if (!customerPhone) {\n    throw new Error('Phone number is required for customer: ' + customerName);\n  }\n  \n  // Convert phone to string first (handles both string and number inputs)\n  const phoneString = String(customerPhone);\n  \n  // Clean phone number (remove spaces, dashes, etc.)\n  const cleanPhone = phoneString.replace(/[^+\\d]/g, '');\n  \n  // Add + if not present and looks like US number\n  let formattedPhone = cleanPhone;\n  if (!cleanPhone.startsWith('+') && cleanPhone.length === 10) {\n    formattedPhone = '+1' + cleanPhone;\n  } else if (!cleanPhone.startsWith('+') && cleanPhone.length === 11 && cleanPhone.startsWith('1')) {\n    formattedPhone = '+' + cleanPhone;\n  } else if (!cleanPhone.startsWith('+')) {\n    formattedPhone = '+' + cleanPhone;\n  }\n  \n  console.log('Processing customer:', {\n    name: customerName,\n    phone: formattedPhone,\n    email: customerEmail\n  });\n  \n  return {\n    json: {\n      customerName: customerName,\n      customerPhone: formattedPhone,\n      customerEmail: customerEmail,\n      originalInput: inputData\n    }\n  };\n});"
+      },
+      "id": "c01018d8-2ab8-41e6-9437-1c36faab3519",
+      "name": "Process Customer Data2",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3776,
+        -784
+      ],
+      "notes": "Validates and formats customer information"
+    },
+    {
+      "parameters": {
+        "content": "update the roe sheet from pending to calling\n",
+        "height": 224
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -3808,
+        80
+      ],
+      "id": "cbdc1fde-73c6-431b-95cf-959934d26d6b",
+      "name": "Sticky Note46"
+    },
+    {
+      "parameters": {
+        "url": "https://erp.nsolbpo.com/api/customers?status=calling",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -4688,
+        -784
+      ],
+      "id": "105ba3ce-c312-4b95-bdd1-d5bc17081374",
+      "name": "Fetch Calling Customers1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get calling customers from previous node\nconst apiResponse = $input.first().json;\nconst callingCustomers = apiResponse.data || apiResponse || [];\n\nconsole.log('Currently calling:', callingCustomers.length);\n\n// Calculate available slots\nconst MAX_CONCURRENT = 10;\nconst availableSlots = Math.max(0, MAX_CONCURRENT - callingCustomers.length);\n\nconsole.log('Available slots:', availableSlots);\n\n// If no slots available, stop workflow\nif (availableSlots === 0) {\n  console.log('All 10 slots occupied - stopping workflow');\n  return [];\n}\n\n// Pass available slots to next node\nreturn [{\n  json: {\n    availableSlots: availableSlots,\n    currentlyCalling: callingCustomers.length\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4464,
+        -784
+      ],
+      "id": "11bc5554-1778-4b92-8535-a6b2a6b12122",
+      "name": "Calculate Available Slots1"
+    },
+    {
+      "parameters": {
+        "url": "=https://erp.nsolbpo.com/api/customers?status=pending&limit={{ $('Calculate Available Slots1').item.json.availableSlots }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/json"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -4288,
+        -784
+      ],
+      "id": "e2c6c99a-e0aa-49e0-ab21-13cc101e2eff",
+      "name": "Fetch Pending Customers1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get available slots from earlier calculation\nconst slotsData = $('Calculate Available Slots1').first().json;\nconst availableSlots = slotsData.availableSlots;\n\n// Get pending customers from API\nconst apiResponse = $input.first().json;\nconst pendingCustomers = apiResponse.data || apiResponse || [];\n\nconsole.log('Pending customers in DB:', pendingCustomers.length);\nconsole.log('Available slots:', availableSlots);\n\n// Function to clean phone number to E.164 format\nfunction cleanToE164(phone) {\n  if (!phone) return null;\n  \n  // Convert to string and trim\n  phone = String(phone).trim();\n  \n  // Handle empty or too short numbers\n  if (phone.length === 0) return null;\n  \n  // Remove all non-digit characters except +\n  let cleaned = phone.replace(/[^\\d+]/g, '');\n  \n  // Handle multiple + signs (keep only the first one)\n  const plusCount = (cleaned.match(/\\+/g) || []).length;\n  if (plusCount > 1) {\n    cleaned = '+' + cleaned.replace(/\\+/g, '');\n  }\n  \n  // If it starts with +, validate it\n  if (cleaned.startsWith('+')) {\n    return cleaned;\n  }\n  \n  // Handle numbers starting with 00 (international prefix)\n  if (cleaned.startsWith('00')) {\n    return '+' + cleaned.substring(2);\n  }\n  \n  // Handle US numbers without country code\n  // If 10 digits and doesn't start with 0, assume US (+1)\n  if (cleaned.length === 10 && !cleaned.startsWith('0')) {\n    return '+1' + cleaned;\n  }\n  \n  // Handle US numbers with 1 prefix (11 digits)\n  if (cleaned.length === 11 && cleaned.startsWith('1')) {\n    return '+' + cleaned;\n  }\n  \n  // If number doesn't start with + and not a recognizable format, return null\n  return null;\n}\n\n// Function to validate E.164 format\nfunction isValidE164(phone) {\n  if (!phone) return false;\n  \n  // E.164 format: + followed by 1-15 digits\n  // First digit after + cannot be 0\n  const e164Regex = /^\\+[1-9]\\d{1,14}$/;\n  \n  if (!e164Regex.test(phone)) return false;\n  \n  // Additional validation: check length isn't too short (minimum 8 chars: +1234567)\n  if (phone.length < 8) return false;\n  \n  // Additional validation: check it's not suspiciously short (less than 7 digits after +)\n  const digitsAfterPlus = phone.substring(1);\n  if (digitsAfterPlus.length < 7) return false;\n  \n  return true;\n}\n\n// Process customers: clean and validate phone numbers\nconst validCustomers = pendingCustomers\n  .map(customer => {\n    const cleanedPhone = cleanToE164(customer.phone);\n    return {\n      ...customer,\n      phone: cleanedPhone,\n      originalPhone: customer.phone\n    };\n  })\n  .filter(customer => {\n    const isValid = isValidE164(customer.phone);\n    if (!isValid) {\n      console.log(`Skipping customer ${customer.id} (${customer.name}): Invalid phone \"${customer.originalPhone}\" → \"${customer.phone || 'null'}\"`);\n    } else {\n      console.log(`Valid: ${customer.name} - \"${customer.originalPhone}\" → \"${customer.phone}\"`);\n    }\n    return isValid;\n  });\n\nconsole.log(`Valid E.164 numbers: ${validCustomers.length} out of ${pendingCustomers.length}`);\n\n// Take only what we can handle\nconst customersToCall = validCustomers.slice(0, availableSlots);\n\nif (customersToCall.length === 0) {\n  console.log('No pending customers with valid phone numbers to call');\n  return [];\n}\n\nconsole.log(`Starting ${customersToCall.length} new calls`);\n\n// Return each customer as separate item for independent processing\nreturn customersToCall.map(customer => ({\n  json: {\n    customerId: customer.id,\n    name: customer.name || `${customer.firstname} ${customer.lastname}`,\n    phone: customer.phone, // This is now the cleaned E.164 format\n    email: customer.email,\n    originalPhone: customer.originalPhone, // Keep original for reference\n    rawCustomer: customer\n  }\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -4096,
+        -784
+      ],
+      "id": "2b8118e4-7f33-4c18-b023-a0c05c4b5ea1",
+      "name": "Limit to Available Slots1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://erp.nsolbpo.com/api/customer/12",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"status\": \"calling\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -3792,
+        -1264
+      ],
+      "id": "f9f1bbe6-ae34-444a-bad6-4fa8ab0069dc",
+      "name": "HTTP Request11"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://erp.nsolbpo.com/api/customer/{{ $json.callId }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "status",
+              "value": "completed"
+            },
+            {
+              "name": "calling_link",
+              "value": "={{ $json.artifact.recordingUrl }}"
+            },
+            {
+              "name": "Description",
+              "value": "={{ $json.summary }}"
+            },
+            {
+              "name": "status_comment",
+              "value": "={{ $('Check Call Status2').item.json.endedReason }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -2336,
+        -512
+      ],
+      "id": "85875dcb-6e1d-4758-bb62-cddf5e11d542",
+      "name": "HTTP Request12"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\n// Get today's date\nconst today = new Date('2025-10-30'); // Current date from context\n\nreturn items.map(item => {\n  const data = item.json;\n  const summary = data.summary || '';\n  \n  // Handle null or \"null\" string summaries\n  if (summary === 'null' || summary === '' || !summary) {\n    return {\n      json: {\n        meetingAccepted: false,\n        name: null,\n        email: null,\n        phone: null,\n        appointmentDate: null\n      }\n    };\n  }\n  \n  // Helper function to extract field value from structured section\n  const extractField = (text, fieldName) => {\n    const regex = new RegExp(`${fieldName}:\\\\s*(.+?)(?:\\\\n|$)`, 'i');\n    const match = text.match(regex);\n    if (!match) return null;\n    \n    const value = match[1].trim();\n    // Return null if value is \"Not confirmed\", \"Not applicable\", or similar\n    if (value.toLowerCase().includes('not confirmed') || \n        value.toLowerCase().includes('not applicable')) {\n      return null;\n    }\n    return value;\n  };\n  \n  // Extract meeting acceptance status\n  const appointmentBooked = extractField(summary, 'appointment booked');\n  const meetingAccepted = appointmentBooked && appointmentBooked.toLowerCase().includes('yes');\n  \n  // Extract customer name\n  const name = extractField(summary, 'Name');\n  \n  // Extract email\n  const email = extractField(summary, 'Email');\n  \n  // Extract phone\n  const phone = extractField(summary, 'Phone');\n  \n  // Extract and parse appointment date\n  const appointmentTimeRaw = extractField(summary, 'appointment time');\n  let appointmentDate = null;\n  \n  if (appointmentTimeRaw) {\n    const timeStr = appointmentTimeRaw.toLowerCase();\n    let calculatedDate = new Date(today);\n    let timeComponent = '';\n    \n    // Extract time component (e.g., \"2:00 PM\", \"3:30 PM\")\n    const timeMatch = appointmentTimeRaw.match(/(\\d{1,2}:\\d{2}\\s*(?:AM|PM|am|pm))/i);\n    if (timeMatch) {\n      timeComponent = timeMatch[1];\n    }\n    \n    // Handle relative dates\n    if (timeStr.includes('today')) {\n      calculatedDate = new Date(today);\n    } else if (timeStr.includes('tomorrow')) {\n      calculatedDate = new Date(today);\n      calculatedDate.setDate(calculatedDate.getDate() + 1);\n    } else if (timeStr.includes('next monday')) {\n      calculatedDate = getNextWeekday(today, 1);\n    } else if (timeStr.includes('next tuesday')) {\n      calculatedDate = getNextWeekday(today, 2);\n    } else if (timeStr.includes('next wednesday')) {\n      calculatedDate = getNextWeekday(today, 3);\n    } else if (timeStr.includes('next thursday')) {\n      calculatedDate = getNextWeekday(today, 4);\n    } else if (timeStr.includes('next friday')) {\n      calculatedDate = getNextWeekday(today, 5);\n    } else if (timeStr.includes('next saturday')) {\n      calculatedDate = getNextWeekday(today, 6);\n    } else if (timeStr.includes('next sunday')) {\n      calculatedDate = getNextWeekday(today, 0);\n    } else {\n      // Try to parse as specific date (e.g., \"October 28 at 6:00 PM\")\n      const dateMatch = appointmentTimeRaw.match(/([A-Za-z]+\\s+\\d{1,2})/);\n      if (dateMatch) {\n        let dateToparse = dateMatch[1];\n        if (!dateToparse.match(/\\d{4}/)) {\n          dateToparse += ` ${today.getFullYear()}`;\n        }\n        const parsedDate = new Date(dateToparse);\n        if (!isNaN(parsedDate.getTime())) {\n          calculatedDate = parsedDate;\n        }\n      }\n    }\n    \n    // Format date as YYYY-MM-DD\n    if (!isNaN(calculatedDate.getTime())) {\n      const year = calculatedDate.getFullYear();\n      const month = String(calculatedDate.getMonth() + 1).padStart(2, '0');\n      const day = String(calculatedDate.getDate()).padStart(2, '0');\n      appointmentDate = `${year}-${month}-${day}`;\n      \n      // Add time if available\n      if (timeComponent) {\n        appointmentDate += ` ${timeComponent}`;\n      }\n    }\n  }\n  \n  return {\n    json: {\n      meetingAccepted: meetingAccepted,\n      name: name,\n      email: email,\n      phone: phone,\n      appointmentDate: appointmentDate\n    }\n  };\n});\n\n// Helper function to get next occurrence of a weekday\nfunction getNextWeekday(fromDate, targetDay) {\n  const result = new Date(fromDate);\n  const currentDay = result.getDay();\n  let daysToAdd = targetDay - currentDay;\n  \n  // If the target day is today or already passed this week, go to next week\n  if (daysToAdd <= 0) {\n    daysToAdd += 7;\n  }\n  \n  result.setDate(result.getDate() + daysToAdd);\n  return result;\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2176,
+        64
+      ],
+      "id": "e76d375b-93ac-40a7-bae7-1cbbd74cb7dd",
+      "name": "Code1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.vapi.ai/call",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"assistantId\": \"c2cd4cf8-d7a7-4c29-bb48-cf28e2d58ef8\",\n  \"phoneNumberId\": \"e12b5dd3-e585-4a8b-b6d9-1ea72801b6de\",\n  \"customer\": {\n    \"number\": \"+442045874574\",\n    \"name\": \"ALEX\"\n  },\n  \"name\": \"ALEX\"\n}",
+        "options": {}
+      },
+      "id": "3b31db92-7ffb-4f5a-8876-19bc6ff81240",
+      "name": "Initiate VAPI Call",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        -2432,
+        464
+      ],
+      "notes": "Makes the call using VAPI API"
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "https://api.vapi.ai/assistant/c2cd4cf8-d7a7-4c29-bb48-cf28e2d58ef8",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"hooks\": [\n    {\n      \"on\": \"customer.speech.timeout\",\n      \"options\": {\n        \"timeoutSeconds\": 10,\n        \"triggerMaxCount\": 3,\n        \"triggerResetMode\": \"onUserSpeech\"\n      },\n      \"do\": [\n        {\n          \"type\": \"say\",\n          \"exact\": \"Are you still there? Please let me know how I can help you.\"\n        }\n      ]\n    },\n    {\n      \"on\": \"customer.speech.timeout\",\n      \"options\": {\n        \"timeoutSeconds\": 20,\n        \"triggerMaxCount\": 3,\n        \"triggerResetMode\": \"onUserSpeech\"\n      },\n      \"do\": [\n        {\n          \"type\": \"say\",\n          \"prompt\": \"The user has not responded in 20s. Based on the above conversation in {{transcript}} ask the user if they need help or if not you will be ending the call\"\n        }\n      ]\n    },\n    {\n      \"on\": \"customer.speech.timeout\",\n      \"options\": {\n        \"timeoutSeconds\": 30,\n        \"triggerMaxCount\": 3,\n        \"triggerResetMode\": \"onUserSpeech\"\n      },\n      \"do\": [\n        {\n          \"type\": \"say\",\n          \"exact\": \"I'll be ending the call now, please feel free to call back at any time.\"\n        },\n        {\n          \"type\": \"tool\",\n          \"tool\": {\n            \"type\": \"endCall\"\n          }\n        }\n      ]\n    }\n  ]\n}",
+        "options": {}
+      },
+      "id": "5c620df9-209c-4126-9c9e-93904040c62f",
+      "name": "Initiate VAPI Call1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        -2624,
+        464
+      ],
+      "notes": "Makes the call using VAPI API"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://erp.nsolbpo.com/api/customer/{{ $('Process Customer Data2').item.json.originalInput.rawCustomer.id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Accept",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"status\": \"invalid\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -3552,
+        -384
+      ],
+      "id": "ee74abe2-8a00-4d90-858b-9f16e1628e61",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1584,
+        -960
+      ],
+      "id": "d9c2f617-03c3-411f-8b33-f4c9eae1be63",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.vapi.ai/call",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer [REDACTED]"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"assistantId\": \"ac0dc231-61de-428b-9ff8-271c9d124179\",\n  \"phoneNumberId\": \"{{ (['8e87b48a-9357-49e2-ba8e-d07142fca898', 'bbfb4a83-4d6c-4a68-bb43-bdaa47a379ba'])[Math.floor(Math.random() * 2)] }}\",\n  \"customer\": {\n    \"number\": \"+1 818 532 5340\",\n    \"name\": \"Ali\"\n  },\n  \"name\": \"Ali\"\n}",
+        "options": {}
+      },
+      "id": "ef5d2ae5-489c-4ef1-a143-e01f4af9898b",
+      "name": "Initiate VAPI Call3",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        -4016,
+        -384
+      ],
+      "alwaysOutputData": false,
+      "notes": "Makes the call using VAPI API"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://erp.nsolbpo.com/api/nsol/bpoleads",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"firstname\": \"Marcos Rojas\",\n  \"lastname\": \".\",\n  \"email\": \"byr4cashmr@gmail.com\",\n  \"phone\": \"+1 (954) 692 4138\",\n  \"demo_datetime\": \"tommorow\",\n\"industry\": \"realtors\",\n\"source\": \"AI Agent lead\",\n\"comments\": \"The AI agent called Marcos Rojas from Ensol to offer virtual assistant services for realtors, specifically to help free up time spent on backend tasks. Marcos confirmed he spends about 10 hours a week on such tasks, mainly phone calls, and would benefit from more time to focus on acquiring properties. An appointment was scheduled for a 15-minute Zoom call with a senior consultant.\"\n\n}\n",
+        "options": {
+          "proxy": ""
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1344,
+        -960
+      ],
+      "id": "a9a7223a-15b1-4c21-a52f-60efbb2dcda7",
+      "name": "HTTP Request8"
+    }
+  ],
+  "connections": {
+    "HTTP Request5": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request6": {
+      "main": [
+        [
+          {
+            "node": "Wait 60 Seconds2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 60 Seconds2": {
+      "main": [
+        [
+          {
+            "node": "Check Call Status2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If2": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request7",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Meeting Declined - Process End2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request7": {
+      "main": [
+        [
+          {
+            "node": "Success - Data Sent to ERP2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze Call Summary2": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request12",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait & Retry2": {
+      "main": [
+        []
+      ]
+    },
+    "Call Completed?2": {
+      "main": [
+        [
+          {
+            "node": "Analyze Call Summary2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Wait 60 Seconds2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Call Status2": {
+      "main": [
+        [
+          {
+            "node": "Call Completed?2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Initiate VAPI Call2": "[REDACTED]",
+    "Process Customer Data2": {
+      "main": [
+        [
+          {
+            "node": "Initiate VAPI Call2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Calling Customers1": {
+      "main": [
+        [
+          {
+            "node": "Calculate Available Slots1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculate Available Slots1": {
+      "main": [
+        [
+          {
+            "node": "Fetch Pending Customers1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Pending Customers1": {
+      "main": [
+        [
+          {
+            "node": "Limit to Available Slots1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit to Available Slots1": {
+      "main": [
+        [
+          {
+            "node": "Process Customer Data2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "If2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Fetch Calling Customers1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Initiate VAPI Call1": "[REDACTED]",
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request8",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": null,
+  "triggerCount": 1,
+  "tags": []
+}

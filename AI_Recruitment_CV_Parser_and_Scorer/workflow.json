@@ -1,0 +1,1594 @@
+{
+  "updatedAt": "2025-12-31T08:13:26.855Z",
+  "createdAt": "2025-10-15T10:59:03.978Z",
+  "id": "gh4B0gR1hbS5y9vH",
+  "name": "AI-Recruitment-Tool",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=This is job description {{ $json['Job description '] }} this is applicant Resume data {{ $json['Applicant data'] }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=You are an advanced ATS (Applicant Tracking System) and Human Resources evaluator.  \nYour task is to analyze a candidate’s resume **against a specific job description** and provide an objective evaluation of suitability.\n\n\n\n--\n\n### 🔍 Your Evaluation Criteria:\n\n1. **Keyword Match:**\n   - Extract and compare all important keywords (skills, tools, technologies, qualifications) from both the JD and the CV.\n   - Identify which keywords match and which are missing.\n\n2. **Skills & Tools Relevance:**\n   - Assess how well the candidate’s technical and soft skills align with the job requirements.\n\n3. **Experience Match:**\n   - Evaluate how relevant the candidate’s professional experience and achievements are to the role.\n\n4. **Education & Certifications:**\n   - Check if the candidate’s education or certifications fit the job expectations.\n\n5. **ATS Optimization:**\n   - Determine how well the CV would score in an ATS scan for the given job role.\n\n6. **Overall Fit:**\n   - Combine all above factors to estimate the candidate’s fit for the position.\n\n---\n\n### 🧾 Output Format (Return ONLY JSON — no extra commentary):\n\n{\n  \"ats_score\": \"number (1–100)\",\n  \"keyword_match_percentage\": \"number (1–100)\",\n  \"matched_keywords\": [\"list of matching keywords\"],\n  \"missing_keywords\": [\"list of missing keywords\"],\n  \"skills_match\": \"short summary of skill alignment\",\n  \"experience_match\": \"short summary of experience relevance\",\n  \"education_match\": \"short summary of education relevance\",\n  \"overall_fit\": \"short summary combining all factors\",\n  \"recommendation\": \"clear recommendation such as 'Highly Suitable', 'Moderately Suitable', or 'Not Suitable'\"\n}\n\n---\n\n### ⚙️ Evaluation Rules:\n- Focus only on relevance to the **job description** provided.\n- Never include any text outside the JSON structure.\n- If the job description or resume is missing, return:\n  `{ \"error\": \"Missing job description or resume input\" }`\n\n\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        224,
+        -224
+      ],
+      "id": "d24476f9-9c85-433f-bf7c-8a94390430cf",
+      "name": "AI Agent",
+      "retryOnFail": false
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        192,
+        0
+      ],
+      "id": "485f415f-00d4-4884-8241-d7714a331c69",
+      "name": "OpenAI Chat Model",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"rating\": 8,\n  \"strengths\": [\n    \"Hands-on experience with n8n, Zapier, and API integrations\",\n    \"Proven ability to automate workflows and improve efficiency\"\n  ],\n  \"weaknesses\": [\n    \"Limited detail on programming depth\",\n    \"Portfolio link lacks complex AI project samples\"\n  ],\n  \"recommendation\": \"Strongly suitable for AI Automation Specialist role with practical experience in automation tools.\"\n}\n"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        416,
+        0
+      ],
+      "id": "c1472136-fac8-4e2d-b71c-9c79d5694074",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        -976,
+        -320
+      ],
+      "id": "b88ee21a-e0b3-436c-84bc-ba49fe3b1ad2",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "be302108-4504-435e-9139-06d3a0f16009",
+              "leftValue": "={{ $json.output.ats_score }}",
+              "rightValue": 60,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1408,
+        -32
+      ],
+      "id": "7253523f-614a-4057-b73b-4f76415fb46f",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.email }}",
+        "subject": "Interview ",
+        "message": "=Sorry You are not shorlisted for the interview , Best Of luck and thanks for applying",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1680,
+        352
+      ],
+      "id": "69d92d02-9547-4849-b9b4-606169b01c44",
+      "name": "Send a message1",
+      "webhookId": "273c9d78-49da-49b8-bd08-9f01091e5bad",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1,
+      "position": [
+        1680,
+        160
+      ],
+      "id": "f0895ced-acdf-4a8e-be2f-e7d7472d336b",
+      "name": "Send message1",
+      "webhookId": "2a4b59e9-e384-4cf1-b05c-3c7f5c000d33",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "seconds",
+              "secondsInterval": 90
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -2352,
+        -240
+      ],
+      "id": "89ca2252-9d32-4d7d-9a8a-960f718e5752",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "Client",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "interview_status",
+              "keyValue": "Pending"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -2112,
+        -240
+      ],
+      "id": "f64515c7-a489-4c6a-9e25-7998b0048932",
+      "name": "Get a row1",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.cv_file_url }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1872,
+        -224
+      ],
+      "id": "3f1857c9-5866-44e3-a159-087365fe9652",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "38d8b888-89f4-44f8-8fe4-b1ec59ff58f1",
+              "leftValue": "={{ $json.cv_file_url }}",
+              "rightValue": ".pdf",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1648,
+        -224
+      ],
+      "id": "04c6c033-ba16-435e-8e9f-a8145a910be2",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "outputPrefix": "data"
+      },
+      "type": "n8n-nodes-base.compression",
+      "typeVersion": 1.1,
+      "position": [
+        -1200,
+        -128
+      ],
+      "id": "4d2ad3c4-39cf-4837-932f-bbf702381b20",
+      "name": "Compression"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "d8035454-fba1-4df0-ae31-e49f122d26c3",
+              "leftValue": "={{ $json.cv_file_url }}",
+              "rightValue": "zip",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        -1424,
+        -128
+      ],
+      "id": "69e68077-592c-422e-8f41-01089988850a",
+      "name": "Filter"
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "binaryPropertyName": "data0",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        -976,
+        -128
+      ],
+      "id": "3f98113c-e842-4a11-8f13-9632f43b69db",
+      "name": "Extract from File1"
+    },
+    {
+      "parameters": {
+        "text": "={{ $json.text }}",
+        "attributes": {
+          "attributes": [
+            {
+              "name": "email",
+              "description": "email",
+              "required": true
+            },
+            {
+              "name": "Name ",
+              "description": "Name",
+              "required": true
+            },
+            {
+              "name": "Phone ",
+              "description": "Phone number",
+              "required": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.informationExtractor",
+      "typeVersion": 1.2,
+      "position": [
+        -528,
+        -224
+      ],
+      "id": "ee681346-b30a-4575-ae26-82014aa27a29",
+      "name": "Information Extractor"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -576,
+        -32
+      ],
+      "id": "d0941ff1-83d5-4768-98c6-5fcc1b57d54a",
+      "name": "OpenAI Chat Model1",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "tableId": "Applicant",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "user_id",
+              "fieldValue": "={{ $('Get a row1').item.json.user_id }}"
+            },
+            {
+              "fieldId": "job_id",
+              "fieldValue": "={{ $('Get a row1').item.json.job_id }}"
+            },
+            {
+              "fieldId": "name",
+              "fieldValue": "={{ $('Get a row1').item.json.name }}"
+            },
+            {
+              "fieldId": "email",
+              "fieldValue": "={{ $('Get a row1').item.json.email }}"
+            },
+            {
+              "fieldId": "phone",
+              "fieldValue": "={{ $('Get a row1').item.json.phone }}"
+            },
+            {
+              "fieldId": "cv_file_url",
+              "fieldValue": "={{ $('Get a row1').item.json.cv_file_url }}"
+            },
+            {
+              "fieldId": "interview_status",
+              "fieldValue": "Completed"
+            },
+            {
+              "fieldId": "ai_score",
+              "fieldValue": "={{ $json.output.ats_score }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1392,
+        -224
+      ],
+      "id": "582dbe59-f734-4c06-9c8b-93b4001ad8b2",
+      "name": "Create a row2",
+      "retryOnFail": true,
+      "maxTries": 2,
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "jobs",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "keyValue": "={{ $('HTTP Request').item.json.job_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -176,
+        -224
+      ],
+      "id": "c12f2a90-9ecf-466f-b36f-f450c6949d72",
+      "name": "Get a row2",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=This is job description {{ $json.description }}.\nThis is applicant Resume data {{ $('Merge').item.json.text }}",
+        "options": {
+          "systemMessage": "=You are an expert recruiter. Based on the provided job description and the applicant's CV:\n\nGenerate 5 to 10 interview questions tailored to the job description, focusing on relevant skills, experiences, and responsibilities required for the role.\n\nThen generate 5 general interview questions based on the applicant's CV. These should refer to specific projects, experiences, or skills mentioned in the CV. Use phrases like:\n\n\"In your CV, you mentioned...\"\n\n\"You stated that you worked on...\"\n\n\"Tell me more about your experience with...\"\n\nThese CV-based questions should probe the candidate’s depth of knowledge, decision-making process, and real-world application of their skills.\n\nFormat the output as:\n\nJob-Specific Questions:\n\n...\n\n...\n(up to 10 questions)\n\nCV-Based General Questions:\n\n...\n\n...\n(5 questions\n\n\nFirst Qive General question then Job specific \n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        2128,
+        -32
+      ],
+      "id": "2885aa01-c425-4bf5-ba46-0ec220cf3f21",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        2096,
+        224
+      ],
+      "id": "c4f9c772-7ff6-4faa-a5dc-2500199b7f37",
+      "name": "OpenAI Chat Model2",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "969e9b2f-d094-4c38-9c15-a2feaa9da6f5",
+              "name": "Applicant data",
+              "value": "={{ $('Merge').item.json.text }}",
+              "type": "string"
+            },
+            {
+              "id": "2a2ae1d6-13e9-4e32-bdb7-c28cc7f48a1b",
+              "name": "Job description ",
+              "value": "={{ $json.description }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        48,
+        -224
+      ],
+      "id": "28fe2209-1d39-4630-9c16-22ceffbfbcac",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -752,
+        -224
+      ],
+      "id": "18c2f0c6-41ec-4ec5-994f-5739d273131a",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Access the input data\nconst inputText = $json[\"output\"];\n\n// Replace \\n or \\\\n with real new lines, and clean up extra slashes\nconst formattedText = inputText\n    .replace(/\\\\n/g, \"\\n\")          // Converts literal '\\n' to actual newlines\n    .replace(/\\n{2,}/g, \"\\n\\n\")     // Ensures double newlines for paragraph breaks\n    .replace(/\\\\\"/g, '\"')           // Fixes escaped quotes\n    .replace(/\\\\'/g, \"'\");          // Fixes escaped single quotes\n\n// Return the formatted text as a new field\nreturn [\n  {\n    json: {\n      formattedOutput: formattedText\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2480,
+        -32
+      ],
+      "id": "bebf1b36-a142-450a-938c-32f4256d2514",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Job Description: {{ $('Get a row3').item.json.description }}\nCandidate CV: {{ $json.text }}\nInterview Transcript: {{ $('Webhook').item.json.body.record.Transcript }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "ou are an expert interview analyst AI. Your task is to analyze interview transcripts and provide numerical ratings for each answer the candidate provided.\nInput Requirements\nYou will receive:\n\nJob Description: The role requirements and required skills\nCandidate CV: The candidate's resume/background\nInterview Transcript: Complete conversation with fixed questions and candidate responses\n\nYour Task\nAnalyze each question and answer in the transcript, then provide detailed numerical ratings (0-10 scale) for multiple criteria.\n\nAnalysis Instructions\nFor each question in the interview transcript, you must:\n1. Identify the Question Details\n\nExtract the exact question text\nClassify the question type: Technical / Behavioral / Situational / General / Experience-based\nNote what the question is trying to assess\n\n2. Rate the Candidate's Answer on These Criteria (0-10 scale):\nAnswered Correctly (0-10)\n\n10: Directly and fully addressed exactly what was asked\n7-9: Addressed most of what was asked with minor gaps\n4-6: Partially answered, missed key aspects\n1-3: Barely addressed the question, went off-topic\n0: Did not answer the question at all\nStatus: Yes | Partially | No\n\nAccuracy (0-10)\n\n10: All information provided was factually correct\n7-9: Mostly accurate with minor errors\n4-6: Mix of accurate and inaccurate information\n1-3: Mostly inaccurate information\n0: Completely incorrect or fabricated\nLevel: Accurate | Partially Accurate | Inaccurate\n\nCompleteness (0-10)\n\n10: Covered all necessary points comprehensively\n7-9: Covered most important points\n4-6: Covered some points but missing important details\n1-3: Very incomplete answer\n0: No substantial content provided\nLevel: Complete | Adequate | Incomplete\n\nClarity (0-10)\n\n10: Extremely clear, easy to understand, well-structured\n7-9: Clear with good structure\n4-6: Somewhat clear but could be better organized\n1-3: Unclear, confusing, hard to follow\n0: Incomprehensible\nLevel: Clear | Somewhat Clear | Unclear\n\nConfidence (0-10)\n\n10: Very confident, no hesitation, authoritative\n7-9: Confident with minor hesitation\n4-6: Moderate confidence, some uncertainty\n1-3: Low confidence, lots of hesitation\n0: No confidence, completely unsure\nLevel: High | Moderate | Low\n\nRelevance (0-10)\n\n10: Highly relevant to the job requirements\n7-9: Relevant with good connection to role\n4-6: Somewhat relevant\n1-3: Barely relevant to the role\n0: Not relevant at all\nLevel: Highly Relevant | Relevant | Not Relevant\n\nDepth of Knowledge (0-10)\n\n10: Deep, expert-level understanding demonstrated\n7-9: Good understanding with solid knowledge\n4-6: Surface-level understanding\n1-3: Very shallow or limited knowledge\n0: No knowledge demonstrated\nLevel: Deep | Moderate | Surface-level | None\n\nTechnical Accuracy (0-10) - For Technical Questions Only\n\n10: Technically perfect, no errors in concepts/terminology\n7-9: Technically sound with minor imprecisions\n4-6: Some technical errors or misconceptions\n1-3: Multiple technical errors\n0: Fundamentally incorrect technical understanding\nApplicable: true/false\nLevel: Accurate | Partially Accurate | Inaccurate | N/A\n\nCommunication Quality (0-10)\n\n10: Excellent articulation, perfect structure\n7-9: Good communication skills\n4-6: Average communication\n1-3: Poor communication skills\n0: Unable to communicate effectively\nLevel: Excellent | Good | Average | Poor\n\nExample Usage (0-10)\n\n10: Provided specific, relevant, concrete examples\n7-9: Provided good examples\n4-6: Provided generic or vague examples\n1-3: Poor quality examples\n0: No examples provided\nProvided: true/false\nQuality: Specific and relevant | Generic | None\n\n3. Calculate Overall Answer Score\nAverage the relevant ratings to give an overall score (0-10) for each answer.\n4. Brief Notes\nProvide ONE sentence each for:\n\nStrengths: What they did well\nWeaknesses: What they could improve\n\n\nAggregate Analysis\nAfter rating all questions, calculate:\nBy Question Type:\n\nTechnical Questions: Count, average scores for all ratings\nBehavioral Questions: Count, average scores\nGeneral Questions: Count, average scores\n\nOverall Ratings:\n\nTotal average score across all questions\nAverage accuracy rating\nAverage confidence rating\nAverage clarity rating\nAverage completeness rating\nAverage technical competency rating (technical questions only)\nAverage communication rating\n\nPerformance Distribution:\nCount how many answers were:\n\nExcellent (8-10 overall score)\nGood (6-7.9 overall score)\nAverage (4-5.9 overall score)\nPoor (1-3.9 overall score)\nNot Answered (0 overall score)\n\nFinal Evaluation:\n\nOverall Score: Out of 100\nPercentage: Overall score as percentage\nGrade: A+ (95-100), A (90-94), A- (85-89), B+ (80-84), B (75-79), B- (70-74), C+ (65-69), C (60-64), C- (55-59), D (50-54), F (<50)\nRecommendation: Strong Hire | Hire | Maybe | Don't Hire | Strong Don't Hire\nConfidence in Recommendation: Score 0-10 (High/Medium/Low)\nTop 3 Strengths: List top strengths\nTop 3 Weaknesses: List top weaknesses\nCritical Gaps: Any dealbreaker issues\n\n\nRating Guidelines\n\nBe objective and consistent - use the same standards for all questions\nBe fair but critical - don't inflate or deflate scores\nConsider job requirements - rate answers in context of the role\nFor technical questions - verify accuracy of concepts mentioned\nFor behavioral questions - look for specific examples and STAR structure\nPartial credit - give credit for partially correct answers\nNo answer - if they didn't answer at all, give 0\nOff-topic rambling - penalize in \"Answered Correctly\" and \"Relevance\""
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -96,
+        688
+      ],
+      "id": "48f941b2-c0f3-4e26-9202-a60b4cdbb440",
+      "name": "AI Agent2"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -96,
+        912
+      ],
+      "id": "4c39d6de-ef37-467d-a8a6-59199d7f98da",
+      "name": "OpenAI Chat Model3",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"interview_analysis\": {\n    \"metadata\": {\n      \"candidate_name\": \"string\",\n      \"position_applied\": \"string\",\n      \"analysis_date\": \"YYYY-MM-DD\",\n      \"total_questions\": 0\n    },\n    \"questions_ratings\": [\n      {\n        \"question_number\": 1,\n        \"question_text\": \"string\",\n        \"question_category\": \"Technical | Behavioral | Situational | General | Experience-based\",\n        \"ratings\": {\n          \"answered_correctly\": {\n            \"score\": 0,\n            \"max_score\": 10,\n            \"status\": \"Yes | Partially | No\"\n          },\n          \"accuracy\": {\n            \"score\": 0,\n            \"max_score\": 10,\n            \"level\": \"Accurate | Partially Accurate | Inaccurate\"\n          },\n          \"completeness\": {\n            \"score\": 0,\n            \"max_score\": 10,\n            \"level\": \"Complete | Adequate | Incomplete\"\n          },\n          \"clarity\": {\n            \"score\": 0,\n            \"max_score\": 10,\n            \"level\": \"Clear | Somewhat Clear | Unclear\"\n          },\n          \"confidence\": {\n            \"score\": 0,\n            \"max_score\": 10,\n            \"level\": \"High | Moderate | Low\"\n          },\n          \"relevance\": {\n            \"score\": 0,\n            \"max_score\": 10,\n            \"level\": \"Highly Relevant | Relevant | Not Relevant\"\n          },\n          \"depth_of_knowledge\": {\n            \"score\": 0,\n            \"max_score\": 10,\n            \"level\": \"Deep | Moderate | Surface-level | None\"\n          },\n          \"technical_accuracy\": {\n            \"score\": 0,\n            \"max_score\": 10,\n            \"applicable\": true,\n            \"level\": \"Accurate | Partially Accurate | Inaccurate | N/A\"\n          },\n          \"communication_quality\": {\n            \"score\": 0,\n            \"max_score\": 10,\n            \"level\": \"Excellent | Good | Average | Poor\"\n          },\n          \"example_usage\": {\n            \"score\": 0,\n            \"max_score\": 10,\n            \"provided\": true,\n            \"quality\": \"Specific and relevant | Generic | None\"\n          }\n        },\n        \"overall_answer_score\": {\n          \"score\": 0,\n          \"max_score\": 10\n        },\n        \"brief_notes\": {\n          \"strengths\": \"string\",\n          \"weaknesses\": \"string\"\n        }\n      }\n    ],\n    \"aggregate_scores\": {\n      \"by_question_type\": {\n        \"technical_questions\": {\n          \"count\": 0,\n          \"average_score\": 0.0,\n          \"average_accuracy\": 0.0,\n          \"average_depth\": 0.0,\n          \"average_technical_accuracy\": 0.0\n        },\n        \"behavioral_questions\": {\n          \"count\": 0,\n          \"average_score\": 0.0,\n          \"average_clarity\": 0.0,\n          \"average_completeness\": 0.0\n        },\n        \"general_questions\": {\n          \"count\": 0,\n          \"average_score\": 0.0,\n          \"average_relevance\": 0.0\n        }\n      },\n      \"overall_ratings\": {\n        \"total_average_score\": 0.0,\n        \"accuracy_rating\": 0.0,\n        \"confidence_rating\": 0.0,\n        \"clarity_rating\": 0.0,\n        \"completeness_rating\": 0.0,\n        \"technical_competency_rating\": 0.0,\n        \"communication_rating\": 0.0\n      },\n      \"performance_distribution\": {\n        \"excellent_answers\": 0,\n        \"good_answers\": 0,\n        \"average_answers\": 0,\n        \"poor_answers\": 0,\n        \"questions_not_answered\": 0\n      }\n    },\n    \"final_evaluation\": {\n      \"overall_score\": 0,\n      \"max_score\": 100,\n      \"percentage\": 0.0,\n      \"grade\": \"A+ | A | A- | B+ | B | B- | C+ | C | C- | D | F\",\n      \"recommendation\": \"Strong Hire | Hire | Maybe | Don't Hire | Strong Don't Hire\",\n      \"confidence_in_recommendation\": {\n        \"score\": 0,\n        \"max_score\": 10,\n        \"level\": \"High | Medium | Low\"\n      },\n      \"top_strengths\": [\"string\", \"string\", \"string\"],\n      \"top_weaknesses\": [\"string\", \"string\", \"string\"],\n      \"critical_gaps\": [\"string\"]\n    }\n  }\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        48,
+        912
+      ],
+      "id": "ef4c9d66-5d54-4f46-a218-39e590df565a",
+      "name": "Structured Output Parser1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "69985ada-6a14-4e0a-9378-0937f3255a14",
+              "name": "Overall Score",
+              "value": "={{ $json.output.aggregate_analysis.final_evaluation.overall_score }}",
+              "type": "string"
+            },
+            {
+              "id": "2be58c81-bce7-4979-b758-5d06d3548438",
+              "name": "Percentage ",
+              "value": "={{ $json.output.aggregate_analysis.final_evaluation.percentage }}",
+              "type": "string"
+            },
+            {
+              "id": "219f6ab2-cdcd-441d-8621-65d55729ae2d",
+              "name": "Garde",
+              "value": "={{ $json.output.aggregate_analysis.final_evaluation.grade }}",
+              "type": "string"
+            },
+            {
+              "id": "bb648458-fecd-47fd-a9f9-f940dad88e17",
+              "name": "Recommendation ",
+              "value": "={{ $json.output.aggregate_analysis.final_evaluation.recommendation }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        256,
+        688
+      ],
+      "id": "56d51f8a-83a3-496d-a877-023691cc7ab6",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "tableId": "Shortlisted_candidates",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "user_id",
+              "fieldValue": "={{ $('Webhook').item.json.body.record.user_id }}"
+            },
+            {
+              "fieldId": "job_id",
+              "fieldValue": "={{ $('Webhook').item.json.body.record.job_id }}"
+            },
+            {
+              "fieldId": "name",
+              "fieldValue": "={{ $('Webhook').item.json.body.record.name }}"
+            },
+            {
+              "fieldId": "email",
+              "fieldValue": "={{ $('Webhook').item.json.body.record.email }}"
+            },
+            {
+              "fieldId": "phone",
+              "fieldValue": "={{ $('Webhook').item.json.body.record.phone }}"
+            },
+            {
+              "fieldId": "cv_file_url",
+              "fieldValue": "={{ $('Webhook').item.json.body.record.cv_file_url }}"
+            },
+            {
+              "fieldId": "interview_status",
+              "fieldValue": "Completed"
+            },
+            {
+              "fieldId": "interview_result",
+              "fieldValue": "={{ $json['Recommendation '] }}"
+            },
+            {
+              "fieldId": "ai_score",
+              "fieldValue": "={{ $json['Percentage '] }}"
+            },
+            {
+              "fieldId": "Recording URL",
+              "fieldValue": "={{ $('Webhook').item.json.body.record['Recording URL'] }}"
+            },
+            {
+              "fieldId": "Screen recording",
+              "fieldValue": "={{ $('Webhook').item.json.body.record['Screen recording'] }}"
+            },
+            {
+              "fieldId": "Analysis",
+              "fieldValue": "=Overall Score :{{ $json['Overall Score'] }}\nPercentage :{{ $json['Percentage '] }}\nGarde :{{ $json.Garde }}\nRecommendation:{{ $json['Recommendation '] }}"
+            },
+            {
+              "fieldId": "Transcript",
+              "fieldValue": "={{ $('Webhook').item.json.body.old_record.Transcript }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        496,
+        688
+      ],
+      "id": "e906fea5-f2a3-4aa5-a73c-62785746b924",
+      "name": "Create a row",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "jobs",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "keyValue": "={{ $json.body.record.job_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -1888,
+        688
+      ],
+      "id": "92fa3bb0-ec90-49c8-a5e3-fb43f9298522",
+      "name": "Get a row3",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "Applicant",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "email",
+              "keyValue": "={{ $('Filter2').item.json.body.record.email }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -1664,
+        688
+      ],
+      "id": "5925a3db-8f50-43af-8e6f-0199fd73b12d",
+      "name": "Get a row4",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        -544,
+        592
+      ],
+      "id": "ca03b5f1-5172-4eee-af37-802a482cf1a7",
+      "name": "Extract from File3"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "38d8b888-89f4-44f8-8fe4-b1ec59ff58f1",
+              "leftValue": "={{ $json.cv_file_url }}",
+              "rightValue": ".pdf",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1216,
+        688
+      ],
+      "id": "cf153056-e00a-4d11-b76a-0f5b805431b1",
+      "name": "If2"
+    },
+    {
+      "parameters": {
+        "outputPrefix": "data"
+      },
+      "type": "n8n-nodes-base.compression",
+      "typeVersion": 1.1,
+      "position": [
+        -768,
+        784
+      ],
+      "id": "b937e191-812b-4d89-917d-4a5e911a74f5",
+      "name": "Compression1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "d8035454-fba1-4df0-ae31-e49f122d26c3",
+              "leftValue": "={{ $json.cv_file_url }}",
+              "rightValue": "zip",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        -992,
+        784
+      ],
+      "id": "3ce90fca-bee7-4006-9611-270f730c6e9b",
+      "name": "Filter1"
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "binaryPropertyName": "data0",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        -544,
+        784
+      ],
+      "id": "824ae49f-6dd1-4372-946a-1d8c767a5cfb",
+      "name": "Extract from File4"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -320,
+        688
+      ],
+      "id": "3b9a042e-1e33-4bfc-8e61-3ee0a50320f7",
+      "name": "Merge1"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.cv_file_url }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1440,
+        688
+      ],
+      "id": "3808f55b-a976-4599-b619-7ea7a80aefcc",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "b444b519-f989-4df3-b6bd-8cbec1ae05f5",
+              "leftValue": "={{ $json.body.record.interview_status }}",
+              "rightValue": "Completed",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        -2112,
+        688
+      ],
+      "id": "565fe0a6-5b89-43e9-8488-47976d5e518a",
+      "name": "Filter2"
+    },
+    {
+      "parameters": {
+        "tableId": "Qualified_For_Final_Interview",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "user_id",
+              "fieldValue": "={{ $('Get a row1').item.json.user_id }}"
+            },
+            {
+              "fieldId": "job_id",
+              "fieldValue": "={{ $('Get a row1').item.json.job_id }}"
+            },
+            {
+              "fieldId": "name",
+              "fieldValue": "={{ $('Get a row1').item.json.name }}"
+            },
+            {
+              "fieldId": "email",
+              "fieldValue": "={{ $('Get a row1').item.json.email }}"
+            },
+            {
+              "fieldId": "phone",
+              "fieldValue": "={{ $('Get a row1').item.json.phone }}"
+            },
+            {
+              "fieldId": "cv_file_url",
+              "fieldValue": "={{ $('Get a row1').item.json.cv_file_url }}"
+            },
+            {
+              "fieldId": "interview_status",
+              "fieldValue": "Scheduled"
+            },
+            {
+              "fieldId": "ai_score",
+              "fieldValue": "={{ $json.output.ats_score }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1680,
+        -32
+      ],
+      "id": "17cd7dc4-8758-4178-8a3d-01e72920b578",
+      "name": "Qualified For Final INterview",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "jobs",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "keyValue": "={{ $json.job_id }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1904,
+        -32
+      ],
+      "id": "208872f7-975a-46d5-8f4c-94927f87be8a",
+      "name": "Get Job Data",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "Client",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $('Get a row1').item.json.id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "interview_status",
+              "fieldValue": "Completed"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1152,
+        -544
+      ],
+      "id": "6e5ed64c-66c3-4f12-8d7d-2b1aaa1bf9a3",
+      "name": "Update a row",
+      "retryOnFail": true,
+      "maxTries": 2,
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "1e0d7a00-3b8d-4eef-8964-0b07c2853ef9",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -2320,
+        688
+      ],
+      "id": "6f3314f6-36f9-4c38-908d-c978ac24edfd",
+      "name": "Webhook",
+      "webhookId": "1e0d7a00-3b8d-4eef-8964-0b07c2853ef9"
+    },
+    {
+      "parameters": {
+        "content": "ATS SCore",
+        "height": 1184,
+        "width": 5392,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -2448,
+        -640
+      ],
+      "typeVersion": 1,
+      "id": "54f66053-0421-4e44-9dc2-f6eab12460f7",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "Final Interview",
+        "height": 544,
+        "width": 3168
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -2432,
+        576
+      ],
+      "typeVersion": 1,
+      "id": "e5fee738-53f4-440b-9e4d-a1a2bf272525",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "Meeting Scheduling ",
+        "height": 544,
+        "width": 2176,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        784,
+        576
+      ],
+      "typeVersion": 1,
+      "id": "f80e129f-4370-49b1-b56e-13fa9f3c7454",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "scheduled-meetings",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        912,
+        800
+      ],
+      "id": "e959e406-39b3-4e5b-8a5e-138ecefb2aa1",
+      "name": "Webhook1",
+      "webhookId": "d7429157-f09c-4335-9bc4-ff7d972fd1ea"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "Qualified_For_Final_Interview",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "email",
+              "condition": "eq",
+              "keyValue": "={{ $node['Qualified For Final INterview'].json.email }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "AI Generated Question",
+              "fieldValue": "={{ $json.formattedOutput }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        2704,
+        -32
+      ],
+      "id": "11140c3d-fb36-4825-9a12-d09bc7aa8c02",
+      "name": "Update a row1",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "164353730101820",
+        "recipientPhoneNumber": "={{ $('Information Extractor').item.json.output['Phone '] }}",
+        "textBody": "=Hello, How Are You Doing {{ $('Information Extractor').item.json.output['Name '] }}? Your Final Interview has been scheduled. Please complete it within 24 hours on https://hiring.duhanashrah.ai/interview-landing",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1,
+      "position": [
+        1904,
+        -208
+      ],
+      "id": "b4b8b551-1bd2-4de5-af41-9c0757e93ec7",
+      "name": "Send message2",
+      "webhookId": "ab56ea30-467e-4981-b170-45baf37b2987",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "834396543090999",
+        "recipientPhoneNumber": "={{ $json.body.record.candidate_phone }}",
+        "textBody": "=Candidates Name : {{ $json.body.record.candidate_name }}\nMeeting Date And time : {{ $json.body.record.meeting_date }}\nMeeting Duration : {{ $json.body.record.meeting_duration }}\nMeeting Instruction : {{ $json.body.record.meeting_instructions }}\nZoom Id : {{ $json.body.record.zoom_link }}\nZoom link : https://app.zoom.us/wc/my/nsolbpo.usa?fromPWA=1  ",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1,
+      "position": [
+        1200,
+        800
+      ],
+      "id": "f094fbf8-ded6-446f-bf82-d0947fc8fc5c",
+      "name": "Send message",
+      "webhookId": "ab56ea30-467e-4981-b170-45baf37b2987",
+      "credentials": "[REDACTED]"
+    }
+  ],
+  "connections": {
+    "OpenAI Chat Model": "[REDACTED]",
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Update a row",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Create a row2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Qualified For Final INterview",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send message2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a message1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Get a row1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a row1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter": {
+      "main": [
+        [
+          {
+            "node": "Compression",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compression": {
+      "main": [
+        [
+          {
+            "node": "Extract from File1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File1": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Information Extractor": {
+      "main": [
+        [
+          {
+            "node": "Get a row2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": "[REDACTED]",
+    "Get a row2": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model2": "[REDACTED]",
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Information Extractor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Update a row1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model3": "[REDACTED]",
+    "Structured Output Parser1": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent2": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Create a row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a row": {
+      "main": [
+        []
+      ]
+    },
+    "Get a row3": {
+      "main": [
+        [
+          {
+            "node": "Get a row4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a row4": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File3": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If2": {
+      "main": [
+        [
+          {
+            "node": "Extract from File3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Filter1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compression1": {
+      "main": [
+        [
+          {
+            "node": "Extract from File4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter1": {
+      "main": [
+        [
+          {
+            "node": "Compression1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File4": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "If2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter2": {
+      "main": [
+        [
+          {
+            "node": "Get a row3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Qualified For Final INterview": {
+      "main": [
+        [
+          {
+            "node": "Get Job Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Job Data": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Filter2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook1": {
+      "main": [
+        [
+          {
+            "node": "Send message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": null,
+  "triggerCount": 3,
+  "tags": [
+    {
+      "updatedAt": "2025-10-15T12:01:49.775Z",
+      "createdAt": "2025-10-15T12:01:49.775Z",
+      "id": "vqPjQ1pPoVp3pFKR",
+      "name": "Mark Edward"
+    }
+  ]
+}

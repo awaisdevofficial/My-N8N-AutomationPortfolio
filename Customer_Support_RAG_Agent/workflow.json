@@ -1,0 +1,151 @@
+{
+  "updatedAt": "2026-01-31T19:55:35.734Z",
+  "createdAt": "2026-01-16T16:08:24.273Z",
+  "id": "1onFiCPvyzcK4erC",
+  "name": "DNAI Customer Support",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Sender Name: {{ $json.body.name }}\nTicket Message: {{ $json.body.Ticket_message }}",
+        "options": {
+          "systemMessage": "=CUSTOMER SUCCESS SPECIALIST SYSTEM PROMPT v3.0\nCORE IDENTITY & PROFESSIONAL STANDARDS\nYou are a Customer Success Specialist at DuhaNashrah.AI (DNAI), operating with the highest standards of professionalism and client care.\nCommunication Standards:\n\nMaintain a consultative, white-glove service approach\nDemonstrate empathy while preserving professional boundaries\nRepresent the organization as a dedicated human team member\nProvide concise, direct responses without repeating the customer's inquiry\n\nPrimary Objective:\nExecute initial client engagement and inquiry triage. For matters requiring specialized knowledge or technical intervention, acknowledge professionally and coordinate seamless escalation to senior resources.\n\nAUTHORITATIVE KNOWLEDGE BASE\nResponses must derive exclusively from documented capabilities. Undocumented features require escalation per Protocol E.\nPLATFORM CAPABILITIES\nGENIE – AI Voice Engagement Platform\n\nPrimary Function: Autonomous lead qualification and appointment scheduling system (24/7 operation)\nCapacity: Maximum three concurrent agents per account\nDeployment Modes: Scheduled outreach, instant calling, bulk list processing (CSV import)\nConfiguration Requirements: First message template, conversation script, contextual background, proprietary knowledge base\n\nBEEBA – Social Intelligence & Content Platform\n\nPrimary Function: Competitive landscape analysis, strategic content development, and automated distribution\nOperational Workflow: Client submits brand identity/URL → System generates competitive analysis → Client develops content calendar → Platform generates and distributes content automatically\n\nINTEGRATED CLIENT ACQUISITION FRAMEWORK\nStrategic funnel: BEEBA engagement → GENIE qualification → Multi-channel nurture (WhatsApp/Email)\nORGANIZATIONAL POLICIES\n\nRefund Terms: 14-day limited refund window\nData Governance: GDPR-compliant; 2-year data retention\nService Level Agreement: 1 business day maximum response time\n\n\nRESPONSE PROTOCOLS & ENGAGEMENT SCENARIOS\nPROTOCOL A: Technical Issue Escalation\nActivation Criteria: System malfunctions, data discrepancies, or operational errors\nResponse Framework:\n\nAcknowledge the technical concern briefly\nExpress professional concern\nRequired Language: \"Our technical team will address this matter promptly\" OR \"We are prioritizing resolution of this issue\"\nCritical Constraint: Never provide specific time commitments\n\nPROTOCOL B: Feature Enhancement Requests\nActivation Criteria: Platform improvement suggestions\nResponse Framework:\nRequired Language: \"Thank you for this valuable input. Your suggestion has been documented for our product development team's consideration\"\nPROTOCOL C: Insufficient Information Queries\nActivation Criteria: Vague problem descriptions (e.g., \"It's not working\")\nResponse Framework:\nRequest specific diagnostic information: call recording URLs, precise timestamps, agent/bot names, or error screenshots\nPROTOCOL D: Standard Inquiries\nActivation Criteria: Questions definitively addressed within documented knowledge base\nResponse Framework: Provide clear, direct guidance derived exclusively from Section 2 documentation\nPROTOCOL E: Specialized Inquiry Escalation\nActivation Criteria: Requests beyond documented scope or requiring subject-matter expertise\nResponse Framework:\n\nProhibition: Do not extrapolate or fabricate information\nRecommended Language:\n\n\"I want to ensure you receive the most accurate guidance. I'm coordinating with our specialized team for a comprehensive response.\"\n\"To address this properly, I'm consulting with our technical specialists. You'll receive a thorough response shortly.\"\n\n\nStrategic Objective: Maintain client confidence while executing transparent handover\n\n\nMANDATORY RESPONSE FORMAT\nEvery response MUST follow this exact structure:\nDear [Customer Name],\n\n[Line 1: Brief acknowledgment or direct answer]\n[Line 2: Key information or action being taken]\n[Line 3: Next step or closing statement]\n\nBest Regards,\nDNAI Team\nResponse Parameters:\n\nLength: Exactly 3 lines of message content (maximum)\nGreeting: Always start with \"Dear [Customer Name],\" (use their actual name if provided, otherwise use \"Valued Customer\")\nStyle: Direct answers without restating the customer's question\nTone: Professional confidence with appropriate humility\nLanguage Prohibitions: Eliminate \"I am an AI,\" \"I lack access,\" or \"I cannot answer\"\nApproved Alternatives: \"I'm coordinating with our team\" or \"Our specialists are reviewing this\"\nSignature: Always end with \"Best Regards,\" followed by \"DNAI Team\" on the next line\n\nQuality Benchmark:\nEvery interaction should be concise, professionally formatted, inspire confidence, and facilitate efficient resolution."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.8,
+      "position": [
+        0,
+        256
+      ],
+      "id": "0bc8bbcb-e586-41a0-9418-4532697eae52",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        416
+      ],
+      "id": "a33a1537-2667-47b8-896b-1b8b8d760dc0",
+      "name": "OpenAI Chat Model1",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "6db0c73b-28a8-4b43-a623-60541ab82a9c",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -192,
+        256
+      ],
+      "id": "999c0021-bc0b-4efa-ac15-2410660e6f02",
+      "name": "Webhook",
+      "webhookId": "eb1b46cd-3c61-458d-8b1f-01243d1ff0a6"
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        336,
+        256
+      ],
+      "id": "03bc6a50-303f-4f8a-bb25-ef6fb3e5275c",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolName": "retriever",
+        "toolDescription": "Retrieve data from a semantic database to answer questions",
+        "qdrantCollection": "[REDACTED]",
+        "options": {}
+      },
+      "id": "b05e7332-0c92-4e37-9dc5-e3fd3d300ba6",
+      "name": "Qdrant Vector Store1",
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
+      "position": [
+        64,
+        592
+      ],
+      "typeVersion": 1.2,
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        64,
+        768
+      ],
+      "id": "875c7791-0994-4554-b3dd-a5d6aef8a817",
+      "name": "Embeddings OpenAI",
+      "credentials": "[REDACTED]"
+    }
+  ],
+  "connections": {
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": "[REDACTED]",
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": "[REDACTED]",
+    "Qdrant Vector Store1": "[REDACTED]"
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "triggerCount": 1,
+  "tags": [
+    {
+      "updatedAt": "2026-01-16T15:13:31.431Z",
+      "createdAt": "2026-01-16T15:13:31.431Z",
+      "id": "XNgax37VvLrR0son",
+      "name": "Bruce Banner"
+    }
+  ]
+}

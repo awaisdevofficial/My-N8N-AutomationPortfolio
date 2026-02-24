@@ -1,0 +1,1379 @@
+{
+  "updatedAt": "2026-02-03T17:03:21.353Z",
+  "createdAt": "2025-10-26T08:14:23.580Z",
+  "id": "glVBg3fT6Mc3bhs5",
+  "name": "Arise",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -720,
+        -1744
+      ],
+      "id": "2fc6ea7b-f34f-41c8-a457-86a4dee23827",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "65c428df-ce09-4325-9a31-22eef3d5ab17",
+              "name": "email",
+              "value": "ak5413032@gmail.com",
+              "type": "string"
+            },
+            {
+              "id": "a4d683f0-92ce-49a4-b7dc-557340bcadca",
+              "name": "website_url",
+              "value": "https://myinterview.lovable.app/",
+              "type": "string"
+            },
+            {
+              "id": "c7dd6008-9041-400e-8d67-0280dbb37ca0",
+              "name": "competitor_count",
+              "value": 10,
+              "type": "number"
+            },
+            {
+              "id": "1aece83d-a732-48c0-8c91-08c00e094ec1",
+              "name": "analysis_type",
+              "value": "one_time",
+              "type": "string"
+            },
+            {
+              "id": "56ab501d-67cd-4731-b23d-a1b591e7d4f3",
+              "name": "social_handles",
+              "value": "={ \"instagram\": \"@oh.awais\",   \n\"facebook\": \"\",   \n\"tiktok\": \"awais\",   \n\"linkedin\": \"https://www.linkedin.com/company/107879222\"\n}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -496,
+        -1744
+      ],
+      "id": "6e14212c-e9ec-4519-a10d-82ef61a296bc",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "url": "https://www.googleapis.com/pagespeedonline/v5/runPagespeed",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "url",
+              "value": "={{ $json.website_url }}"
+            },
+            {
+              "name": "key",
+              "value": "AIzaSyC5RX5i3b1-WLCQKByLpRhcx0-fxOcI_lA"
+            },
+            {
+              "name": "strategy",
+              "value": "mobile"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        176,
+        -1360
+      ],
+      "id": "74bfb4d6-532b-440f-8222-1989554e4234",
+      "name": "\"PageSpeed - User Website\""
+    },
+    {
+      "parameters": {
+        "tableId": "website_analysis",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "analysis_request_id",
+              "fieldValue": "={{ $('analysis request insert').item.json.id }}"
+            },
+            {
+              "fieldId": "page_speed_score",
+              "fieldValue": "={{ $json.page_speed_score }}"
+            },
+            {
+              "fieldId": "mobile_friendly",
+              "fieldValue": "={{ $json.mobile_friendly }}"
+            },
+            {
+              "fieldId": "seo_score",
+              "fieldValue": "={{ $json.seo_score }}"
+            },
+            {
+              "fieldId": "tech_stack",
+              "fieldValue": "={{ $json.tech_stack }}"
+            },
+            {
+              "fieldId": "traffic_estimate",
+              "fieldValue": "={{ $json.traffic_estimate }}"
+            },
+            {
+              "fieldId": "backlinks_count",
+              "fieldValue": "={{ $json.backlinks_count }}"
+            },
+            {
+              "fieldId": "content_analysis",
+              "fieldValue": "={{ $json.content_analysis }}"
+            },
+            {
+              "fieldId": "recommendations",
+              "fieldValue": "={{ $json.recommendations }}"
+            },
+            {
+              "fieldId": "raw_data",
+              "fieldValue": "={{ $json.raw_data }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        624,
+        -1360
+      ],
+      "id": "4827c5a3-e32d-4b81-b411-08bebc784250",
+      "name": "website analysis insert",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "tableId": "analysis_requests",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "status",
+              "fieldValue": "pending"
+            },
+            {
+              "fieldId": "website_url",
+              "fieldValue": "={{ $json.website_url }}"
+            },
+            {
+              "fieldId": "social_handles",
+              "fieldValue": "={{ $json.social_handles }}"
+            },
+            {
+              "fieldId": "competitor_count",
+              "fieldValue": "={{ $json.competitor_count }}"
+            },
+            {
+              "fieldId": "analysis_type",
+              "fieldValue": "={{ $json.analysis_type }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        -272,
+        -1744
+      ],
+      "id": "41203a5e-ed95-49b1-81c2-37cd48ae77b8",
+      "name": "analysis request insert",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract keywords from website URL\nconst websiteUrl = $input.item.json.website_url;\nconst analysisId = $input.item.json.id;\n\n// Simple keyword extraction from domain\n// In production, you'd scrape the actual website content\nconst domain = websiteUrl.replace(/^https?:\\/\\//i, '').replace(/^www\\./i, '').split('/')[0];\nconst domainParts = domain.split('.')[0].split('-');\n\n// For now, we'll use domain as main keyword\n// Later we can enhance this with actual web scraping\nconst mainKeywords = domainParts.filter(part => part.length > 3);\n\nreturn [{\n  json: {\n    analysis_id: analysisId,\n    website_url: websiteUrl,\n    main_keywords: mainKeywords,\n    // We'll use these for SerpAPI searches\n    search_query_main: `${mainKeywords.join(' ')} tools`,\n    search_query_alternative: `alternatives to ${mainKeywords.join(' ')}`,\n    search_query_category: `${mainKeywords.join(' ')} companies`,\n    // Pass through all original data\n    user_id: $input.item.json.user_id,\n    competitor_count: $input.item.json.competitor_count,\n    social_handles: $input.item.json.social_handles,\n    analysis_type: $input.item.json.analysis_type\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -48,
+        -2032
+      ],
+      "id": "cdba3d21-a805-4bdf-a3b2-71389d7d58f5",
+      "name": "Provide relevant recommendations"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the SerpAPI results and user data\nconst serpResults = $input.first().json.organic_results || [];\nconst userWebsite = $('Provide relevant recommendations').first().json.website_url;\nconst competitorCount = $('Provide relevant recommendations').first().json.competitor_count;\n\n// Extract domain from user's website\nconst getUserDomain = (url) => {\n  return url.replace(/^https?:\\/\\//i, '').replace(/^www\\./i, '').split('/')[0];\n};\n\nconst userDomain = getUserDomain(userWebsite);\n\n// Sites to exclude (marketplaces, news, etc.)\nconst excludeDomains = [\n  'amazon.', 'ebay.', 'walmart.', 'alibaba.',\n  'facebook.com', 'twitter.com', 'linkedin.com', 'instagram.com',\n  'youtube.com', 'wikipedia.org', 'medium.com',\n  'forbes.com', 'techcrunch.com', 'businessinsider.com'\n];\n\n// Filter and score competitors\nconst competitors = serpResults\n  .filter(result => {\n    const link = result.link || '';\n    \n    // Exclude user's own site\n    if (link.includes(userDomain)) return false;\n    \n    // Exclude blacklisted domains\n    if (excludeDomains.some(domain => link.includes(domain))) return false;\n    \n    return true;\n  })\n  .map(result => {\n    // Score based on position (higher position = higher score)\n    let score = 100 - (result.position * 3);\n    \n    // Bonus if title matches keywords well\n    const title = (result.title || '').toLowerCase();\n    if (title.includes('tool') || title.includes('software') || title.includes('platform')) {\n      score += 10;\n    }\n    \n    return {\n      competitor_name: result.title,\n      website_url: result.link,\n      discovery_method: 'serpapi_main',\n      serp_position: result.position,\n      relevance_score: Math.max(0, Math.min(100, score)), // Keep between 0-100\n      snippet: result.snippet\n    };\n  })\n  .sort((a, b) => b.relevance_score - a.relevance_score)\n  .slice(0, competitorCount); // Take only the number user requested\n\n// Return for next node\nreturn competitors.map(comp => ({ json: comp }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        400,
+        -2032
+      ],
+      "id": "84c5dafc-8d63-4ab8-a17d-f14c5ee98f83",
+      "name": "arrange data"
+    },
+    {
+      "parameters": {
+        "tableId": "competitors",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "analysis_request_id",
+              "fieldValue": "={{ $('Provide relevant recommendations').first().json.analysis_id }}"
+            },
+            {
+              "fieldId": "competitor_name",
+              "fieldValue": "={{ $json.competitor_name }}"
+            },
+            {
+              "fieldId": "website_url",
+              "fieldValue": "={{ $json.website_url }}"
+            },
+            {
+              "fieldId": "discovery_method",
+              "fieldValue": "={{ $json.discovery_method }}"
+            },
+            {
+              "fieldId": "serp_position",
+              "fieldValue": "={{ $json.serp_position }}"
+            },
+            {
+              "fieldId": "relevance_score",
+              "fieldValue": "={{ $json.relevance_score }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        624,
+        -2032
+      ],
+      "id": "6ff954eb-f394-4243-975b-93b88f744b6f",
+      "name": "insert competitors",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        -48,
+        -1360
+      ],
+      "id": "545b6036-f744-44ee-94be-9cb9c688298a",
+      "name": "Limit"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get PageSpeed API response\nconst pageSpeedData = $input.first().json;\n\n// Get analysis_id from the Edit Fields node (adjust node name if needed)\nconst analysisId = $('Edit Fields').first().json.analysis_id;\nconst websiteUrl = $('Edit Fields').first().json.website_url;\n\n// Extract the important scores\nconst lighthouseResult = pageSpeedData.lighthouseResult || {};\nconst categories = lighthouseResult.categories || {};\nconst audits = lighthouseResult.audits || {};\n\n// Performance score (0-1, convert to 0-100)\nconst performanceScore = categories.performance?.score || 0;\nconst pageSpeedScore = Math.round(performanceScore * 100);\n\n// SEO score\nconst seoScore = categories.seo?.score || 0;\nconst seoScorePercent = Math.round(seoScore * 100);\n\n// Check if mobile friendly\nconst mobileFriendly = audits['viewport']?.score === 1;\n\n// Extract tech stack from detected technologies\nconst techStack = [];\nif (lighthouseResult.stacks) {\n  lighthouseResult.stacks.forEach(stack => {\n    if (stack.name) techStack.push(stack.name);\n  });\n}\n\n// Get some key metrics\nconst firstContentfulPaint = audits['first-contentful-paint']?.displayValue || 'N/A';\nconst speedIndex = audits['speed-index']?.displayValue || 'N/A';\nconst timeToInteractive = audits['interactive']?.displayValue || 'N/A';\n\n// Build recommendations based on failed audits\nconst recommendations = [];\n\nif (pageSpeedScore < 50) {\n  recommendations.push('CRITICAL: Website is very slow. Immediate optimization needed.');\n}\nif (pageSpeedScore < 70) {\n  recommendations.push('Optimize images - use WebP format and compression');\n  recommendations.push('Enable text compression (gzip/brotli)');\n  recommendations.push('Minify CSS and JavaScript files');\n}\nif (audits['unused-css-rules']?.score < 1) {\n  recommendations.push('Remove unused CSS to reduce file size');\n}\nif (audits['unused-javascript']?.score < 1) {\n  recommendations.push('Remove unused JavaScript code');\n}\nif (audits['uses-responsive-images']?.score < 1) {\n  recommendations.push('Serve images in modern formats and appropriate sizes');\n}\nif (audits['offscreen-images']?.score < 1) {\n  recommendations.push('Defer loading of offscreen images');\n}\nif (!mobileFriendly) {\n  recommendations.push('Add viewport meta tag for mobile optimization');\n}\nif (seoScorePercent < 80) {\n  recommendations.push('Improve SEO: add meta descriptions and proper heading structure');\n}\n\n// Content analysis\nconst contentAnalysis = {\n  first_contentful_paint: firstContentfulPaint,\n  speed_index: speedIndex,\n  time_to_interactive: timeToInteractive,\n  total_blocking_time: audits['total-blocking-time']?.displayValue || 'N/A',\n  cumulative_layout_shift: audits['cumulative-layout-shift']?.displayValue || 'N/A',\n  largest_contentful_paint: audits['largest-contentful-paint']?.displayValue || 'N/A'\n};\n\n// Return structured data ready for database - NOW WITH analysis_request_id\nreturn [{\n  json: {\n    analysis_request_id: analysisId,  // ← FIXED: Now included!\n    website_url: websiteUrl,\n    page_speed_score: pageSpeedScore,\n    mobile_friendly: mobileFriendly,\n    seo_score: seoScorePercent,\n    tech_stack: techStack,\n    traffic_estimate: null,\n    backlinks_count: null,\n    content_analysis: contentAnalysis,\n    recommendations: recommendations,\n    raw_data: {\n      performance_score: pageSpeedScore,\n      seo_score: seoScorePercent,\n      accessibility_score: Math.round((categories.accessibility?.score || 0) * 100),\n      best_practices_score: Math.round((categories['best-practices']?.score || 0) * 100),\n      note: 'Extracted from Google PageSpeed Insights API'\n    }\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        400,
+        -1360
+      ],
+      "id": "116fa789-32d6-4b15-8399-bb9096a39734",
+      "name": "Process PageSpeed Data"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get social handles and analysis ID\nconst socialHandles = $('Provide relevant recommendations').first().json.social_handles || {};\nconst analysisId = $('Provide relevant recommendations').first().json.analysis_id;\n\n// Convert social handles object into array of items (one per platform)\nconst platforms = [];\n\nif (socialHandles.instagram) {\n  platforms.push({\n    platform: 'instagram',\n    handle: socialHandles.instagram,\n    analysis_request_id: analysisId\n  });\n}\n\nif (socialHandles.facebook) {\n  platforms.push({\n    platform: 'facebook',\n    handle: socialHandles.facebook,\n    analysis_request_id: analysisId\n  });\n}\n\nif (socialHandles.tiktok) {\n  platforms.push({\n    platform: 'tiktok',\n    handle: socialHandles.tiktok,\n    analysis_request_id: analysisId\n  });\n}\n\nif (socialHandles.linkedin) {\n  platforms.push({\n    platform: 'linkedin',\n    handle: socialHandles.linkedin,\n    analysis_request_id: analysisId\n  });\n}\n\nif (socialHandles.twitter) {\n  platforms.push({\n    platform: 'twitter',\n    handle: socialHandles.twitter,\n    analysis_request_id: analysisId\n  });\n}\n\nif (socialHandles.youtube) {\n  platforms.push({\n    platform: 'youtube',\n    handle: socialHandles.youtube,\n    analysis_request_id: analysisId\n  });\n}\n\n// Return array of platforms (one item per platform)\nreturn platforms.map(p => ({ json: p }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        848,
+        -1360
+      ],
+      "id": "7d8c630a-fb60-476f-9f27-e9e0beb8de3f",
+      "name": "Split Social Handles"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.platform }}",
+                    "rightValue": "instagram",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "339bec66-1369-455c-98fb-8c2eccbf9655"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "d15c7f51-3cff-47dd-b697-aaa7e8d92da9",
+                    "leftValue": "={{ $json.platform }}",
+                    "rightValue": "tiktok",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "59b97c68-8f86-48eb-9715-a32f0d8e4b8e",
+                    "leftValue": "={{ $json.platform }}",
+                    "rightValue": "facbook",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "e9efdf45-3386-4d06-9bd8-988ef9fec471",
+                    "leftValue": "={{ $json.platform }}",
+                    "rightValue": "linkedin",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {
+          "allMatchingOutputs": false
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        1072,
+        -1392
+      ],
+      "id": "d89466f3-5a8c-4e3a-8e1a-4ec23d2a15fc",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "operation": "Run actor and get dataset",
+        "actorId": {
+          "__rl": true,
+          "value": "K3KVQ5n7S5K5p0KbI",
+          "mode": "list",
+          "cachedResultName": "Website Contact & Socials Extractor (embion/website-contact-socials-extractor)",
+          "cachedResultUrl": "https://console.apify.com/actors/K3KVQ5n7S5K5p0KbI/input"
+        },
+        "customBody": "={\n    \"proxy_settings\": {\n        \"useApifyProxy\": true\n    },\n    \"start_urls\": [\n        {\n            \"url\": \"{{ $json.website_url }}\"\n        }\n    ]\n}",
+        "timeout": {}
+      },
+      "type": "@apify/n8n-nodes-apify.apify",
+      "typeVersion": 1,
+      "position": [
+        848,
+        -2032
+      ],
+      "id": "da6a2fa6-87fe-416c-932b-64a066fe7f9b",
+      "name": "Run an Actor and get dataset",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get Apify results (10 items)\nconst apifyResults = $input.all();\n\n// Get competitor data from database (from earlier in workflow)\nconst competitorsFromDB = $('insert competitors').all().map(item => item.json);\n\n// Process each Apify result\nconst competitorsWithSocial = [];\n\napifyResults.forEach(item => {\n  const result = item.json;\n  const domain = result.domain || '';\n  const startUrl = result.start_urls?.[0] || '';\n  \n  // Find matching competitor from database by comparing domains\n  const matchingCompetitor = competitorsFromDB.find(comp => {\n    const compDomain = (comp.website_url || comp.website || '')\n      .replace(/^https?:\\/\\//, '')\n      .replace(/^www\\./, '')\n      .split('/')[0];\n    \n    return domain.includes(compDomain) || compDomain.includes(domain.replace(/^www\\./, ''));\n  });\n  \n  if (!matchingCompetitor) {\n    console.log(`⚠️ Could not match ${domain} to any competitor in database`);\n    return; // Skip this one\n  }\n  \n  // Extract social handles\n  const socialHandles = {};\n  \n  if (result.instagram_urls && result.instagram_urls.length > 0) {\n    const instaMatch = result.instagram_urls[0].match(/instagram\\.com\\/([a-zA-Z0-9_.]+)/);\n    if (instaMatch && instaMatch[1]) {\n      socialHandles.instagram = instaMatch[1].replace(/\\//g, '');\n    }\n  }\n  \n  if (result.tiktok_urls && result.tiktok_urls.length > 0) {\n    const tiktokMatch = result.tiktok_urls[0].match(/tiktok\\.com\\/@([a-zA-Z0-9_.]+)/);\n    if (tiktokMatch && tiktokMatch[1]) {\n      socialHandles.tiktok = tiktokMatch[1];\n    }\n  }\n  \n  if (result.facebook_urls && result.facebook_urls.length > 0) {\n    const fbUrl = result.facebook_urls.find(url => \n      !url.includes('/about/') && \n      !url.includes('/sharer/') &&\n      !url.includes('/login')\n    );\n    if (fbUrl) {\n      const fbMatch = fbUrl.match(/facebook\\.com\\/([a-zA-Z0-9.-]+)/);\n      if (fbMatch && fbMatch[1]) {\n        socialHandles.facebook = fbMatch[1];\n      }\n    }\n  }\n  \n  if (result.linkedin_urls && result.linkedin_urls.length > 0) {\n    const linkedinMatch = result.linkedin_urls[0].match(/linkedin\\.com\\/(?:company|in)\\/([a-zA-Z0-9-]+)/);\n    if (linkedinMatch && linkedinMatch[1]) {\n      socialHandles.linkedin = linkedinMatch[1];\n    }\n  }\n  \n  if (result.twitter_urls && result.twitter_urls.length > 0) {\n    const twitterMatch = result.twitter_urls[0].match(/(?:twitter|x)\\.com\\/([a-zA-Z0-9_]+)/);\n    if (twitterMatch && twitterMatch[1]) {\n      socialHandles.twitter = twitterMatch[1];\n    }\n  }\n  \n  if (result.youtube_urls && result.youtube_urls.length > 0) {\n    const youtubeMatch = result.youtube_urls[0].match(/youtube\\.com\\/(?:channel|c|user)\\/([a-zA-Z0-9_-]+)/);\n    if (youtubeMatch && youtubeMatch[1]) {\n      socialHandles.youtube = youtubeMatch[1];\n    }\n  }\n  \n  // Only add if we found at least one social media handle\n  if (Object.keys(socialHandles).length > 0) {\n    competitorsWithSocial.push({\n      competitor_id: matchingCompetitor.id,\n      competitor_name: matchingCompetitor.competitor_name || matchingCompetitor.name,\n      website_url: matchingCompetitor.website_url || matchingCompetitor.website,\n      social_handles: socialHandles,\n      analysis_request_id: matchingCompetitor.analysis_request_id,\n      apify_stats: {\n        pages_crawled: result.pages_crawled,\n        is_cloudflare_protected: result.is_cloudflare_protected\n      }\n    });\n    \n    console.log(`✅ ${matchingCompetitor.competitor_name}: Found ${Object.keys(socialHandles).length} social platforms`);\n  } else {\n    console.log(`❌ ${matchingCompetitor.competitor_name}: No social media found`);\n  }\n});\n\nreturn competitorsWithSocial.map(c => ({ json: c }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1072,
+        -2032
+      ],
+      "id": "7aabfc19-37f9-47a1-9079-f72d6b490edf",
+      "name": "Extract Social Handles from Apify"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get all competitors with social handles\nconst competitors = $input.all();\n\nconst allPlatforms = [];\n\n// For each competitor, create one item per platform\ncompetitors.forEach(competitor => {\n  const comp = competitor.json;\n  \n  // Loop through each social platform they have\n  for (const [platform, handle] of Object.entries(comp.social_handles)) {\n    if (handle && handle.length > 0) {\n      \n      // Construct profile URL based on platform\n      let profileUrl = '';\n      \n      switch(platform) {\n        case 'instagram':\n          profileUrl = `https://www.instagram.com/${handle.replace('@', '')}`;\n          break;\n        case 'facebook':\n          profileUrl = `https://www.facebook.com/${handle}`;\n          break;\n        case 'tiktok':\n          profileUrl = `https://www.tiktok.com/@${handle.replace('@', '')}`;\n          break;\n        case 'linkedin':\n          // Check if it's a company or personal profile\n          if (handle.includes('/') || /^\\d+$/.test(handle)) {\n            // Numeric ID or already formatted\n            profileUrl = handle.startsWith('http') \n              ? handle \n              : `https://www.linkedin.com/company/${handle}`;\n          } else {\n            // Personal profile\n            profileUrl = `https://www.linkedin.com/in/${handle}`;\n          }\n          break;\n        case 'twitter':\n          profileUrl = `https://twitter.com/${handle.replace('@', '')}`;\n          break;\n        case 'youtube':\n          profileUrl = handle.startsWith('http')\n            ? handle\n            : `https://www.youtube.com/${handle}`;\n          break;\n        default:\n          profileUrl = handle;\n      }\n      \n      allPlatforms.push({\n        competitor_id: comp.competitor_id,\n        competitor_name: comp.competitor_name,\n        platform: platform,\n        handle: handle,\n        profile_url: profileUrl,\n        analysis_request_id: comp.analysis_request_id,\n        is_competitor: true\n      });\n    }\n  }\n});\n\nconsole.log(`Total platforms to scrape: ${allPlatforms.length}`);\nallPlatforms.forEach(p => {\n  console.log(`${p.platform}: ${p.profile_url}`);\n});\n\nreturn allPlatforms.map(p => ({ json: p }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1296,
+        -2032
+      ],
+      "id": "30ed6a36-98c2-4391-a413-a205a303bf5f",
+      "name": "Split Competitor Platforms",
+      "alwaysOutputData": false,
+      "executeOnce": false
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.platform }}",
+                    "rightValue": "instagram",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "8a799224-f0bb-4894-af7a-5e05ae2e1e27"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "6cbc507b-3145-43ad-9973-f665e4dc9c49",
+                    "leftValue": "={{ $json.platform }}",
+                    "rightValue": "tiktok",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "26aa6518-b985-4cae-bb58-71e1a5c02390",
+                    "leftValue": "={{ $json.platform }}",
+                    "rightValue": "facebook",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "34266f60-a0d4-4ea0-bfb3-15bc900d671b",
+                    "leftValue": "={{ $json.platform }}",
+                    "rightValue": "linkedin",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        1520,
+        -2064
+      ],
+      "id": "04189e00-7004-44cb-a7ba-a187683a3d3d",
+      "name": "Route Competitor Platform"
+    },
+    {
+      "parameters": {
+        "operation": "Run actor and get dataset",
+        "actorId": {
+          "__rl": true,
+          "value": "dSCLg0C3YEZ83HzYX",
+          "mode": "list",
+          "cachedResultName": "Instagram Profile Scraper (apify/instagram-profile-scraper)",
+          "cachedResultUrl": "https://console.apify.com/actors/dSCLg0C3YEZ83HzYX/input"
+        },
+        "customBody": "={\n    \"usernames\": [\n        \"{{ $json.profile_url }}\"\n    ]\n}",
+        "timeout": {},
+        "memory": 4096
+      },
+      "type": "@apify/n8n-nodes-apify.apify",
+      "typeVersion": 1,
+      "position": [
+        1744,
+        -2320
+      ],
+      "id": "aeacf80f-2632-4c7f-b8f9-40bc88f32f75",
+      "name": "Instagram Profile Scraper\"1",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "operation": "Run actor and get dataset",
+        "actorId": {
+          "__rl": true,
+          "value": "GdWCkxBtKWOsKjdch",
+          "mode": "list",
+          "cachedResultName": "TikTok Scraper (clockworks/tiktok-scraper)",
+          "cachedResultUrl": "https://console.apify.com/actors/GdWCkxBtKWOsKjdch/input"
+        },
+        "customBody": "={\n    \"excludePinnedPosts\": true,\n    \"profiles\": [\n        \"{{ $json.profile_url }}\"\n    ],\n    \"shouldDownloadCovers\": false,\n    \"shouldDownloadSlideshowImages\": false,\n    \"shouldDownloadSubtitles\": false,\n    \"shouldDownloadVideos\": false\n}",
+        "timeout": {}
+      },
+      "type": "@apify/n8n-nodes-apify.apify",
+      "typeVersion": 1,
+      "position": [
+        1744,
+        -2128
+      ],
+      "id": "7b624654-6e2d-4d5d-b4ed-7a2670214cfe",
+      "name": "Tiktok Profile Scraper\"1",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "operation": "Run actor and get dataset",
+        "actorId": {
+          "__rl": true,
+          "value": "2SyF0bVxmgGr8IVCZ",
+          "mode": "list",
+          "cachedResultName": "✨Mass Linkedin Profile Scraper with Email 📧 (No Cookies) (dev_fusion/Linkedin-Profile-Scraper)",
+          "cachedResultUrl": "https://console.apify.com/actors/2SyF0bVxmgGr8IVCZ/input"
+        },
+        "customBody": "={\n    \"profileUrls\": [\n        \"{{ $json.profile_url }}\"\n    ]\n}",
+        "timeout": {}
+      },
+      "type": "@apify/n8n-nodes-apify.apify",
+      "typeVersion": 1,
+      "position": [
+        1744,
+        -1744
+      ],
+      "id": "0c512bc6-acaf-41ee-a1fe-7e4ba0432327",
+      "name": "Linkedin Profile Scraper\"1",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "operation": "Run actor and get dataset",
+        "actorId": {
+          "__rl": true,
+          "value": "4Hv5RhChiaDk6iwad",
+          "mode": "list",
+          "cachedResultName": "Facebook Pages Scraper (apify/facebook-pages-scraper)",
+          "cachedResultUrl": "https://console.apify.com/actors/4Hv5RhChiaDk6iwad/input"
+        },
+        "customBody": "={\n    \"startUrls\": [\n        {\n            \"url\": \"{{ $json.profile_url }}\"\n        }\n    ]\n}",
+        "timeout": {}
+      },
+      "type": "@apify/n8n-nodes-apify.apify",
+      "typeVersion": 1,
+      "position": [
+        1744,
+        -1936
+      ],
+      "id": "0b31d3e2-50f0-4edf-87e8-27d88e60fab2",
+      "name": "Facebook Profile Scraper\"1",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "tableId": "competitor_social_media",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "analysis_requests",
+              "fieldValue": "={{ $('website analysis insert').item.json.analysis_request_id }}"
+            },
+            {
+              "fieldId": "platform",
+              "fieldValue": "={{ $json.platform }}"
+            },
+            {
+              "fieldId": "Accounts",
+              "fieldValue": "={{ $json.accountOverview }}"
+            },
+            {
+              "fieldId": "AudienceMetrics",
+              "fieldValue": "={{ $json.audienceMetrics }}"
+            },
+            {
+              "fieldId": "ContentBreakdownContentBreakdown",
+              "fieldValue": "={{ $json.contentBreakdown }}"
+            },
+            {
+              "fieldId": "CaptionStrategy",
+              "fieldValue": "={{ $json.captionStrategy }}"
+            },
+            {
+              "fieldId": "HashtagStrategy",
+              "fieldValue": "={{ $json.hashtagStrategy }}"
+            },
+            {
+              "fieldId": "PostingPatterns",
+              "fieldValue": "={{ $json.postingPatterns }}"
+            },
+            {
+              "fieldId": "CollaborationStrategy",
+              "fieldValue": "={{ $json.collaborationStrategy }}"
+            },
+            {
+              "fieldId": "LocationStrategy",
+              "fieldValue": "={{ $json.locationStrategy }}"
+            },
+            {
+              "fieldId": "EngagementAnalysis",
+              "fieldValue": "={{ $json.engagementAnalysis }}"
+            },
+            {
+              "fieldId": "Posts",
+              "fieldValue": "={{ $json.allPosts }}"
+            },
+            {
+              "fieldId": "CompetitiveIntel",
+              "fieldValue": "={{ $json.competitiveIntel }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        2192,
+        -2128
+      ],
+      "id": "88d3e1b4-2f5b-4520-a080-fd9e0b45fb12",
+      "name": "Compatitor Socail Media Insert",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "tableId": "Mysocialmedia",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "analysis_requests",
+              "fieldValue": "={{ $('website analysis insert').item.json.analysis_request_id }}"
+            },
+            {
+              "fieldId": "platform",
+              "fieldValue": "={{ $json.platform }}"
+            },
+            {
+              "fieldId": "Accounts",
+              "fieldValue": "={{ $json.accountOverview }}"
+            },
+            {
+              "fieldId": "AudienceMetrics",
+              "fieldValue": "={{ $json.audienceMetrics }}"
+            },
+            {
+              "fieldId": "ContentBreakdownContentBreakdown",
+              "fieldValue": "={{ $json.contentBreakdown }}"
+            },
+            {
+              "fieldId": "CaptionStrategy",
+              "fieldValue": "={{ $json.captionStrategy }}"
+            },
+            {
+              "fieldId": "HashtagStrategy",
+              "fieldValue": "={{ $json.hashtagStrategy }}"
+            },
+            {
+              "fieldId": "PostingPatterns",
+              "fieldValue": "={{ $json.postingPatterns }}"
+            },
+            {
+              "fieldId": "CollaborationStrategy",
+              "fieldValue": "={{ $json.collaborationStrategy }}"
+            },
+            {
+              "fieldId": "LocationStrategy",
+              "fieldValue": "={{ $json.locationStrategy }}"
+            },
+            {
+              "fieldId": "EngagementAnalysis",
+              "fieldValue": "={{ $json.engagementAnalysis }}"
+            },
+            {
+              "fieldId": "Posts",
+              "fieldValue": "={{ $json.allPosts }}"
+            },
+            {
+              "fieldId": "CompetitiveIntel",
+              "fieldValue": "={{ $json.competitiveIntel }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1744,
+        -1456
+      ],
+      "id": "4a926415-e315-4c9f-9330-d976e4eedefa",
+      "name": "User Social Media Insert",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "operation": "Run actor and get dataset",
+        "actorId": {
+          "__rl": true,
+          "value": "4Hv5RhChiaDk6iwad",
+          "mode": "list",
+          "cachedResultName": "Facebook Pages Scraper (apify/facebook-pages-scraper)",
+          "cachedResultUrl": "https://console.apify.com/actors/4Hv5RhChiaDk6iwad/input"
+        },
+        "customBody": "={\n    \"startUrls\": [\n        {\n            \"url\": \"{{ $('Split Social Handles').item.json.handle }}\"\n        }\n    ]\n}",
+        "timeout": {}
+      },
+      "type": "@apify/n8n-nodes-apify.apify",
+      "typeVersion": 1,
+      "position": [
+        1296,
+        -1360
+      ],
+      "id": "6909ee1e-3367-4eba-b657-4b309d5ad231",
+      "name": "Facebook Profile Scraper\"",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "operation": "Run actor and get dataset",
+        "actorId": {
+          "__rl": true,
+          "value": "2SyF0bVxmgGr8IVCZ",
+          "mode": "list",
+          "cachedResultName": "✨Mass Linkedin Profile Scraper with Email 📧 (No Cookies) (dev_fusion/Linkedin-Profile-Scraper)",
+          "cachedResultUrl": "https://console.apify.com/actors/2SyF0bVxmgGr8IVCZ/input"
+        },
+        "customBody": "={\n    \"profileUrls\": [\n        \"{{ $('Split Social Handles').item.json.handle }}\"\n    ]\n}",
+        "timeout": {}
+      },
+      "type": "@apify/n8n-nodes-apify.apify",
+      "typeVersion": 1,
+      "position": [
+        1296,
+        -1168
+      ],
+      "id": "a9e9bf6f-f6ab-4e84-97ae-06dcb27f5d74",
+      "name": "Linkedin Profile Scraper\"",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "operation": "Run actor and get dataset",
+        "actorId": {
+          "__rl": true,
+          "value": "GdWCkxBtKWOsKjdch",
+          "mode": "list",
+          "cachedResultName": "TikTok Scraper (clockworks/tiktok-scraper)",
+          "cachedResultUrl": "https://console.apify.com/actors/GdWCkxBtKWOsKjdch/input"
+        },
+        "customBody": "={\n    \"excludePinnedPosts\": true,\n    \"profiles\": [\n        \"{{ $('Split Social Handles').item.json.handle }}\"\n    ],\n    \"shouldDownloadCovers\": false,\n    \"shouldDownloadSlideshowImages\": false,\n    \"shouldDownloadSubtitles\": false,\n    \"shouldDownloadVideos\": false\n}"
+      },
+      "type": "@apify/n8n-nodes-apify.apify",
+      "typeVersion": 1,
+      "position": [
+        1296,
+        -1552
+      ],
+      "id": "087d9b1f-cc0f-4eb2-bcfb-f0fd33ecce76",
+      "name": "Tiktok Profile Scraper\"",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "operation": "Run actor and get dataset",
+        "actorId": {
+          "__rl": true,
+          "value": "dSCLg0C3YEZ83HzYX",
+          "mode": "list",
+          "cachedResultName": "Instagram Profile Scraper (apify/instagram-profile-scraper)",
+          "cachedResultUrl": "https://console.apify.com/actors/dSCLg0C3YEZ83HzYX/input"
+        },
+        "customBody": "={\n    \"usernames\": [\n        \"{{ $('Split Social Handles').item.json.handle }}\"\n    ]\n}",
+        "memory": 4096
+      },
+      "type": "@apify/n8n-nodes-apify.apify",
+      "typeVersion": 1,
+      "position": [
+        1296,
+        -1744
+      ],
+      "id": "22f99a88-d577-4ce6-909c-f8d336948f7c",
+      "name": "Instagram Profile Scraper\"",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "actorId": {
+          "__rl": true,
+          "value": "LjHyPDyJBpNXNFfKc",
+          "mode": "list",
+          "cachedResultName": "Social Media Intelligence Scraper (yawrlassi/social-media-intelligence-scraper)",
+          "cachedResultUrl": "https://console.apify.com/actors/LjHyPDyJBpNXNFfKc/input"
+        },
+        "customBody": "={\n    \"facebookUrl\": \"{{ $json.inputUrl }}\",\n    \"instagramUrl\": \"{{ $json.inputUrl }}\",\n    \"linkedinUrl\": \"{{ $json.inputUrl }}\",\n    \"tiktokUrl\": \"{{ $json.inputUrl }}\"\n}"
+      },
+      "type": "@apify/n8n-nodes-apify.apify",
+      "typeVersion": 1,
+      "position": [
+        1520,
+        -1456
+      ],
+      "id": "6b3b57ab-fc5a-4b87-aecb-fa90e6948e7b",
+      "name": "Run an Actor",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "actorId": {
+          "__rl": true,
+          "value": "LjHyPDyJBpNXNFfKc",
+          "mode": "list",
+          "cachedResultName": "Social Media Intelligence Scraper (yawrlassi/social-media-intelligence-scraper)",
+          "cachedResultUrl": "https://console.apify.com/actors/LjHyPDyJBpNXNFfKc/input"
+        },
+        "customBody": "={\n    \"facebookUrl\": \"{{ $json.inputUrl }}\",\n    \"instagramUrl\": \"{{ $json.inputUrl }}\",\n    \"linkedinUrl\": \"{{ $json.inputUrl }}\",\n    \"tiktokUrl\": \"{{ $json.inputUrl }}\"\n}",
+        "timeout": {}
+      },
+      "type": "@apify/n8n-nodes-apify.apify",
+      "typeVersion": 1,
+      "position": [
+        1968,
+        -2128
+      ],
+      "id": "f471674f-f24e-4921-b8c6-1ea02d00d31c",
+      "name": "Run an Actor1",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        2400,
+        -2128
+      ],
+      "id": "a80cac93-f11f-4c8d-a9d5-c9a8baa3fecb",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        2368,
+        -1840
+      ],
+      "id": "e92e3e69-44b2-4129-a7d4-e5a21eaf8856",
+      "name": "OpenAI Chat Model",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "tableId": "Mysocialmedia",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "analysis_requests",
+              "keyValue": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('conditions0_Value', ``, 'string') }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabaseTool",
+      "typeVersion": 1,
+      "position": [
+        2560,
+        -1920
+      ],
+      "id": "b1c7021c-c218-428d-ab96-c62b243c6f57",
+      "name": "Get a row in Supabase",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "q": "h",
+        "additionalFields": {},
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-serpapi.serpApi",
+      "typeVersion": 1,
+      "position": [
+        176,
+        -2032
+      ],
+      "id": "8c151b54-baf7-48c2-a703-a1e56671a99a",
+      "name": "Give Top Competitor",
+      "credentials": "[REDACTED]"
+    }
+  ],
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "analysis request insert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "website analysis insert": {
+      "main": [
+        [
+          {
+            "node": "Split Social Handles",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "analysis request insert": {
+      "main": [
+        [
+          {
+            "node": "Provide relevant recommendations",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Provide relevant recommendations": {
+      "main": [
+        [
+          {
+            "node": "Give Top Competitor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "arrange data": {
+      "main": [
+        [
+          {
+            "node": "insert competitors",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "insert competitors": {
+      "main": [
+        [
+          {
+            "node": "Run an Actor and get dataset",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "\"PageSpeed - User Website\"": {
+      "main": [
+        [
+          {
+            "node": "Process PageSpeed Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit": {
+      "main": [
+        [
+          {
+            "node": "\"PageSpeed - User Website\"",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process PageSpeed Data": {
+      "main": [
+        [
+          {
+            "node": "website analysis insert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Social Handles": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Instagram Profile Scraper\"",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Tiktok Profile Scraper\"",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Facebook Profile Scraper\"",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Linkedin Profile Scraper\"",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run an Actor and get dataset": {
+      "main": [
+        [
+          {
+            "node": "Extract Social Handles from Apify",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Social Handles from Apify": "[REDACTED]",
+    "Split Competitor Platforms": {
+      "main": [
+        [
+          {
+            "node": "Route Competitor Platform",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route Competitor Platform": {
+      "main": [
+        [
+          {
+            "node": "Instagram Profile Scraper\"1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Tiktok Profile Scraper\"1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Facebook Profile Scraper\"1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Linkedin Profile Scraper\"1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Instagram Profile Scraper\"1": {
+      "main": [
+        [
+          {
+            "node": "Run an Actor1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tiktok Profile Scraper\"1": {
+      "main": [
+        [
+          {
+            "node": "Run an Actor1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Linkedin Profile Scraper\"1": {
+      "main": [
+        [
+          {
+            "node": "Run an Actor1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Facebook Profile Scraper\"1": {
+      "main": [
+        [
+          {
+            "node": "Run an Actor1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Facebook Profile Scraper\"": {
+      "main": [
+        [
+          {
+            "node": "Run an Actor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Linkedin Profile Scraper\"": {
+      "main": [
+        [
+          {
+            "node": "Run an Actor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tiktok Profile Scraper\"": {
+      "main": [
+        [
+          {
+            "node": "Run an Actor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Instagram Profile Scraper\"": {
+      "main": [
+        [
+          {
+            "node": "Run an Actor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run an Actor1": {
+      "main": [
+        [
+          {
+            "node": "Compatitor Socail Media Insert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run an Actor": {
+      "main": [
+        [
+          {
+            "node": "User Social Media Insert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compatitor Socail Media Insert": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": "[REDACTED]",
+    "Get a row in Supabase": "[REDACTED]",
+    "Give Top Competitor": {
+      "main": [
+        [
+          {
+            "node": "arrange data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "triggerCount": 0,
+  "tags": [
+    {
+      "updatedAt": "2025-10-15T12:01:49.775Z",
+      "createdAt": "2025-10-15T12:01:49.775Z",
+      "id": "vqPjQ1pPoVp3pFKR",
+      "name": "Mark Edward"
+    }
+  ]
+}

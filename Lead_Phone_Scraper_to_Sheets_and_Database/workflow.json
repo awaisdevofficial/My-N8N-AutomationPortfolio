@@ -1,0 +1,286 @@
+{
+  "updatedAt": "2025-11-12T09:39:41.000Z",
+  "createdAt": "2025-10-26T17:53:38.392Z",
+  "id": "jE3pZ994JO2Ho8lo",
+  "name": "Context",
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 24
+            }
+          ]
+        }
+      },
+      "id": "e6f54f8b-b88d-43d6-8aee-87de75a7eece",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [
+        -144,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get items from Apify\nconst items = $input.all();\nconst extractedData = [];\nconst maxItems = 50;\n\n// Regex patterns for phone numbers (supports multiple formats)\nconst phonePatterns = [\n  /\\+?\\d{1,4}?[-.\\s]?\\(?\\d{1,3}?\\)?[-.\\s]?\\d{1,4}[-.\\s]?\\d{1,4}[-.\\s]?\\d{1,9}/g,\n  /\\b\\d{10,}\\b/g,\n  /\\(\\d{3}\\)\\s*\\d{3}[-.\\s]?\\d{4}/g,\n  /\\d{4}[-.\\s]?\\d{7}/g, // Pakistan format\n  /03\\d{9}/g // Pakistan mobile format\n];\n\n// Function to clean phone numbers\nfunction cleanPhoneNumber(phone) {\n  return phone.replace(/[^0-9+]/g, '').trim();\n}\n\n// Function to validate phone number length\nfunction isValidPhone(phone) {\n  const cleaned = cleanPhoneNumber(phone);\n  return cleaned.length >= 10 && cleaned.length <= 15;\n}\n\nfor (let i = 0; i < items.length && extractedData.length < maxItems; i++) {\n  const item = items[i].json;\n  \n  // Combine text fields where phone numbers might appear\n  const textContent = [\n    item.text || '',\n    item.description || '',\n    item.message || '',\n    item.caption || '',\n    item.content || '',\n    item.body || ''\n  ].join(' ');\n  \n  // Extract phone numbers\n  let phoneNumbers = [];\n  phonePatterns.forEach(pattern => {\n    const matches = textContent.match(pattern);\n    if (matches) {\n      phoneNumbers = phoneNumbers.concat(matches);\n    }\n  });\n  \n  // Clean and validate phone numbers\n  phoneNumbers = phoneNumbers\n    .map(phone => cleanPhoneNumber(phone))\n    .filter(phone => isValidPhone(phone));\n  \n  // Remove duplicates\n  phoneNumbers = [...new Set(phoneNumbers)];\n  \n  // If phone numbers found, add to results\n  if (phoneNumbers.length > 0) {\n    phoneNumbers.forEach(phone => {\n      if (extractedData.length < maxItems) {\n        extractedData.push({\n          name: item.authorName || item.userName || item.author || item.user || 'Unknown',\n          phoneNumber: phone,\n          source: item.url || item.postUrl || 'N/A',\n          date: new Date().toISOString().split('T')[0],\n          timestamp: new Date().toISOString()\n        });\n      }\n    });\n  }\n}\n\n// Return extracted data\nif (extractedData.length === 0) {\n  return [{ json: { message: 'No phone numbers found', count: 0 } }];\n}\n\nreturn extractedData.map(data => ({ json: data }));"
+      },
+      "id": "31d87ef6-b5bf-466c-9a34-f2dff8a1c249",
+      "name": "Extract Phone Numbers",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        304,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.phoneNumber }}",
+              "operation": "isNotEmpty"
+            }
+          ]
+        }
+      },
+      "id": "cc881c70-cf99-4bd5-95d8-444ad403affe",
+      "name": "Filter Valid Data",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        528,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "YOUR_GOOGLE_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Sheet1",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Name": "={{ $json.name }}",
+            "Phone Number": "={{ $json.phoneNumber }}",
+            "Source": "={{ $json.source }}",
+            "Date": "={{ $json.date }}",
+            "Timestamp": "={{ $json.timestamp }}"
+          }
+        },
+        "options": {}
+      },
+      "id": "99436906-8fa4-4a23-a601-e35d605fad33",
+      "name": "Add to Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [
+        736,
+        -16
+      ],
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {},
+      "id": "93570ea9-3ae5-437e-9d56-370fb8be610f",
+      "name": "No Data Found",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        736,
+        192
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "Run actor and get dataset",
+        "actorId": {
+          "__rl": true,
+          "value": "https://console.apify.com/actors/2chN8UQcH1CfxLRNE/",
+          "mode": "url",
+          "__regex": "https://console.apify.com/actors/([a-zA-Z0-9]+).*"
+        },
+        "customBody": "{\n  \"resultsLimit\": 5,\n  \"startUrls\": [\n    {\n      \"url\": \"https://www.facebook.com/share/g/16ztHyR6sa/?mibextid=wwXIfr\"\n    },\n    {\n      \"url\": \"https://www.facebook.com/share/g/16EnuWHJkd/?mibextid=wwXIfr\"\n    },\n    {\n      \"url\": \"https://www.facebook.com/share/g/1A53G6eerK/?mibextid=wwXIfr\"\n    },\n    {\n      \"url\": \"https://www.facebook.com/share/g/17WiDpcNVb/?mibextid=wwXIfr\"\n    },\n    {\n      \"url\": \"https://www.facebook.com/share/g/1AJST5Uspy/?mibextid=wwXIfr\"\n    },\n    {\n      \"url\": \"https://www.facebook.com/share/g/17Rzd316ue/?mibextid=wwXIfr\"\n    },\n    {\n      \"url\": \"https://www.facebook.com/share/g/1G2edNvPCk/?mibextid=wwXIfr\"\n    },\n    {\n      \"url\": \"https://www.facebook.com/share/g/1FJNN41JjF/?mibextid=wwXIfr\"\n    },\n    {\n      \"url\": \"https://www.facebook.com/share/g/14Qrh8d2NRJ/?mibextid=wwXIfr\"\n    },\n    {\n      \"url\": \"https://www.facebook.com/share/g/1GpdogHU6v/?mibextid=wwXIfr\"\n    },\n    {\n      \"url\": \"https://www.facebook.com/share/g/1BJnhtCAiP/?mibextid=wwXIfr\"\n    },\n    {\n      \"url\": \"https://www.facebook.com/share/g/1K6UzrBgJD/?mibextid=wwXIfr\"\n    },\n    {\n      \"url\": \"https://www.facebook.com/share/g/1FrhZrtp5C/?mibextid=wwXIfr\"\n    },\n    {\n      \"url\": \"https://www.facebook.com/share/g/14PUPVRu4xr/?mibextid=wwXIfr\"\n    },\n    {\n      \"url\": \"https://www.facebook.com/share/g/1AC2iBwEye/?mibextid=wwXIfr\"\n    },\n    {\n      \"url\": \"https://www.facebook.com/share/g/14MGPtt1Nqb/?mibextid=wwXIfr\"\n    },\n    {\n      \"url\": \"https://www.facebook.com/share/g/17hWrfXkX2/?mibextid=wwXIfr\"\n    },\n    {\n      \"url\": \"https://www.facebook.com/share/g/1BbTgL835c/?mibextid=wwXIfr\"\n    }\n  ],\n  \"viewOption\": \"CHRONOLOGICAL\"\n}"
+      },
+      "type": "@apify/n8n-nodes-apify.apify",
+      "typeVersion": 1,
+      "position": [
+        80,
+        0
+      ],
+      "id": "aaa82a28-156e-4948-9082-1b2a50373062",
+      "name": "Run an Actor and get dataset",
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {},
+      "id": "7e15fc9c-6db7-43cf-abde-8bbe5381e9da",
+      "name": "Execute Workflow Trigger",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1,
+      "position": [
+        -384,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract input from AI agent - handle nested query object\nconst inputData = $json.query || $json;\n\nconst key = inputData.key;\nconst value = inputData.value;\nconst conversationId = inputData.conversation_id || 'unknown';\n\n// Validation\nif (!key || typeof key !== 'string' || key.trim().length === 0) {\n  throw new Error('❌ key is required and must be a non-empty string');\n}\n\nif (!value) {\n  throw new Error('❌ value is required');\n}\n\nif (!conversationId) {\n  throw new Error('❌ conversation_id is required');\n}\n\n// Sanitize key\nconst sanitizedKey = key.trim().substring(0, 100);\n\n// Parse value if it's a string that looks like JSON\nlet parsedValue = value;\nif (typeof value === 'string') {\n  try {\n    parsedValue = JSON.parse(value);\n  } catch (e) {\n    // Keep as string if not valid JSON\n    parsedValue = value;\n  }\n}\n\nreturn [{\n  json: {\n    key: sanitizedKey,\n    value: parsedValue,\n    conversationId: conversationId,\n    timestamp: new Date().toISOString()\n  }\n}];"
+      },
+      "id": "1cdf06a5-41ec-4185-b5ba-a4a5f8ceb6ac",
+      "name": "Validate Input",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -160,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- Store or update context in database\nINSERT INTO conversation_context (\n  conversation_id,\n  context_key,\n  context_value,\n  created_at,\n  updated_at\n)\nVALUES (\n  $1,\n  $2,\n  $3::jsonb,\n  NOW(),\n  NOW()\n)\nON CONFLICT (conversation_id, context_key) \nDO UPDATE SET\n  context_value = $3::jsonb,\n  updated_at = NOW()\nRETURNING \n  id,\n  conversation_id,\n  context_key,\n  context_value,\n  updated_at;",
+        "options": {
+          "queryReplacement": "={{ [\n  $json.conversationId,\n  $json.key,\n  JSON.stringify($json.value)\n] }}"
+        }
+      },
+      "id": "e03f0953-3cd1-4839-a05e-7d762531c8e4",
+      "name": "Save to Database",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [
+        64,
+        400
+      ],
+      "credentials": "[REDACTED]"
+    },
+    {
+      "parameters": {
+        "jsCode": "const saved = $input.first().json;\nconst original = $('Validate Input').first().json;\n\nreturn [{\n  json: {\n    success: true,\n    message: `✅ Context stored successfully\\n\\n🔑 Key: ${original.key}\\n💾 Stored for conversation: ${original.conversationId}`,\n    details: {\n      key: saved.context_key,\n      value: saved.context_value,\n      conversationId: saved.conversation_id,\n      storedAt: saved.updated_at\n    }\n  }\n}];"
+      },
+      "id": "2a875f5a-5106-4fa7-840c-9761a1a4828a",
+      "name": "Format Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        288,
+        400
+      ]
+    }
+  ],
+  "connections": {
+    "Extract Phone Numbers": {
+      "main": [
+        [
+          {
+            "node": "Filter Valid Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Valid Data": {
+      "main": [
+        [
+          {
+            "node": "Add to Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Run an Actor and get dataset",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run an Actor and get dataset": {
+      "main": [
+        [
+          {
+            "node": "Extract Phone Numbers",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Workflow Trigger": {
+      "main": [
+        [
+          {
+            "node": "Validate Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Input": {
+      "main": [
+        [
+          {
+            "node": "Save to Database",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save to Database": {
+      "main": [
+        [
+          {
+            "node": "Format Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "triggerCount": 1,
+  "tags": [
+    {
+      "updatedAt": "2025-10-28T07:41:35.810Z",
+      "createdAt": "2025-10-28T07:41:35.810Z",
+      "id": "Bjds4VMsUOfAftkN",
+      "name": "Abdul Wasay"
+    },
+    {
+      "updatedAt": "2025-10-24T04:04:28.048Z",
+      "createdAt": "2025-10-24T04:04:28.048Z",
+      "id": "SgbCkdz8ViP8OAzg",
+      "name": "SamCliff"
+    }
+  ]
+}
